@@ -23,9 +23,13 @@
     "Disabling smoothing and updating restores original playback without downloading again",
     "Optional owned-library import with local key, deduplication, uninstalled filter, and key removal",
     "All five spaces at 1280, 800, 390 px in English and French without horizontal overflow",
+    "Cancelling complete purge keeps prepared media and Steam export intact",
+    "Confirmed complete purge resets all variants and uninstalls the Steam copy while preserving user selections and settings",
+    "Purged previews stay empty across navigation and reload without background re-downloads",
+    "Explicit search restores image previews and preparation rebuilds chosen artwork for reinstall after purge",
     "No uncaught browser errors",
     "Screensaver removal leaves catalog/media intact"
   ],
   "consoleErrors": [],
-  "preparedFiles": 15
+  "preparedFiles": 21
 }

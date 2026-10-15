@@ -432,6 +432,114 @@ async function runUI({ capture = false } = {}) {
       'Optional owned-library import with local key, deduplication, uninstalled filter, and key removal'
     );
     check('All five spaces at 1280, 800, 390 px in English and French without horizontal overflow');
+    await fixture.core.invoke('install');
+    await go('settings');
+    const beforePurge = await fixture.core.invoke('state');
+    const oldChoices = beforePurge.games.map((g) => ({
+      id: g.id,
+      included: g.included,
+      selectedAsset: g.selectedAsset,
+      selectedCover: g.selectedCover
+    }));
+    let confirmation = '';
+    page.once('dialog', async (dialog) => {
+      confirmation = dialog.message();
+      await dialog.dismiss();
+    });
+    await page.locator('[data-action="purge-media"]').click();
+    await settled();
+    assert(
+      confirmation.includes('TOUTES') &&
+        confirmation.includes('clés API') &&
+        confirmation.includes('Steam')
+    );
+    assert.equal(
+      (await fixture.core.invoke('state')).games.find((g) => g.id === 'steam:7000901').media.file,
+      beforePurge.games.find((g) => g.id === 'steam:7000901').media.file
+    );
+    assert(await fs.stat(installed));
+    check('Cancelling complete purge keeps prepared media and Steam export intact');
+    page.once('dialog', (dialog) => dialog.accept());
+    await page.locator('[data-action="purge-media"]').click();
+    await page.locator('.purge-result').waitFor();
+    await settled();
+    let purged = await fixture.core.invoke('state');
+    assert.equal(purged.storage.used, 0);
+    assert.equal(purged.steam.installed, false);
+    assert.equal(purged.previewsPaused, true);
+    assert(purged.games.every((g) => g.status === 'new' && !g.media && !g.cover && !g.smoothed));
+    assert.deepEqual(
+      purged.games.map((g) => ({
+        id: g.id,
+        included: g.included,
+        selectedAsset: g.selectedAsset,
+        selectedCover: g.selectedCover
+      })),
+      oldChoices
+    );
+    assert.deepEqual(purged.settings, beforePurge.settings);
+    assert.equal(purged.hasKey, beforePurge.hasKey);
+    assert.deepEqual(await fs.readdir(path.join(fixture.dataDir, 'media')), []);
+    await assert.rejects(fs.stat(installed), { code: 'ENOENT' });
+    if (capture)
+      await page
+        .locator('.settings-panel')
+        .filter({ has: page.locator('[data-action="purge-media"]') })
+        .screenshot({ path: path.join(screenshots, '14-storage-after-purge-qa.png') });
+    check(
+      'Confirmed complete purge resets all variants and uninstalls the Steam copy while preserving user selections and settings'
+    );
+    let automaticPreviews = 0;
+    const observe = (request) => {
+      if (
+        request.url().endsWith('/api/invoke') &&
+        request.postDataJSON()?.action === 'previewImage'
+      )
+        automaticPreviews++;
+    };
+    page.on('request', observe);
+    await go('library');
+    await page.locator('.banner').filter({ hasText: 'Les médias ont été purgés' }).waitFor();
+    await page.reload();
+    await page.locator('[data-action="prepare-home"]').waitFor();
+    await go('library');
+    assert.equal(automaticPreviews, 0);
+    assert.deepEqual(await fs.readdir(path.join(fixture.dataDir, 'media')), []);
+    await shot('15-library-after-purge-qa');
+    page.off('request', observe);
+    check(
+      'Purged previews stay empty across navigation and reload without background re-downloads'
+    );
+    await page.locator('[data-action="add-game"]').click();
+    await page.locator('#game-search').fill('Orbit');
+    await page.locator('#search-form').evaluate((form) => form.requestSubmit());
+    await page.locator('#add-dialog .managed-image img').first().waitFor();
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('#add-dialog .managed-image img')].some(
+        (img) => img.naturalWidth > 0
+      )
+    );
+    assert.equal((await fixture.core.invoke('state')).previewsPaused, false);
+    await page.locator('[data-action="close-add"]').click();
+    await fixture.core.invoke('prepare', { ids: ['steam:7000901'] });
+    for (let i = 0; i < 600; i++) {
+      if ((await fixture.core.invoke('state')).job.status === 'completed') break;
+      await new Promise((r) => setTimeout(r, 25));
+    }
+    const preparedAgain = (await fixture.core.invoke('state')).games.find(
+      (g) => g.id === 'steam:7000901'
+    );
+    assert.equal(preparedAgain.status, 'ready');
+    assert(preparedAgain.media && preparedAgain.cover);
+    assert.deepEqual(
+      preparedAgain.selectedCover,
+      beforePurge.games.find((g) => g.id === 'steam:7000901').selectedCover
+    );
+    await fixture.core.invoke('install');
+    check(
+      'Explicit search restores image previews and preparation rebuilds chosen artwork for reinstall after purge'
+    );
+
     assert.equal(evidence.consoleErrors.length, 0, evidence.consoleErrors.join('\n'));
     check('No uncaught browser errors');
     await fixture.core.invoke('uninstall');

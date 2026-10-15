@@ -39,3 +39,12 @@ During playback the manager is unnecessary. The player has one active media scen
 
 
 `steam-api.key` stores the optional personal Steam Web API key with mode 0600, independently of `steamgriddb.key`. Neither is serialized in catalog/public state or exported playback. `steamAccount` stores only profile, SteamID, key-presence and import metadata. Games can have source `account`; importing never implies installation. `job.history` retains at most 250 dated phase/milestone events; current detailed progress remains in memory until the next normal checkpoint.
+
+
+## Complete media purge (0.1.5)
+
+`purgeMedia {confirm:true}` first blocks and aborts preview requests, pauses active preparation and waits for its cleanup. It preflights all four cache folders (`media`, `sources`, `processed`, `thumbnails`) and ownership of the current Steam destination before removing owned current/legacy exports. Top-level regular cache files and marked flat interpolation work folders are eligible. Symlinks, special files and unknown directories abort the preflight. Unrelated data outside these cache folders and other Steam screensavers are preserved.
+
+The catalog's media/cover/smoothed references, errors and preparation queue are reset and saved before file deletion, so interrupted unlinking cannot leave missing media advertised as ready. Failed removal reports an error and can be retried. Games, inclusion, selected animation/fixed artwork, settings and key files remain. The last successful purge records date/file count and local-cache bytes; exported copies are removed separately and excluded from that byte count.
+
+`previewsPaused` persists after purge. The renderer invalidates pending image promises/generations, and core rejects automatic preview requests until explicit discovery (`search`, `artworks`, `covers`) or preparation. Navigation and automatic Steam scans do not resume downloads. The Steam export must be prepared and installed again.

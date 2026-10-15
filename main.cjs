@@ -47,6 +47,7 @@ const actions = new Set([
   'importSteamLibrary',
   'validateKey',
   'clearUnused',
+  'purgeMedia',
   'repair',
   'install',
   'uninstall'

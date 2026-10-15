@@ -105,6 +105,15 @@ async function run() {
       ),
       true
     );
+    assert.equal(
+      await page.evaluate(() =>
+        window.cinema.invoke('purgeMedia').then(
+          () => false,
+          (error) => error.message.includes('Confirm')
+        )
+      ),
+      true
+    );
     await page.locator('[data-route="preview"]').first().click();
     await page.locator('#player-frame').waitFor();
     let frame;
@@ -154,6 +163,7 @@ async function run() {
             'Full product name and no Local-first badge',
             'Real Electron preview pause',
             'Sender/action restrictions',
+            'Native purge action requires confirmation before any filesystem change',
             'No Node in renderer',
             'Sandbox enabled',
             'Library lock released on close'

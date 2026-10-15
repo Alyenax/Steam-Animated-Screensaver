@@ -212,6 +212,20 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
     }
   });
 }
+async function assertCanUninstall(steamRoot) {
+  const parent = await directory(steamRoot);
+  if (!parent) return;
+  const target = path.join(parent, NAME);
+  const exists = await fs.lstat(target).then(
+    () => true,
+    (e) => {
+      if (e.code === 'ENOENT') return false;
+      throw e;
+    }
+  );
+  if (exists && !(await owned(target)))
+    throw new Error('The screensaver destination is not owned by this app. It was left untouched.');
+}
 async function uninstall({ steamRoot }) {
   const parent = await directory(steamRoot);
   if (!parent) return { installed: false };
@@ -248,4 +262,4 @@ async function isInstalled(steamRoot) {
     return false;
   }
 }
-module.exports = { install, uninstall, isInstalled, NAME, LEGACY_NAME, MARKER };
+module.exports = { install, uninstall, isInstalled, assertCanUninstall, NAME, LEGACY_NAME, MARKER };

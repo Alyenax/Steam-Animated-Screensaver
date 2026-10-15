@@ -668,3 +668,206 @@ test('live interpolation progress is readable during work, journaled, persisted,
   const persisted = JSON.parse(await fs.readFile(path.join(x.dataDir, 'catalog.json'), 'utf8'));
   assert.equal(persisted.job.history.at(-1).stage, 'completed');
 });
+
+test('complete media purge preserves games, artwork choices, settings and separate keys; removes exports and all cache variants', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('setKey', { key: 'fixture-sgdb-personal-key' });
+  await x.core.invoke('setSteamAccount', {
+    profile: '76561198000000000',
+    key: '0123456789abcdef'.repeat(2)
+  });
+  await x.core.invoke('settings', {
+    smoothingFps: 24,
+    smoothingMode: 'blend',
+    coverPosition: 'top-right'
+  });
+  await x.core.invoke('add', { sgdbId: 99 });
+  const choices = await x.core.invoke('artworks', { id: 'steam:620' });
+  await x.core.invoke('updateGame', { id: 'steam:620', selectedAsset: choices[0] });
+  await x.core.invoke('prepare');
+  const prepared = await done(x.core);
+  const original = prepared.games[0];
+  // Seed optional variants and manual cover choice exactly as a persisted user catalog would.
+  const selectedCover = { ...asset, id: 9001, animated: false };
+  await x.core.close();
+  const file = path.join(x.dataDir, 'catalog.json'),
+    saved = JSON.parse(await fs.readFile(file, 'utf8'));
+  saved.games[0].cover = { ...original.media, file: 'fixed.png', animated: false };
+  saved.games[0].smoothed = {
+    ...original.media,
+    file: 'smooth.webm',
+    smoothing: 'interpolate-24-v2'
+  };
+  saved.games[0].selectedCover = selectedCover;
+  saved.games[0].coverManualSelection = true;
+  await fs.writeFile(file, JSON.stringify(saved));
+  for (const f of ['fixed.png', 'smooth.webm', 'preview-cache.jpg', 'incomplete.partial'])
+    await fs.writeFile(path.join(x.dataDir, 'media', f), 'cached');
+  for (const dir of ['sources', 'processed', 'thumbnails']) {
+    await fs.mkdir(path.join(x.dataDir, dir));
+    await fs.writeFile(path.join(x.dataDir, dir, 'cached-image.png'), 'old cached file');
+  }
+  const frames = path.join(x.dataDir, 'media', '00000000-0000-0000-0000-000000000000.frames');
+  await fs.mkdir(frames);
+  await fs.writeFile(
+    path.join(frames, '.cinema-smoothing-work'),
+    'steamos-animated-screensaver-v1'
+  );
+  await fs.writeFile(path.join(frames, 'frame-0.png'), 'temporary frame');
+  const core = x.create();
+  await core.invoke('scan');
+  await core.invoke('install');
+  const parent = path.join(x.steam, 'config/uioverrides/screensavers'),
+    installed = path.join(parent, 'steamos-animated-screensaver');
+  await fs.cp(installed, path.join(parent, 'SteamOS Animated Screensaver'), { recursive: true });
+  await fs.mkdir(path.join(parent, 'other-screensaver'));
+  await fs.writeFile(path.join(parent, 'other-screensaver', 'keep'), 'unrelated');
+  await fs.writeFile(path.join(x.dataDir, 'unrelated.txt'), 'keep');
+  const keys = await Promise.all(
+    ['steamgriddb.key', 'steam-api.key'].map((f) => fs.readFile(path.join(x.dataDir, f), 'utf8'))
+  );
+  await assert.rejects(core.invoke('purgeMedia'), /Confirm/);
+  assert(await fs.stat(installed));
+  let state = await core.invoke('purgeMedia', { confirm: true });
+  for (const dir of ['media', 'sources', 'processed', 'thumbnails'])
+    assert.deepEqual(await fs.readdir(path.join(x.dataDir, dir)), []);
+  assert.equal(state.storage.used, 0);
+  assert.equal(state.steam.installed, false);
+  assert.equal(state.games.length, 1);
+  assert.equal(state.games[0].included, original.included);
+  assert.deepEqual(state.games[0].selectedAsset, original.selectedAsset);
+  assert.deepEqual(state.games[0].selectedCover, selectedCover);
+  assert.equal(state.games[0].coverManualSelection, true);
+  assert.equal(state.games[0].status, 'new');
+  for (const field of ['media', 'cover', 'smoothed']) assert.equal(state.games[0][field], null);
+  assert.equal(state.settings.smoothingFps, 24);
+  assert.equal(state.settings.coverPosition, 'top-right');
+  assert.equal(state.job.status, 'idle');
+  assert.equal(state.job.pending, 0);
+  assert.equal(state.previewsPaused, true);
+  assert(state.lastMediaPurge.files >= 10);
+  for (const folder of ['steamos-animated-screensaver', 'SteamOS Animated Screensaver'])
+    await assert.rejects(fs.stat(path.join(parent, folder)), { code: 'ENOENT' });
+  assert.equal(
+    await fs.readFile(path.join(parent, 'other-screensaver', 'keep'), 'utf8'),
+    'unrelated'
+  );
+  assert.equal(await fs.readFile(path.join(x.dataDir, 'unrelated.txt'), 'utf8'), 'keep');
+  assert.deepEqual(
+    await Promise.all(
+      ['steamgriddb.key', 'steam-api.key'].map((f) => fs.readFile(path.join(x.dataDir, f), 'utf8'))
+    ),
+    keys
+  );
+  await assert.rejects(core.invoke('previewImage', { url: asset.url }), /paused/);
+  await core.close();
+  const reopened = x.create();
+  state = await reopened.invoke('state');
+  assert.equal(state.previewsPaused, true);
+  state = await reopened.invoke('purgeMedia', { confirm: true });
+  assert.equal(state.lastMediaPurge.files, 0);
+  await reopened.invoke('prepare');
+  state = await done(reopened);
+  assert.equal(state.games[0].status, 'ready');
+  assert.equal(state.previewsPaused, false);
+  assert.equal(state.games[0].selectedAsset.id, original.selectedAsset.id);
+  await reopened.invoke('install');
+  assert.equal((await reopened.invoke('state')).steam.installed, true);
+});
+
+test('purge interrupts preparation and active previews before deleting their partial files', async (t) => {
+  let started, previewStarted;
+  const preparing = new Promise((r) => {
+      started = r;
+    }),
+    previewing = new Promise((r) => {
+      previewStarted = r;
+    });
+  const x = await setup(t, {
+    prepareHook: async (_, { signal }) => {
+      started();
+      await new Promise((resolve, reject) =>
+        signal.addEventListener(
+          'abort',
+          () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })),
+          { once: true }
+        )
+      );
+    }
+  });
+  x.media.preview = async (_, { signal }) => {
+    previewStarted();
+    await new Promise((resolve, reject) =>
+      signal.addEventListener(
+        'abort',
+        () => reject(Object.assign(new Error('aborted'), { name: 'AbortError' })),
+        { once: true }
+      )
+    );
+  };
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  await preparing;
+  const preview = x.core.invoke('previewImage', { url: asset.url }).catch((e) => e);
+  await previewing;
+  const state = await x.core.invoke('purgeMedia', { confirm: true });
+  assert.equal((await preview).name, 'AbortError');
+  assert.equal(state.job.pending, 0);
+  assert.equal(state.job.status, 'idle');
+  assert.equal(state.games[0].media, null);
+  assert.equal(state.games[0].status, 'new');
+});
+
+test('purge rejects linked caches, unowned work folders and foreign Steam destinations before deleting local files', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  const before = await done(x.core);
+  const keep = path.join(x.dataDir, 'media', before.games[0].media.file),
+    original = await fs.readFile(keep);
+  const outside = path.join(x.dir, 'outside');
+  await fs.mkdir(outside);
+  await fs.writeFile(path.join(outside, 'keep'), 'untouched');
+  await fs.symlink(outside, path.join(x.dataDir, 'media', 'linked'));
+  await assert.rejects(x.core.invoke('purgeMedia', { confirm: true }), /unknown folder or link/);
+  assert.deepEqual(await fs.readFile(keep), original);
+  assert.equal(await fs.readFile(path.join(outside, 'keep'), 'utf8'), 'untouched');
+  await fs.unlink(path.join(x.dataDir, 'media', 'linked'));
+  const unowned = path.join(x.dataDir, 'media', '00000000-0000-0000-0000-000000000001.frames');
+  await fs.mkdir(unowned);
+  await assert.rejects(x.core.invoke('purgeMedia', { confirm: true }), /unknown folder or link/);
+  await fs.rmdir(unowned);
+  await fs.symlink(outside, path.join(x.dataDir, 'sources'));
+  await assert.rejects(x.core.invoke('purgeMedia', { confirm: true }), /Unsafe media directory/);
+  await fs.unlink(path.join(x.dataDir, 'sources'));
+  const target = path.join(x.steam, 'config/uioverrides/screensavers/steamos-animated-screensaver');
+  await fs.mkdir(target, { recursive: true });
+  await fs.writeFile(path.join(target, 'mine'), 'foreign');
+  await assert.rejects(x.core.invoke('purgeMedia', { confirm: true }), /not owned/);
+  assert.deepEqual(await fs.readFile(keep), original);
+  assert.equal((await x.core.invoke('state')).games[0].status, 'ready');
+  assert.equal(await fs.readFile(path.join(target, 'mine'), 'utf8'), 'foreign');
+});
+
+test('a failed unlink leaves a recoverable unprepared catalog and allows a complete purge retry', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  await done(x.core);
+  const unlink = fs.unlink;
+  let fail = true;
+  t.mock.method(fs, 'unlink', async (file) => {
+    if (fail && String(file).includes('asset-')) {
+      fail = false;
+      throw new Error('Fixture file is busy');
+    }
+    return unlink(file);
+  });
+  await assert.rejects(x.core.invoke('purgeMedia', { confirm: true }), /busy/);
+  const saved = JSON.parse(await fs.readFile(path.join(x.dataDir, 'catalog.json'), 'utf8'));
+  assert.equal(saved.games[0].status, 'new');
+  assert.equal(saved.games[0].media, null);
+  assert.equal(saved.previewsPaused, true);
+  const state = await x.core.invoke('purgeMedia', { confirm: true });
+  assert.equal(state.storage.used, 0);
+});

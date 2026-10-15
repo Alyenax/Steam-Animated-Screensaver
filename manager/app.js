@@ -217,6 +217,17 @@ const translations = {
     storageLimit: 'Storage limit',
     storageHint: 'Maximum space reserved for prepared media.',
     clearUnused: 'Remove unused media',
+    purgeMedia: 'Purge all media',
+    purgeMediaHint:
+      'Delete originals, processed animations, still artwork, previews and unfinished media. The installed Steam screensaver is removed too. Games, artwork choices, settings and API keys are kept.',
+    confirmPurgeMedia:
+      'Permanently delete ALL downloaded and processed images/animations, previews and temporary media?\n\nThe current preparation will stop and the installed Steam screensaver will be removed. Your games, artwork choices, settings and API keys will be kept.\n\nPrepare again and reinstall the screensaver to use it afterward.',
+    purgeMediaSuccess: 'All media purged. Prepare again, then install the screensaver.',
+    purgingMedia: 'Purging media…',
+    previewsPaused:
+      'Media was purged. Prepare your library or search for artwork to download again.',
+    mediaPurgedPlaceholder: 'Media purged',
+    lastMediaPurge: 'Last media purge',
     steamIntegration: 'Steam integration',
     steamInstallBody:
       'Copy the standalone player and prepared scenes into the Steam screensavers folder. Select steamos-animated-screensaver in Steam settings afterward.',
@@ -490,6 +501,18 @@ const translations = {
     storageLimit: 'Limite de stockage',
     storageHint: 'Espace maximal réservé aux médias préparés.',
     clearUnused: 'Supprimer les médias inutilisés',
+    purgeMedia: 'Purger tous les médias',
+    purgeMediaHint:
+      'Supprime les originaux, animations traitées, artworks fixes, aperçus et fichiers temporaires. La copie de l’économiseur installée dans Steam est aussi supprimée. Les jeux, choix d’artworks, réglages et clés API sont conservés.',
+    confirmPurgeMedia:
+      'Supprimer définitivement TOUTES les images et animations téléchargées ou traitées, les aperçus et fichiers temporaires ?\n\nLa préparation en cours sera arrêtée et l’économiseur installé dans Steam sera désinstallé. Vos jeux, choix d’artworks, réglages et clés API seront conservés.\n\nIl faudra préparer à nouveau puis réinstaller l’économiseur.',
+    purgeMediaSuccess:
+      'Tous les médias ont été purgés. Préparez à nouveau, puis installez l’économiseur.',
+    purgingMedia: 'Purge des médias…',
+    previewsPaused:
+      'Les médias ont été purgés. Préparez la bibliothèque ou recherchez des artworks pour les télécharger à nouveau.',
+    mediaPurgedPlaceholder: 'Médias purgés',
+    lastMediaPurge: 'Dernière purge des médias',
     steamIntegration: 'Intégration Steam',
     steamInstallBody:
       'Copiez le lecteur autonome et ses scènes dans le dossier des écrans de veille Steam. Sélectionnez ensuite steamos-animated-screensaver dans les réglages Steam.',
@@ -801,6 +824,8 @@ let state = structuredClone(defaultState),
   searchTerm = '',
   searchPending = false,
   importingSteam = false,
+  purgingMedia = false,
+  previewGeneration = 0,
   toastTimer;
 const lang = () => (state.settings.language === 'fr' ? 'fr' : 'en');
 const t = (key) => translations[lang()][key] || translations.en[key] || key;
@@ -836,7 +861,7 @@ const readyGames = () =>
       (g.media.animated || state.settings.staticFallback)
   );
 const button = (label, action, ic = '', primary = false, extra = '') =>
-  `<button class="button ${primary ? 'primary' : ''} ${['uninstall', 'remove-game'].includes(action) ? 'danger' : ''}" data-action="${action}" ${extra}>${ic ? icon(ic) : ''}${esc(label)}</button>`;
+  `<button class="button ${primary ? 'primary' : ''} ${['uninstall', 'remove-game', 'purge-media'].includes(action) ? 'danger' : ''}" data-action="${action}" ${extra}>${ic ? icon(ic) : ''}${esc(label)}</button>`;
 const statusName = (g) =>
   t(
     { ready: 'gameReady', new: 'gameNew', missing: 'gameMissing', error: 'gameError' }[g.status] ||
@@ -869,7 +894,7 @@ const thumbnail = (g) =>
     ? localMedia(g.media.thumbnail)
     : safeRemote(g.selectedAsset?.thumb) || safeRemote(g.thumb);
 function previewImage(values, shape = 'asset', alt = '', sgdbId = null, steamAppId = null) {
-  const candidates = [...new Set(values.filter(Boolean))]
+  const candidates = [...new Set((state.previewsPaused ? [] : values).filter(Boolean))]
     .map((value) => {
       try {
         const u = new URL(value, location.href);
@@ -885,16 +910,18 @@ function previewImage(values, shape = 'asset', alt = '', sgdbId = null, steamApp
       }
     })
     .filter(Boolean);
-  if (!candidates.length && state.hasKey && (sgdbId || steamAppId))
+  if (!state.previewsPaused && !candidates.length && state.hasKey && (sgdbId || steamAppId))
     candidates.push(sgdbId ? { sgdbId } : { steamAppId });
   const direct =
     candidates[0]?.file && /\.(?:jpe?g|png|webp|gif)$/i.test(candidates[0].file)
       ? localMedia(candidates[0].file)
       : '';
-  return `<span class="managed-image image-${shape}"><img data-preview-candidates="${attr(JSON.stringify(candidates))}" ${direct ? `src="${attr(direct)}"` : ''} alt="${esc(alt)}" decoding="async"><span class="preview-placeholder" aria-hidden="true">${icon('image')}<span class="preview-unavailable-label">${esc(t('previewUnavailable'))}</span></span></span>`;
+  return `<span class="managed-image image-${shape}"><img data-preview-candidates="${attr(JSON.stringify(candidates))}" ${direct ? `src="${attr(direct)}"` : ''} alt="${esc(alt)}" decoding="async"><span class="preview-placeholder" aria-hidden="true">${icon('image')}<span class="preview-unavailable-label">${esc(t(state.previewsPaused ? 'mediaPurgedPlaceholder' : 'previewUnavailable'))}</span></span></span>`;
 }
 const normalizedPreviews = new Map();
 async function normalizedPreview(candidate, force = false) {
+  if (purgingMedia) throw new Error('Media purge in progress.');
+  const generation = previewGeneration;
   const key = JSON.stringify(candidate);
   if (force) normalizedPreviews.delete(key);
   if (!normalizedPreviews.has(key)) {
@@ -903,7 +930,7 @@ async function normalizedPreview(candidate, force = false) {
     normalizedPreviews.set(
       key,
       invoke('previewImage', { ...candidate, force }).catch((error) => {
-        normalizedPreviews.delete(key);
+        if (generation === previewGeneration) normalizedPreviews.delete(key);
         throw error;
       })
     );
@@ -911,7 +938,8 @@ async function normalizedPreview(candidate, force = false) {
   return normalizedPreviews.get(key);
 }
 async function hydratePreview(img, force = false) {
-  if (img._previewBusy || !img.isConnected) return;
+  if (purgingMedia || img._previewBusy || !img.isConnected) return;
+  const generation = previewGeneration;
   img._previewBusy = true;
   const wrapper = img.closest('.managed-image');
   try {
@@ -924,9 +952,10 @@ async function hydratePreview(img, force = false) {
     }
     const candidates = JSON.parse(img.dataset.previewCandidates || '[]');
     for (const candidate of candidates) {
+      if (purgingMedia || generation !== previewGeneration || !img.isConnected) return;
       try {
         const result = await normalizedPreview(candidate, force);
-        if (!img.isConnected) return;
+        if (purgingMedia || generation !== previewGeneration || !img.isConnected) return;
         img.src = localMedia(result.file);
         await img.decode();
         wrapper?.classList.add('loaded');
@@ -1092,7 +1121,7 @@ async function run(action, payload = {}, message, options = {}) {
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">SteamOS <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.4</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">SteamOS Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} SteamOS Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">SteamOS <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.5</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">SteamOS Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} SteamOS Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -1153,7 +1182,7 @@ function libraryView() {
         (filter === 'excludedFilter' && !g.included)) &&
       g.name.toLowerCase().includes(query.toLowerCase())
   );
-  return `${heading('libraryEyebrow', 'libraryTitle', 'librarySub', button(t('scanAgain'), 'scan', 'scan', false, scanning ? 'disabled' : '') + button(t('importSteam'), 'open-steam-account', 'steam') + button(t('addGame'), 'add-game', 'plus', true))}${state.games.length ? keyBanner() : ''}<div class="toolbar"><div class="filter-pills" role="group" aria-label="${esc(t('library'))}">${['all', 'installedFilter', 'notInstalledFilter', 'ownedFilter', 'manualFilter', 'ready', 'animatedFilter', 'missingFilter', 'excludedFilter'].map((f) => `<button data-filter="${f}" class="${filter === f ? 'active' : ''}">${esc(t(f))}${f === 'all' ? ` <span>(${state.games.length})</span>` : ''}</button>`).join('')}</div><label class="search-field">${icon('search')}<span class="visually-hidden">${esc(t('filterPlaceholder'))}</span><input class="field" id="library-filter" placeholder="${esc(t('filterPlaceholder'))}" value="${attr(query)}"></label></div>${!state.games.length ? noLibrary() : games.length ? `<div class="game-grid">${games.map(gameCard).join('')}</div>` : empty(t('noFilter'), t('noFilterBody'), '', 'search')}${state.games.length ? `<div class="button-row" style="margin-top:24px">${button(t('prepareScenes'), 'prepare-all', 'prepare', true, !state.hasKey || !state.games.some((g) => g.included) ? 'disabled' : '')}</div>` : ''}`;
+  return `${heading('libraryEyebrow', 'libraryTitle', 'librarySub', button(t('scanAgain'), 'scan', 'scan', false, scanning ? 'disabled' : '') + button(t('importSteam'), 'open-steam-account', 'steam') + button(t('addGame'), 'add-game', 'plus', true))}${state.games.length ? keyBanner() : ''}${state.previewsPaused ? `<div class="banner" role="status">${icon('info')}<span>${esc(t('previewsPaused'))}</span></div>` : ''}<div class="toolbar"><div class="filter-pills" role="group" aria-label="${esc(t('library'))}">${['all', 'installedFilter', 'notInstalledFilter', 'ownedFilter', 'manualFilter', 'ready', 'animatedFilter', 'missingFilter', 'excludedFilter'].map((f) => `<button data-filter="${f}" class="${filter === f ? 'active' : ''}">${esc(t(f))}${f === 'all' ? ` <span>(${state.games.length})</span>` : ''}</button>`).join('')}</div><label class="search-field">${icon('search')}<span class="visually-hidden">${esc(t('filterPlaceholder'))}</span><input class="field" id="library-filter" placeholder="${esc(t('filterPlaceholder'))}" value="${attr(query)}"></label></div>${!state.games.length ? noLibrary() : games.length ? `<div class="game-grid">${games.map(gameCard).join('')}</div>` : empty(t('noFilter'), t('noFilterBody'), '', 'search')}${state.games.length ? `<div class="button-row" style="margin-top:24px">${button(t('prepareScenes'), 'prepare-all', 'prepare', true, !state.hasKey || !state.games.some((g) => g.included) ? 'disabled' : '')}</div>` : ''}`;
 }
 function preparationView() {
   const job = state.job,
@@ -1254,7 +1283,7 @@ function settingsView() {
       .join(
         ''
       )}</select></label><label class="setting-row"><span class="setting-row-label">${esc(t('smoothingFps'))}</span><select class="field" data-setting="smoothingFps">${[24, 30].map((n) => `<option value="${n}" ${state.settings.smoothingFps === n ? 'selected' : ''}>${n} ${lang() === 'fr' ? 'i/s' : 'fps'}</option>`).join('')}</select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('maxSmoothingMB'))}</span><small>${esc(t('smoothingSizeHint'))}</small></span><input class="field" data-setting="maxSmoothingMB" type="number" min="0" max="1000000" step="1" value="${Number(state.settings.maxSmoothingMB) || 0}" aria-label="${esc(t('maxSmoothingMB'))}"></label>${toggle('staticFallback', 'staticFallback', 'staticHint')}${toggle('reducedMotion', 'reducedMotion', 'motionHint')}${toggle('pauseOnGame', 'pauseOnGame', 'pauseHint')}`
-  )}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
+  )}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div><div class="purge-section"><p>${esc(t('purgeMediaHint'))}</p>${button(t(purgingMedia ? 'purgingMedia' : 'purgeMedia'), 'purge-media', 'trash', false, purgingMedia ? 'disabled' : '')}${state.lastMediaPurge ? `<p class="purge-result">${esc(t('lastMediaPurge'))} : ${esc(new Date(state.lastMediaPurge.at).toLocaleString(lang()))} · ${esc(bytes(state.lastMediaPurge.bytes))}</p>` : ''}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
 }
 function render() {
   const active = document.activeElement;
@@ -1387,6 +1416,7 @@ async function searchGames() {
   renderAdd();
   try {
     const result = await invoke('search', { query: searchTerm });
+    state.previewsPaused = false;
     searchResults = Array.isArray(result) ? result : result?.results || result?.games || [];
   } catch (error) {
     toast(error.message || t('searchError'));
@@ -1468,6 +1498,7 @@ async function loadCovers() {
   renderDetail();
   try {
     const result = await invoke('covers', { id });
+    state.previewsPaused = false;
     if (detailId === id) coverAssets = result;
   } catch (error) {
     toast(error.message);
@@ -1496,6 +1527,7 @@ async function loadArtworks() {
   renderDetail();
   try {
     const result = await invoke('artworks', { id });
+    state.previewsPaused = false;
     if (detailId !== id) return;
     assets = Array.isArray(result) ? result : result?.assets || result?.artworks || [];
   } catch (error) {
@@ -1624,6 +1656,24 @@ async function handleAction(action) {
       const result = await run('validateKey');
       if (result !== undefined)
         toast(t(result === false || result?.valid === false ? 'keyInvalid' : 'keyValid'));
+      break;
+    }
+    case 'purge-media': {
+      if (pending || purgingMedia || !confirm(t('confirmPurgeMedia'))) break;
+      purgingMedia = true;
+      previewGeneration++;
+      normalizedPreviews.clear();
+      clearHover();
+      document.querySelector('#player-frame')?.remove();
+      detailDialog.close();
+      addDialog.close();
+      render();
+      try {
+        await run('purgeMedia', { confirm: true }, 'purgeMediaSuccess');
+      } finally {
+        purgingMedia = false;
+        render();
+      }
       break;
     }
     case 'clearUnused':

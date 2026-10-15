@@ -3,6 +3,7 @@ const fs = require('node:fs/promises');
 const constants = require('node:fs').constants;
 const path = require('node:path');
 const { smoothingMatches, smoothingConfig } = require('./smoothing.cjs');
+const { planPurge, applyPurge } = require('./purge.cjs');
 const { createSteamAccount, parseProfile } = require('./steam-account.cjs');
 const { scanSteam, isSteamGameRunning } = require('./scanner.cjs');
 const { createSGDB, positiveId } = require('./sgdb.cjs');
@@ -137,7 +138,8 @@ function createCore(options = {}) {
     steam: { detected: false, roots: [], installed: false },
     storage: { used: 0 },
     steamAccount: { profile: '', steamId: null, hasKey: false, lastImport: null, count: 0 },
-    hasKey: false
+    hasKey: false,
+    previewsPaused: false
   };
   let key = '',
     steamKey = '',
@@ -147,7 +149,10 @@ function createCore(options = {}) {
     closed = false,
     autoPaused = false,
     releaseLock,
-    monitorBusy = false;
+    monitorBusy = false,
+    purging = false;
+  let previewAbort = new AbortController();
+  const previewTasks = new Set();
   let writes = Promise.resolve(),
     actions = Promise.resolve();
   const assetCache = new Map(),
@@ -224,6 +229,8 @@ function createCore(options = {}) {
       if (saved && saved.version !== 1)
         throw new Error('This library uses an unsupported catalog version.');
       if (saved) {
+        state.previewsPaused = saved.previewsPaused === true;
+        if (saved.lastMediaPurge) state.lastMediaPurge = saved.lastMediaPurge;
         state.games = (Array.isArray(saved.games) ? saved.games : [])
           .map(cleanGame)
           .filter(Boolean);
@@ -717,26 +724,33 @@ function createCore(options = {}) {
       return publicState();
     }
     if (action === 'previewImage') {
+      if (purging || state.previewsPaused)
+        throw new Error(
+          'Media previews are paused. Search for artwork or prepare your library to download again.'
+        );
+      const previewSignal = AbortSignal.any([lifetime.signal, previewAbort.signal]);
       if (!media.preview) throw new Error('Image previews are unavailable.');
       let url = p.url;
       if (p.sgdbId || p.steamAppId) {
         const id = p.sgdbId
           ? positiveId(p.sgdbId)
-          : (await sgdb.bySteam(positiveId(p.steamAppId), { signal: lifetime.signal }))?.sgdbId;
+          : (await sgdb.bySteam(positiveId(p.steamAppId), { signal: previewSignal }))?.sgdbId;
         if (!id) throw new Error('No SteamGridDB preview is available for this game.');
         const rows = sgdb.enrichThumbnails
-          ? await sgdb.enrichThumbnails([{ sgdbId: id, thumb: null }], { signal: lifetime.signal })
+          ? await sgdb.enrichThumbnails([{ sgdbId: id, thumb: null }], { signal: previewSignal })
           : [];
         url = rows[0]?.thumb;
         if (!url && sgdb.covers) {
-          const covers = await sgdb.covers(id, { signal: lifetime.signal });
+          const covers = await sgdb.covers(id, { signal: previewSignal });
           url = covers[0]?.thumb || covers[0]?.url;
         }
         if (!url) throw new Error('No SteamGridDB preview is available for this game.');
       }
+      if (previewSignal.aborted)
+        throw Object.assign(new Error('Image preview cancelled.'), { name: 'AbortError' });
       return media.preview(
         { file: p.file, url },
-        { signal: lifetime.signal, force: p.force === true }
+        { signal: previewSignal, force: p.force === true }
       );
     }
     if (action === 'validateKey') return sgdb.validateKey();
@@ -771,6 +785,10 @@ function createCore(options = {}) {
     if (action === 'search') {
       let results = await sgdb.search(p.query);
       if (sgdb.enrichThumbnails) results = await sgdb.enrichThumbnails(results);
+      if (state.previewsPaused) {
+        state.previewsPaused = false;
+        await save();
+      }
       return results.map((g) => ({
         ...g,
         present: state.games.some(
@@ -825,10 +843,21 @@ function createCore(options = {}) {
       await save();
       return publicState();
     }
-    if (action === 'artworks') return getArtworks(find(p.id));
+    if (action === 'artworks') {
+      const rows = await getArtworks(find(p.id));
+      if (state.previewsPaused) {
+        state.previewsPaused = false;
+        await save();
+      }
+      return rows;
+    }
     if (action === 'covers') {
       const g = find(p.id),
         rows = await sgdb.covers(await resolveGame(g));
+      if (state.previewsPaused) {
+        state.previewsPaused = false;
+        await save();
+      }
       coverCache.set(g.id, rows);
       return rows;
     }
@@ -911,6 +940,10 @@ function createCore(options = {}) {
       return publicState();
     }
     if (action === 'prepare' || action === 'retry') {
+      if (state.previewsPaused) {
+        state.previewsPaused = false;
+        await save();
+      }
       if (state.job.status === 'running') return publicState();
       if (state.job.status === 'paused' && pending.length && action === 'prepare') {
         state.job.status = 'running';
@@ -974,6 +1007,60 @@ function createCore(options = {}) {
       await refreshStorage();
       await save();
       return publicState();
+    }
+    if (action === 'purgeMedia') {
+      if (p.confirm !== true) throw new Error('Confirm the complete media purge first.');
+      purging = true;
+      previewAbort.abort(new Error('Media purge in progress.'));
+      try {
+        if (runner || pending.length) await stop('paused');
+        autoPaused = false;
+        await Promise.allSettled([...previewTasks]);
+        await media.waitForPreviews?.();
+        const plan = await planPurge(dataDir);
+        const scan = await scanSteam(options.steamRoots);
+        const roots = new Set();
+        for (const root of [...state.steam.roots, ...scan.roots]) {
+          try {
+            roots.add(await fs.realpath(root));
+          } catch (error) {
+            if (error.code !== 'ENOENT') throw error;
+          }
+        }
+        const installer = require('./installer.cjs');
+        for (const root of roots) await installer.assertCanUninstall(root);
+        for (const root of roots) await installer.uninstall({ steamRoot: root });
+        state.steam.installed = false;
+        pending = [];
+        state.job = newJob();
+        state.previewsPaused = true;
+        for (const game of state.games) {
+          game.media = null;
+          game.cover = null;
+          game.smoothed = null;
+          game.status = 'new';
+          delete game.error;
+          delete game.coverError;
+          delete game.smoothingError;
+        }
+        assetCache.clear();
+        coverCache.clear();
+        // Persist the reset before unlinking files, so interruption never leaves
+        // missing files advertised as ready. Any interrupted deletion is retryable.
+        await save();
+        const removed = await applyPurge(plan);
+        state.lastMediaPurge = { ...removed, at: new Date().toISOString() };
+        await refreshStorage();
+        await save();
+        return publicState();
+      } catch (error) {
+        await refreshStorage().catch(() => {});
+        await save().catch(() => {});
+        throw error;
+      } finally {
+        previewAbort = new AbortController();
+        purging = false;
+      }
     }
     if (action === 'clearUnused') {
       if (runner) throw new Error('Pause preparation before clearing unused media.');
@@ -1043,7 +1130,16 @@ function createCore(options = {}) {
   }
   return {
     invoke(action, payload = {}) {
-      if (action === 'state' || action === 'previewImage') return dispatch(action, payload);
+      if (action === 'state') return dispatch(action, payload);
+      if (action === 'previewImage') {
+        const result = dispatch(action, payload);
+        previewTasks.add(result);
+        result.then(
+          () => previewTasks.delete(result),
+          () => previewTasks.delete(result)
+        );
+        return result;
+      }
       const result = actions.then(() => dispatch(action, payload));
       actions = result.catch(() => {});
       return result;
@@ -1054,6 +1150,7 @@ function createCore(options = {}) {
       await init;
       closed = true;
       lifetime.abort(new Error('Manager closed.'));
+      previewAbort.abort(new Error('Manager closed.'));
       controller?.abort(new Error('Manager closed.'));
       await actions;
       await media.waitForPreviews?.();

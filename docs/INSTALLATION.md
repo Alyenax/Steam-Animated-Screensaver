@@ -39,6 +39,12 @@ If preparation is interrupted, reopen the manager and Resume. The current unfini
 
 If a catalog is malformed it is preserved as a `.corrupt-<timestamp>` file and a recovery message is shown. Back up the data directory before restoring any catalog manually. An exclusive local manager lock avoids simultaneous catalog writers; a stale lock whose process is gone is recovered.
 
+## Purge media while retaining your library
+
+Use **Settings → Local storage → Purge all media** and confirm. This stops the current preparation, clears all managed local media (originals, processed variants, fixed artwork, thumbnails/previews and unfinished work) and removes this app's installed Steam snapshot. Game identities, inclusion/artwork choices, settings and API keys are retained. Cancellation leaves everything unchanged.
+
+After purge, automatic image previews remain paused even after restart. An explicit artwork search/gallery or preparation enables downloads again. Choose **Prepare**, then **Install screensaver** to recreate the Steam export. A separate **Remove unused media** button performs a smaller cleanup without resetting prepared scenes.
+
 ## Removal
 
 Use Manager Settings → Steam Integration → **Uninstall** to remove only the owned screensaver directory. This preserves other custom screensavers, Steam manifests, the manager and its cache.

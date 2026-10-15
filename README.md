@@ -4,7 +4,7 @@
 
 Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, optionally import owned games from Steam, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
 
-**0.1.4 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.5 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
@@ -35,7 +35,7 @@ Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Ste
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.4-linux-x64.tar.gz
+tar -xzf SteamOS-Animated-Screensaver-0.1.5-linux-x64.tar.gz
 cd steamos-animated-screensaver-linux-x64
 ./install.sh
 ```
@@ -73,6 +73,14 @@ Imported titles appear in **My Library**, with **Steam account** and **Not insta
 Search, library, preparation and alternative galleries normalize provider thumbnails into locally cached JPEGs, including thumbnails supplied as WebM videos. Missing/corrupt thumbnails fall back to available source media; unavailable assets show an explicit placeholder. Search results beyond the first eight load artwork on demand.
 
 The promotional sentence above each scene title has been removed. The small `remove-screensaver-tagline.sh` also hides it in existing owned installations without preparing media again.
+
+## Purge downloaded and processed media
+
+In **Settings → Local storage → Purge all media**, confirm the permanent deletion. The app stops preparation and preview downloads, removes downloaded originals, processed/smoothed animations, still artwork, previews and unfinished interpolation files, and uninstalls this app's Steam screensaver snapshot. Your games, inclusion choices, selected animation/fixed artwork, settings and both API keys remain.
+
+The preparation queue resets and the storage panel records the purge date and removed local-cache bytes. The cache stays empty across navigation/restart; automatic previews resume only after an explicit artwork search/gallery request or preparation. To use the screensaver again, **Prepare**, then **Install screensaver**. Cancelling the confirmation changes nothing. **Remove unused media** remains a separate, smaller cleanup that preserves referenced media.
+
+Deletion is limited to the application's cache folders and owned Steam exports. Unknown directories/links or a foreign Steam destination block the purge instead of being traversed. A file-removal error is reported; the catalog stays unprepared and the same purge can be retried after resolving it. No personal media was erased during validation: all deletion tests use isolated fixtures.
 
 ## Update and remove
 

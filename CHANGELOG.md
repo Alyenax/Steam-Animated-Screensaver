@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.5 — Complete media purge
+
+- Add Settings → Local storage → Purge all media, with an explicit confirmation describing removal of the Steam snapshot and preservation of games, artwork choices, settings and keys.
+- Stop active preparation and preview requests, remove originals/derivatives/covers/previews and owned unfinished-frame work, reset preparation state and uninstall owned current/legacy Steam exports.
+- Keep previews paused after purge and restart until an explicit artwork search/gallery or preparation. Clear renderer preview promises and prevent late requests from recreating deleted files.
+- Preflight cache/Steam ownership, reject links and unknown directories, retain unrelated files, and allow retry after partial deletion errors.
+- Validate cancel/confirm, cache-empty navigation/restart, and preparation/reinstall with retained artwork choices.
+
 ## 0.1.4 — Live preparation details, lighter smoothing and optional Steam library import
 
 - Show actual FFmpeg percentages, frames, elapsed time, speed and estimated remaining time; distinguish WebP reconstruction, interpolation/encoding, verification and saving. Keep a dated bounded preparation journal across restart.
