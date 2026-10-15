@@ -263,7 +263,7 @@ test(
       const smooth = await media.smooth(original);
       assert.equal(downloads, 1);
       assert.equal(smooth.format, 'webm');
-      assert.equal(smooth.smoothing, 'interpolate-30-v1');
+      assert.equal(smooth.smoothing, 'interpolate-30-v2');
       assert.equal(await media.validate(smooth), true);
       assert.equal(await media.validate(original), true);
       assert.deepEqual(
@@ -511,5 +511,108 @@ test(
     assert((await fs.stat(large)).size > 160 * 1024 * 1024);
     assert.equal(await media.validate(processed), true);
     assert.equal(await media.validate({ ...processed, smoothing: undefined }), false);
+  }
+);
+
+test(
+  '24 fps fast and blend variants report real phases, distinct caches, and remain playable',
+  { skip: !ffmpeg, timeout: 30000 },
+  async (t) => {
+    const root = await temporary(t),
+      source = path.join(root, 'profiles.webm');
+    const generated = spawnSync(ffmpeg, [
+      '-v',
+      'error',
+      '-f',
+      'lavfi',
+      '-i',
+      'testsrc2=size=320x180:rate=6:duration=2',
+      '-c:v',
+      'libvpx-vp9',
+      '-threads',
+      '2',
+      '-y',
+      source
+    ]);
+    assert.equal(generated.status, 0, generated.stderr.toString());
+    const dataDir = path.join(root, 'data'),
+      media = fixtureMedia({ source, dataDir });
+    const original = await media.prepare({ url, animated: true });
+    const files = new Set();
+    for (const mode of ['fast', 'blend']) {
+      const events = [],
+        out = await media.smooth(original, {
+          settings: { smoothingFps: 24, smoothingMode: mode },
+          onProgress: (p) => events.push(p)
+        });
+      assert.equal(out.smoothingConfig.fps, 24);
+      assert.equal(out.smoothingConfig.codec, 'vp8');
+      assert.equal(out.smoothing, 'interpolate-24-v2');
+      assert.equal(await media.validate(out), true);
+      assert(events.some((p) => p.stage === 'smoothing' && p.progress === 0));
+      assert(events.some((p) => p.stage === 'smoothing-verify' && p.progress === null));
+      assert.equal(events.at(-1).stage, 'smoothing-done');
+      const encoding = events.filter((p) => p.stage === 'smoothing');
+      assert(encoding.at(-1).progress > 0.9);
+      for (let i = 1; i < encoding.length; i++)
+        assert(encoding[i].progress >= encoding[i - 1].progress);
+      const info = JSON.parse(
+        spawnSync(require('ffprobe-static').path, [
+          '-v',
+          'error',
+          '-show_entries',
+          'stream=codec_name,r_frame_rate',
+          '-of',
+          'json',
+          path.join(dataDir, 'media', out.file)
+        ]).stdout
+      );
+      assert.equal(info.streams[0].codec_name, 'vp8');
+      assert.equal(info.streams[0].r_frame_rate, '24/1');
+      files.add(out.file);
+    }
+    assert.equal(files.size, 2);
+    assert.equal(await media.validate(original), true);
+  }
+);
+test(
+  'cancelling a live interpolation kills processing and removes partial variants',
+  { skip: !ffmpeg, timeout: 15000 },
+  async (t) => {
+    const root = await temporary(t),
+      source = path.join(root, 'cancel.webm');
+    assert.equal(
+      spawnSync(ffmpeg, [
+        '-v',
+        'error',
+        '-f',
+        'lavfi',
+        '-i',
+        'testsrc2=size=640x360:rate=8:duration=4',
+        '-c:v',
+        'libvpx-vp9',
+        '-threads',
+        '2',
+        '-y',
+        source
+      ]).status,
+      0
+    );
+    const dataDir = path.join(root, 'data'),
+      media = fixtureMedia({ source, dataDir }),
+      original = await media.prepare({ url, animated: true });
+    const before = await fs.readdir(path.join(dataDir, 'media')),
+      controller = new AbortController();
+    await assert.rejects(
+      media.smooth(original, {
+        signal: controller.signal,
+        onProgress: (p) => {
+          if (p.stage === 'smoothing' && p.progress > 0) controller.abort();
+        }
+      }),
+      { name: 'AbortError' }
+    );
+    assert.deepEqual(await fs.readdir(path.join(dataDir, 'media')), before);
+    assert.equal(await media.validate(original), true);
   }
 );

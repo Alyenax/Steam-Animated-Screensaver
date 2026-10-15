@@ -21,6 +21,7 @@
     "Chosen fixed artwork and its own creator credit are exported and displayed offline",
     "Export plays actual interpolated VP9 directly over file:// with zero HTTP requests and no manager dependency",
     "Disabling smoothing and updating restores original playback without downloading again",
+    "Optional owned-library import with local key, deduplication, uninstalled filter, and key removal",
     "All five spaces at 1280, 800, 390 px in English and French without horizontal overflow",
     "No uncaught browser errors",
     "Screensaver removal leaves catalog/media intact"

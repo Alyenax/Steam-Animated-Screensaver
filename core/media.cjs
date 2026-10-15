@@ -3,6 +3,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const https = require('node:https');
 const crypto = require('node:crypto');
+const { smoothingConfig, smoothingFilter } = require('./smoothing.cjs');
 const { spawn } = require('node:child_process');
 const { pipeline } = require('node:stream/promises');
 const { Transform } = require('node:stream');
@@ -122,7 +123,14 @@ async function download(
 function run(
   binary,
   args,
-  { signal, input, timeoutMs = LIMITS.processMs, binaryOutput = false, maxOutput = 2e6 } = {}
+  {
+    signal,
+    input,
+    timeoutMs = LIMITS.processMs,
+    binaryOutput = false,
+    maxOutput = 2e6,
+    onProgress
+  } = {}
 ) {
   return new Promise((resolve, reject) => {
     aborted(signal);
@@ -135,6 +143,8 @@ function run(
       outputBytes = 0,
       errors = '',
       settled = false;
+    let progressBuffer = '',
+      progress = {};
     const finish = (error) => {
       if (settled) return;
       settled = true;
@@ -155,6 +165,25 @@ function run(
         : null;
     signal?.addEventListener('abort', abort, { once: true });
     child.stdout.on('data', (chunk) => {
+      if (onProgress) {
+        progressBuffer += chunk.toString();
+        let end;
+        while ((end = progressBuffer.indexOf('\n')) !== -1) {
+          const line = progressBuffer.slice(0, end).trim();
+          progressBuffer = progressBuffer.slice(end + 1);
+          const split = line.indexOf('=');
+          if (split < 0) continue;
+          const key = line.slice(0, split),
+            value = line.slice(split + 1);
+          progress[key] = value;
+          if (key === 'progress') {
+            onProgress(progress);
+            progress = {};
+          }
+        }
+        if (progressBuffer.length > 65536) progressBuffer = '';
+        return;
+      }
       if (binaryOutput) output.push(chunk);
       else output += chunk;
       outputBytes += chunk.length;
@@ -756,8 +785,22 @@ function createMedia({
         await Promise.allSettled([partial, ...work].map((f) => fs.rm(f, { force: true })));
       }
     },
-    async smooth(media, { signal, maxBytes = Infinity, processMs = 0 } = {}) {
+    async smooth(
+      media,
+      {
+        signal,
+        maxBytes = Infinity,
+        processMs = 0,
+        onProgress,
+        settings = { smoothingMode: 'quality' }
+      } = {}
+    ) {
       aborted(signal);
+      const config = smoothingConfig(settings),
+        started = Date.now();
+      const report = (stage, data = {}) =>
+        onProgress?.({ stage, elapsed: (Date.now() - started) / 1000, ...data });
+      report('smoothing-inspect', { progress: null });
       if (!(maxBytes === Infinity || Number.isFinite(maxBytes)) || maxBytes < 1024)
         throw new Error('Not enough storage space for interpolation.');
       await ensureDirectory(false);
@@ -769,10 +812,10 @@ function createMedia({
         throw new Error('Interpolation requires an animation with a known duration.');
       // Preserve already fluid media rather than reducing its original frame rate.
       if (
-        info.frames / info.duration >= 29.5 &&
+        info.frames / info.duration >= config.fps - 0.5 &&
         (info.format !== 'webm' || ['vp8', 'vp9'].includes(info.codec))
       )
-        return { ...media, smoothing: 'native-30-plus' };
+        return { ...media, smoothing: 'native-fluid', smoothingConfig: config };
       const token = crypto.randomUUID(),
         temp = path.join(directory, `${token}.smooth.webm`),
         framesDir = path.join(directory, `${token}.frames`),
@@ -796,6 +839,11 @@ function createMedia({
             'steamos-animated-screensaver-v1'
           );
           const list = ['ffconcat version 1.0'];
+          report('smoothing-decode', {
+            progress: 0,
+            frames: 0,
+            totalFrames: decoded.frames.length
+          });
           for (let i = 0; i < decoded.frames.length; i++) {
             aborted(signal);
             if (i && decoded.metadata[i - 1].dispose)
@@ -838,6 +886,11 @@ function createMedia({
               throw new Error('Not enough disk space for interpolation frames.');
             const name = `frame-${i}.png`;
             await fs.writeFile(path.join(framesDir, name), image);
+            report('smoothing-decode', {
+              progress: (i + 1) / decoded.frames.length,
+              frames: i + 1,
+              totalFrames: decoded.frames.length
+            });
             list.push(`file ${name}`, 'option framerate 1000', `duration ${rect.duration}`);
             if (Date.now() >= deadline)
               throw new Error('Interpolation timed out. The original is kept.');
@@ -853,12 +906,26 @@ function createMedia({
           Number(disk.bavail) * Number(disk.bsize) - 64 * 1024 * 1024
         );
         if (budget < 1024) throw new Error('Not enough storage space for interpolation.');
+        report('smoothing', {
+          progress: 0,
+          seconds: 0,
+          duration: info.duration,
+          targetFps: config.fps,
+          mode: config.mode,
+          codec: config.codec
+        });
+        const encodeStarted = Date.now();
         await run(
           ffmpegPath,
           [
             '-v',
             'error',
             '-xerror',
+            '-nostats',
+            '-progress',
+            'pipe:1',
+            '-stats_period',
+            '0.5',
             '-protocol_whitelist',
             'file,pipe',
             '-threads',
@@ -868,42 +935,75 @@ function createMedia({
             '-filter_threads',
             '2',
             '-vf',
-            "scale=w='min(1920,iw)':h='min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,tpad=stop_mode=clone:stop_duration=1,minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,format=yuv420p",
+            smoothingFilter(config),
             '-t',
             String(info.duration),
             '-c:v',
-            'libvpx-vp9',
+            config.codec === 'vp9' ? 'libvpx-vp9' : 'libvpx',
             '-threads',
             '2',
             '-crf',
-            '28',
+            config.codec === 'vp9' ? '28' : '10',
             '-b:v',
-            '0',
+            config.codec === 'vp9' ? '0' : '4000000',
             '-deadline',
-            'good',
+            config.codec === 'vp9' ? 'good' : 'realtime',
             '-cpu-used',
-            '4',
+            config.codec === 'vp9' ? '4' : '8',
             '-fs',
             String(Math.floor(budget)),
             '-y',
             temp
           ],
-          { signal, timeoutMs: Number.isFinite(deadline) ? Math.max(1, deadline - Date.now()) : 0 }
+          {
+            signal,
+            timeoutMs: Number.isFinite(deadline) ? Math.max(1, deadline - Date.now()) : 0,
+            onProgress: (p) => {
+              const seconds = Math.max(
+                0,
+                Math.min(info.duration, Number(p.out_time_us) / 1e6 || 0)
+              );
+              const frame = Math.max(0, Number(p.frame) || 0);
+              const progress = Math.min(
+                1,
+                Math.max(seconds / info.duration, frame / Math.ceil(info.duration * config.fps))
+              );
+              const elapsed = (Date.now() - encodeStarted) / 1000;
+              report('smoothing', {
+                progress,
+                seconds,
+                duration: info.duration,
+                frames: frame,
+                totalFrames: Math.ceil(info.duration * config.fps),
+                targetFps: config.fps,
+                mode: config.mode,
+                codec: config.codec,
+                speed: Number.parseFloat(p.speed) || null,
+                eta:
+                  progress > 0 && elapsed > 1
+                    ? Math.max(0, (elapsed * (1 - progress)) / progress)
+                    : null
+              });
+            }
+          }
         );
+        report('smoothing-verify', { progress: null });
         const result = await inspect(temp, { signal, timeoutMs: processMs });
         if (
           !result.animated ||
           Math.abs(result.duration - info.duration) > 0.1 ||
-          Math.abs(result.frames / result.duration - 30) > 1 ||
+          Math.abs(result.frames / result.duration - config.fps) > 1 ||
           (await fs.stat(temp)).size > budget
         )
           throw new Error(
             'Interpolation was incomplete or exceeded its storage budget. The original is kept.'
           );
         const digest = await hashFile(source, signal);
-        const file = `${digest.slice(0, 24)}.smooth30-v1.webm`;
+        const file = `${digest.slice(0, 24)}.smooth${config.fps}-${config.mode}-v2.webm`;
         aborted(signal);
+        report('smoothing-save', { progress: null });
         await fs.rename(temp, path.join(directory, file));
+        report('smoothing-done', { progress: 1 });
         return {
           ...media,
           file,
@@ -913,7 +1013,8 @@ function createMedia({
           format: 'webm',
           animated: true,
           sha256: digest,
-          smoothing: 'interpolate-30-v1'
+          smoothing: `interpolate-${config.fps}-v2`,
+          smoothingConfig: config
         };
       } finally {
         await fs.rm(temp, { force: true });

@@ -1,0 +1,14 @@
+{
+  "fixture": "Self-authored testsrc2 media, 1280x720, 8 fps, 4 seconds; no credentials or artwork",
+  "checks": [
+    "Actual intermediate FFmpeg progress visible as a percentage in French Manager",
+    "Frames, speed, estimated remaining time and dated activity shown",
+    "Progress advances during processing",
+    "Pause kills processing and clears partial variants",
+    "Resume with very light 24 fps produces a verified separate file",
+    "Completed history retains paused and validation phases"
+  ],
+  "observedProgress": 0.075,
+  "uncaughtBrowserErrors": 0,
+  "physicalSteamOS": false
+}

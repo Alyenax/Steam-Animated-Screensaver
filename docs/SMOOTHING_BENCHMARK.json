@@ -1,0 +1,96 @@
+{
+  "environment": "darwin arm64; Apple M5",
+  "fixture": "FFmpeg testsrc2, 1280x720, 8 fps, 3 seconds. Synthetic test, not a Steam Machine performance prediction.",
+  "results": [
+    {
+      "mode": "quality",
+      "fps": 30,
+      "codec": "vp9",
+      "durationMs": 9158,
+      "bytes": 1284015,
+      "intermediateUpdates": 10,
+      "phases": [
+        "smoothing-inspect",
+        "smoothing",
+        "smoothing-verify",
+        "smoothing-save",
+        "smoothing-done"
+      ]
+    },
+    {
+      "mode": "quality",
+      "fps": 24,
+      "codec": "vp9",
+      "durationMs": 6125,
+      "bytes": 1120034,
+      "intermediateUpdates": 6,
+      "phases": [
+        "smoothing-inspect",
+        "smoothing",
+        "smoothing-verify",
+        "smoothing-save",
+        "smoothing-done"
+      ]
+    },
+    {
+      "mode": "fast",
+      "fps": 30,
+      "codec": "vp8",
+      "durationMs": 7793,
+      "bytes": 1385047,
+      "intermediateUpdates": 13,
+      "phases": [
+        "smoothing-inspect",
+        "smoothing",
+        "smoothing-verify",
+        "smoothing-save",
+        "smoothing-done"
+      ]
+    },
+    {
+      "mode": "fast",
+      "fps": 24,
+      "codec": "vp8",
+      "durationMs": 5165,
+      "bytes": 1356602,
+      "intermediateUpdates": 9,
+      "phases": [
+        "smoothing-inspect",
+        "smoothing",
+        "smoothing-verify",
+        "smoothing-save",
+        "smoothing-done"
+      ]
+    },
+    {
+      "mode": "blend",
+      "fps": 30,
+      "codec": "vp8",
+      "durationMs": 962,
+      "bytes": 1381957,
+      "intermediateUpdates": 1,
+      "phases": [
+        "smoothing-inspect",
+        "smoothing",
+        "smoothing-verify",
+        "smoothing-save",
+        "smoothing-done"
+      ]
+    },
+    {
+      "mode": "blend",
+      "fps": 24,
+      "codec": "vp8",
+      "durationMs": 861,
+      "bytes": 1353788,
+      "intermediateUpdates": 1,
+      "phases": [
+        "smoothing-inspect",
+        "smoothing",
+        "smoothing-verify",
+        "smoothing-save",
+        "smoothing-done"
+      ]
+    }
+  ]
+}

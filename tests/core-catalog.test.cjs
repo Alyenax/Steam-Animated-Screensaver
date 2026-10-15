@@ -609,3 +609,62 @@ test('late search and installed-game previews resolve missing metadata lazily, w
   assert.equal((await x.core.invoke('previewImage', { steamAppId: 620 })).file, 'resolved.jpg');
   assert.deepEqual(requested, [99, 99]);
 });
+
+test('live interpolation progress is readable during work, journaled, persisted, and invalidated by fps/profile changes', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  await done(x.core);
+  let release,
+    started,
+    calls = 0;
+  const ready = new Promise((r) => {
+    started = r;
+  });
+  x.media.smooth = async (media, opts) => {
+    calls++;
+    if (calls === 1) {
+      opts.onProgress({
+        stage: 'smoothing',
+        progress: 0.4,
+        frames: 12,
+        totalFrames: 30,
+        targetFps: 30,
+        codec: 'vp8'
+      });
+      started();
+      await new Promise((r) => {
+        release = r;
+      });
+    }
+    const file = `smooth-${calls}.webm`;
+    await fs.writeFile(path.join(x.dataDir, 'media', file), 'smoothed');
+    return { ...media, file, smoothing: 'interpolate-30-v2' };
+  };
+  await x.core.invoke('settings', { smoothMotion: true });
+  await x.core.invoke('prepare');
+  await ready;
+  let state = await x.core.invoke('state');
+  assert.equal(state.job.stage, 'smoothing');
+  assert.equal(state.job.progress, 0.4);
+  assert.equal(state.job.detail.frames, 12);
+  assert(state.job.history.some((e) => e.stage === 'smoothing' && e.progress === 0.4));
+  release();
+  await done(x.core);
+  await x.core.invoke('prepare');
+  await done(x.core);
+  assert.equal(calls, 1);
+  await x.core.invoke('settings', { smoothingFps: 24 });
+  await x.core.invoke('prepare');
+  state = await done(x.core);
+  assert.equal(calls, 2);
+  assert.equal(state.games[0].smoothed.smoothingConfig.fps, 24);
+  await x.core.invoke('settings', { smoothingMode: 'blend' });
+  await x.core.invoke('prepare');
+  state = await done(x.core);
+  assert.equal(calls, 3);
+  await assert.rejects(x.core.invoke('settings', { smoothingFps: 25 }), /24 or 30/);
+  assert(state.job.history.some((e) => e.stage === 'game-ready'));
+  const persisted = JSON.parse(await fs.readFile(path.join(x.dataDir, 'catalog.json'), 'utf8'));
+  assert.equal(persisted.job.history.at(-1).stage, 'completed');
+});

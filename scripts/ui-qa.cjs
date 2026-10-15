@@ -42,6 +42,7 @@ async function runUI({ capture = false } = {}) {
         await page.screenshot({ path: path.join(screenshots, name + '.png'), fullPage: true });
       }
     };
+    const settled = () => page.waitForFunction(() => !document.body.hasAttribute('aria-busy'));
     const go = async (route) => {
       await page.locator(`[data-route="${route}"]`).first().click();
     };
@@ -248,6 +249,7 @@ async function runUI({ capture = false } = {}) {
       await new Promise((r) => setTimeout(r, 20));
     }
     assert.equal((await fixture.core.invoke('state')).settings.maxSmoothingMB, 512);
+    await settled();
     await page.locator('[data-setting="maxSmoothingMB"]').fill('0');
     await page.locator('[data-setting="maxSmoothingMB"]').dispatchEvent('change');
     for (let i = 0; i < 100; i++) {
@@ -256,20 +258,44 @@ async function runUI({ capture = false } = {}) {
     }
     assert.equal((await fixture.core.invoke('state')).settings.maxSmoothingMB, 0);
     check('Manual video-size limit saves and accepts zero for no per-video size limit');
+    await settled();
+    await page.locator('[data-setting="smoothingMode"]').selectOption('quality');
+    await page.waitForFunction(
+      () => document.querySelector('[data-setting="smoothingMode"]')?.value === 'quality'
+    );
+    await settled();
+    await page.locator('[data-setting="smoothingFps"]').selectOption('24');
+    await settled();
+    assert.equal((await fixture.core.invoke('state')).settings.smoothingFps, 24);
+    await settled();
+    await page.locator('[data-setting="smoothingFps"]').selectOption('30');
+    await settled();
+    await settled();
     await page.locator('[data-setting="smoothMotion"]').check();
     assert.equal((await fixture.core.invoke('state')).settings.smoothMotion, true);
+    await settled();
     await page.locator('[data-setting="shuffle"]').uncheck();
+    await settled();
     await fixture.core.invoke('prepare', { ids: ['steam:7000901'] });
     for (let i = 0; i < 1200; i++) {
       if ((await fixture.core.invoke('state')).job.status === 'completed') break;
       await new Promise((r) => setTimeout(r, 50));
     }
+    const finishedJob = (await fixture.core.invoke('state')).job;
+    assert(finishedJob.history.some((e) => e.stage === 'smoothing' && e.progress > 0));
+    await go('preparation');
+    await page.locator('.job-history li').first().waitFor();
+    assert(
+      (await page.locator('.job-history').innerText()).includes('Creating intermediate frames')
+    );
+    await shot('05b-preparation-history');
+    await go('settings');
     const smoothedGame = (await fixture.core.invoke('state')).games.find(
       (g) => g.id === 'steam:7000901'
     );
     assert.equal(
       smoothedGame.smoothed?.smoothing,
-      'interpolate-30-v1',
+      'interpolate-30-v2',
       smoothedGame.smoothingError
     );
     check(
@@ -332,7 +358,7 @@ async function runUI({ capture = false } = {}) {
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
     await offline.waitForFunction(() =>
-      document.querySelector('.scene.visible video')?.src.includes('.smooth30-v1.webm')
+      document.querySelector('.scene.visible video')?.src.includes('.smooth30-quality-v2.webm')
     );
     await offline.waitForFunction(
       () => document.querySelector('.scene.visible .caption-cover')?.naturalWidth > 0
@@ -354,14 +380,16 @@ async function runUI({ capture = false } = {}) {
     for (let i = 0; i < 100; i++) {
       if (
         !(await fs.readFile(path.join(installed, 'catalog.js'), 'utf8')).includes(
-          '.smooth30-v1.webm'
+          '.smooth30-quality-v2.webm'
         )
       )
         break;
       await new Promise((r) => setTimeout(r, 20));
     }
     assert(
-      !(await fs.readFile(path.join(installed, 'catalog.js'), 'utf8')).includes('.smooth30-v1.webm')
+      !(await fs.readFile(path.join(installed, 'catalog.js'), 'utf8')).includes(
+        '.smooth30-quality-v2.webm'
+      )
     );
     check('Disabling smoothing and updating restores original playback without downloading again');
     for (const width of [1280, 800, 390])
@@ -382,6 +410,27 @@ async function runUI({ capture = false } = {}) {
           await shot(`08-library-${width}-${language}-qa`);
         }
       }
+    await go('settings');
+    await page.locator('#steam-profile').fill('76561198000000000');
+    await page.locator('#steam-api-key').fill('0123456789abcdef'.repeat(2));
+    await page.locator('#steam-account-form').evaluate((form) => form.requestSubmit());
+    await page.locator('[data-action="import-steam"]:not(:disabled)').waitFor();
+    await page.locator('[data-action="import-steam"]').click();
+    await page.locator('[data-filter="ownedFilter"].active').waitFor();
+    assert.equal(await page.locator('.game-card').count(), 2);
+    await page.locator('[data-filter="notInstalledFilter"]').click();
+    assert((await page.locator('.game-grid').innerText()).includes('Uninstalled'));
+    assert.equal(
+      (await fixture.core.invoke('state')).games.find((g) => g.steamAppId === 7000905).included,
+      false
+    );
+    await go('settings');
+    await page.locator('[data-action="forget-steam-key"]').click();
+    await settled();
+    assert.equal((await fixture.core.invoke('state')).steamAccount.hasKey, false);
+    check(
+      'Optional owned-library import with local key, deduplication, uninstalled filter, and key removal'
+    );
     check('All five spaces at 1280, 800, 390 px in English and French without horizontal overflow');
     assert.equal(evidence.consoleErrors.length, 0, evidence.consoleErrors.join('\n'));
     check('No uncaught browser errors');

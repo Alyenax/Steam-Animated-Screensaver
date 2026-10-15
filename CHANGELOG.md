@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.4 — Live preparation details, lighter smoothing and optional Steam library import
+
+- Show actual FFmpeg percentages, frames, elapsed time, speed and estimated remaining time; distinguish WebP reconstruction, interpolation/encoding, verification and saving. Keep a dated bounded preparation journal across restart.
+- Choose 24 or 30 fps and Fast (720p VP8 motion interpolation), Quality (1080p VP9) or Very light (720p VP8 frame blending). Retain manual output limits, original files and profile-aware cache/export selection.
+- Add optional direct Steam owned-library import using a locally stored personal Steam API key and SteamID/profile URL, without any hosted service. Merge by AppID, preserve selections, and filter non-installed/account games.
+- Verify real intermediate UI progress, pause/cancel cleanup, 24 fps resume, offline playback and sample processing times. Live personal Steam-account validation remains pending.
+
 ## 0.1.3 — Preview repairs, chosen fixed artwork and configurable video sizes
 
 - Reproduce and repair live SteamGridDB WebM thumbnails incorrectly rendered as images; generate cached JPEGs for search, library, queues and alternative/fixed-artwork galleries.

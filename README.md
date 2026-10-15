@@ -2,9 +2,9 @@
 
 **Bring Your Steam Library to Life.**
 
-Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
+Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, optionally import owned games from Steam, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
 
-**0.1.3 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.4 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
@@ -18,7 +18,7 @@ The application uses its full name, **SteamOS Animated Screensaver**, throughout
 - Prepare incrementally with a persistent queue, pause, resume, cancellation and retry. Keep manual artwork choices and creator credits.
 - Browse a responsive English/French gallery, preview the same offline player, then install a local snapshot into Steam.
 - Add a fixed game cover beside the title or in three screen corners, using matching margins and local creator credits.
-- Optionally prepare a smoother 30 fps video offline, keeping original animations for an immediate return to their original rendering.
+- Optionally prepare a smoother 24 or 30 fps video offline, keeping original animations for an immediate return to their original rendering.
 - Preserve media proportions with a subdued blurred surround, crossfade or fade to black, shuffle and game-title controls.
 
 ![Actual manager with original validation animations](screenshots/02-home-prepared-qa.png)
@@ -35,7 +35,7 @@ Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Ste
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.3-linux-x64.tar.gz
+tar -xzf SteamOS-Animated-Screensaver-0.1.4-linux-x64.tar.gz
 cd steamos-animated-screensaver-linux-x64
 ./install.sh
 ```
@@ -48,7 +48,27 @@ The application installs to `~/.local/opt/steamos-animated-screensaver`; it does
 
 In **Settings → Playback**, enable **Show a still cover** and choose **Cover position**: beside the title, bottom right, top right or top left. The same controls are also in Preview. Each corner uses the title's horizontal/vertical margins. Prepare the library once to cache static portrait Grids from SteamGridDB; an existing local thumbnail is used when none is available. Cover and animation credits remain separate. In **Library → Game details → Fixed artwork → Choose / change fixed artwork**, select another still image; it is prepared immediately without replacing the animation. **Use automatic artwork** restores automatic selection.
 
-**Smooth animations · 30 fps** is off by default. Enable it, prepare again, preview the result, then **Update / repair** to publish it to Steam. It interpolates low-frame-rate animations into a separate silent VP9 video, up to 1080p. Processing can take minutes and interpolation can cause visual artifacts; it does not repair a broken loop. Original bytes remain available. **Maximum size per 30 fps video (MB)** defaults to **0**, meaning no per-video size limit; set a positive value for your own ceiling. The total library storage setting and free disk space remain applicable. The former fixed 160 MiB output/temporary-frame limits and three-minute interpolation deadline are removed. Disable the option and update the Steam snapshot to return to original playback without downloading again. Already fluid media at approximately 30 fps or above is preserved. Optional processing failures are visible in Preparation and fall back to the original animation.
+**Smooth animations** is off by default. Choose **24 or 30 fps** and a processing method:
+
+| Method | Processing | Output |
+| --- | --- | --- |
+| Fast (default for new settings) | Motion interpolation with a smaller search and lower processing resolution | Up to 720p, VP8 |
+| Quality | Detailed motion interpolation, the previous processing method | Up to 1080p, VP9 |
+| Very light | Blend neighboring frames without motion estimation; may show double edges | Up to 720p, VP8 |
+
+Existing enabled smoothing settings migrate to Quality / 30 fps. No profile upscales the source. Already fluid animations keep their original frame rate. Enable smoothing, choose a profile, prepare again, preview, then **Update / repair** to apply to Steam. Changes to the profile or target fps regenerate only the derivative from the locally retained original. **Maximum size per processed video (MB)** defaults to **0** (no per-video limit); your total library limit and free disk space still apply. Disable smoothing and update to restore original playback. Optional failures keep the original playable.
+
+Preparation shows the **current step's actual percentage**, separate from completed games, plus processed frames, elapsed time, processing speed and an estimated remaining time when available. WebP reconstruction, interpolation/encoding, final decoding validation and saving are shown separately. Indeterminate work is marked as such instead of displaying a fabricated percentage. The dated activity log keeps the last 250 events in the catalog (100 displayed), including failures and pauses. Pause/cancel interrupt unfinished processing; resume starts that unfinished step again and reuses completed files.
+
+A synthetic 3-second 720p animation took 9.16 s in Quality / 30 fps, 7.79 s in Fast / 30 fps, and 0.96 s in Very light / 30 fps on the development Mac. Quality / 24 fps took 6.13 s. These are sample measurements, not Steam Machine performance claims. See [reproducible benchmark data](docs/SMOOTHING_BENCHMARK.json) and [actual live-progress UI checks](docs/PROGRESS_VALIDATION.json).
+
+![Actual percentage and activity during a real FFmpeg interpolation, using original QA media](screenshots/13-live-interpolation-progress-qa.png)
+
+## Import games that are not installed
+
+In **Settings → Steam library import**, save your **SteamID64 or Steam Community profile URL** and your personal **Steam Web API key** from [Steam](https://steamcommunity.com/dev/apikey). This key is distinct from SteamGridDB. Choose **Import my Steam library**; the app calls Steam directly, without a hosted service or Steam login integration.
+
+Imported titles appear in **My Library**, with **Steam account** and **Not installed** filters. Existing games and manual choices are preserved and duplicates merge by AppID. New imported titles start excluded: include the ones you want, then prepare their SteamGridDB artwork. The imported catalog remains available offline. A failed import leaves it intact. Game details must be accessible to the official API; free games are included when previously played. This does not discover borrowed Family Sharing games as owned titles. Account import has provider-fixture coverage; a live personal Steam-key check is still pending. Remove the Steam API key separately in Settings.
 
 Search, library, preparation and alternative galleries normalize provider thumbnails into locally cached JPEGs, including thumbnails supplied as WebM videos. Missing/corrupt thumbnails fall back to available source media; unavailable assets show an explicit placeholder. Search results beyond the first eight load artwork on demand.
 
@@ -78,7 +98,7 @@ The application is three independent modules: [Core](docs/CONTRACTS.md), [Manage
 
 ## Current limits
 
-No Windows compatibility is advertised. Owned-account import is deferred because the official Steam API requires an additional key and respects profile privacy. Installed tools and demos are classified conservatively by local name heuristics. A manually added SGDB-only identity is merged with a later installation once an authoritative Steam↔SGDB mapping is available; offline scanning cannot invent that mapping.
+No Windows compatibility is advertised. Installed tools and demos are classified conservatively by local name heuristics. A manually added SGDB-only identity is merged with a later installation once an authoritative Steam↔SGDB mapping is available; offline scanning cannot invent that mapping.
 
 Ranking is deterministic from the metadata the API actually supplies. Decoder validity and real animation are checked during preparation. Artistic loop continuity, black endings, logo placement and aesthetic quality are not automatically scored in this candidate. Choose an alternative manually when needed. No measurements of SteamOS battery use, 4K performance, Steam CEF codecs or physical dismissal are claimed.
 

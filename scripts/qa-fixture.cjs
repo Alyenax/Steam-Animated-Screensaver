@@ -198,6 +198,15 @@ async function createFixture({ root, browser }) {
     steamRoots: [steamRoot],
     media,
     sgdb,
+    steamAccount: {
+      owned: async () => ({
+        steamId: '76561198000000000',
+        games: [
+          { steamAppId: 7000901, name: names[0] },
+          { steamAppId: 7000905, name: 'Uninstalled · original QA game' }
+        ]
+      })
+    },
     isGameRunning: async () => false
   });
   await core.invoke('state');

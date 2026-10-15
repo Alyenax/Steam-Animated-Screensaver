@@ -20,10 +20,17 @@ These sources establish the installation layout. A subsequent 0.1.0 Steam Machin
 
 The [official SteamGridDB v2 API](https://www.steamgriddb.com/api/v2) is the sole artwork/search backend. Steam AppIDs and SteamGridDB game IDs are distinct. Numeric/Store URL searches resolve by the external Steam mapping; name searches return user-selectable matches. A manually added game is never represented as owned by the Steam account.
 
-Optional owned-library import is deferred. Valve's [IPlayerService GetOwnedGames documentation](https://partner.steamgames.com/doc/webapi/IPlayerService?language=english) requires a Steam Web API key and respects game-detail visibility. Requiring an additional key would complicate the primary experience. The installed-library scanner and manual SteamGridDB search need no Steam account credentials.
+Optional owned-library import calls Valve's [IPlayerService GetOwnedGames](https://partner.steamgames.com/doc/webapi/IPlayerService#GetOwnedGames) directly from the backend with the user's personal Steam Web API key. Vanity profile URLs resolve through [ISteamUser ResolveVanityURL](https://partner.steamgames.com/doc/webapi/ISteamUser#ResolveVanityURL). HTTPS endpoint and redirects are restricted; requests time out and responses are size-bounded. Privacy errors do not erase an existing import. This uses no login cookies, OpenID flow, developer key in the package or hosted service. The installed scanner/manual addition still need no Steam account credentials. Keys remain in separate local files, not state/catalog/export. New account imports default to excluded.
 
 ## Lifecycle
 
 The manager owns one core and one sequential preparation worker. Catalog and queue mutations are persisted atomically. Closing the manager pauses recoverably; finished files remain reusable. The player reads an exported local catalog. The installed snapshot continues working if the manager is removed. Editing the manager's catalog does not silently modify Steam's active installation; Install/Repair republishes it.
 
 See CONTRACTS.md for versioned component interfaces, STORAGE.md for local paths, and PLAYER.md for media and playback behavior.
+
+
+## Smoothing and telemetry
+
+The optional derivative uses explicit fps/profile configuration and source SHA-256 identity. Fast uses 720p motion interpolation and realtime VP8; Quality retains 1080p detailed motion interpolation and VP9; Very light uses FFmpeg frame blending (possible ghosting) and VP8. No upscaling. [FFmpeg minterpolate](https://ffmpeg.org/ffmpeg-filters.html#minterpolate) documents the different interpolation methods. Codec, fps and profile are part of cache validity; exported and previewed derivatives must match current settings. Old enabled settings migrate to Quality/30 fps.
+
+[FFmpeg `-progress`](https://ffmpeg.org/ffmpeg.html#Generic-options) supplies bounded, incrementally parsed key/value records through stdout every 0.5 s. Frame count/output timestamp supplies the actual current-step percentage. No cumulative output is retained for long encodes. Non-quantifiable source/output validation remains indeterminate. WebP composition reports completed frames directly. The core serves live in-memory telemetry without putting state reads behind preparation, records phase changes and 10-percent milestones in a 250-entry journal, and saves it at queue checkpoints. The Manager polls at 800 ms, displays the current phase separately from games completed, and bounds its displayed history to 100 events. No percentage advances merely because time elapsed.

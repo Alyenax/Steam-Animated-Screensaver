@@ -196,7 +196,7 @@ const translations = {
     smoothHint:
       'Optional offline interpolation, up to 1080p. Can take several minutes and create visual artifacts. Prepare again, then Update / Repair to apply. Originals are kept.',
     stageSmoothing: 'Interpolating animation · 30 fps',
-    maxSmoothingMB: 'Maximum size per 30 fps video (MB)',
+    maxSmoothingMB: 'Maximum size per processed video (MB)',
     smoothingSizeHint:
       '0 = no per-video limit. The total library storage limit and free disk space still apply.',
     fixedArtwork: 'Fixed artwork',
@@ -469,7 +469,7 @@ const translations = {
     smoothHint:
       'Interpolation optionnelle hors ligne, jusqu’à 1080p. Peut prendre plusieurs minutes et créer des déformations. Préparez à nouveau, puis Mettre à jour / Réparer pour appliquer. Les originaux sont conservés.',
     stageSmoothing: 'Interpolation de l’animation · 30 i/s',
-    maxSmoothingMB: 'Poids maximal par vidéo à 30 i/s (Mo)',
+    maxSmoothingMB: 'Poids maximal par vidéo traitée (Mo)',
     smoothingSizeHint:
       '0 = aucune limite par vidéo. La limite de stockage de la bibliothèque et l’espace disque disponible restent applicables.',
     fixedArtwork: 'Artwork fixe',
@@ -582,6 +582,178 @@ const translations = {
     returnLibrary: 'Voir la bibliothèque'
   }
 };
+Object.assign(translations.en, {
+  smoothMotion: 'Smooth animations',
+  smoothHint:
+    'Prepare once, then Update / Repair to apply. Originals are kept. Already fluid animations keep their original frame rate.',
+  smoothingMode: 'Processing method',
+  smoothingFps: 'Target frame rate',
+  modeFast: 'Fast · motion interpolation · 720p · VP8',
+  modeQuality: 'Quality · motion interpolation · 1080p · VP9',
+  modeBlend: 'Very light · frame blending · 720p · VP8',
+  smoothingModeHint:
+    'Fast reduces processing resolution and encoding cost. Very light avoids motion estimation but can produce double edges. Quality is slower. No upscaling.',
+  phaseCoverCheck: 'Checking the fixed artwork',
+  phaseCoverPrepare: 'Downloading and preparing the fixed artwork',
+  phasePausedGame: 'Paused while a Steam game is running',
+  liveHistory: 'Live activity',
+  phaseProgress: 'Current step',
+  overallProgress: 'Overall library',
+  elapsed: 'Elapsed',
+  remainingTime: 'Remaining (estimate)',
+  frames: 'frames',
+  phaseChecking: 'Checking existing local files',
+  phaseFinding: 'Finding artwork on SteamGridDB',
+  phaseInspect: 'Checking the source animation',
+  phaseDecode: 'Reconstructing WebP frames (alpha and disposal)',
+  phaseSmoothing: 'Creating intermediate frames and encoding WebM',
+  phaseVerify: 'Decoding the result to check duration and integrity',
+  phaseSave: 'Saving the verified animation',
+  phaseDone: 'Smoothed animation saved',
+  phaseReady: 'Scene ready',
+  phaseMissing: 'No suitable animation found',
+  phaseError: 'Processing failed',
+  phaseSmoothError: 'Smoothing failed; original kept',
+  phaseCompleted: 'Library preparation complete',
+  historyEmpty: 'Start preparing to see each operation here.',
+  steamAccountTitle: 'Steam library import',
+  steamAccountBody:
+    'Optional. Import owned games, including those not installed. Uses your personal Steam Web API key, saved only on this device. No hosted service.',
+  steamProfile: 'SteamID64 or Steam profile URL',
+  steamApiKey: 'Steam Web API key (separate from SteamGridDB)',
+  saveSteamAccount: 'Save Steam account',
+  importSteam: 'Import my Steam library',
+  steamAccountSaved: 'Steam account saved locally',
+  steamImportSuccess: 'Steam library imported',
+  steamImportHint:
+    'New imported games start excluded. Include the games you want in My Library. Game details must be accessible to the API. A failed import keeps the previous library.',
+  steamGetKey: 'Create my Steam Web API key',
+  steamForgetKey: 'Remove Steam API key',
+  steamImported: 'Last import',
+  notInstalledFilter: 'Not installed',
+  ownedFilter: 'Steam account',
+  steamImportedCount: 'owned games',
+  importingSteam: 'Importing Steam library…'
+});
+Object.assign(translations.fr, {
+  smoothMotion: 'Fluidifier les animations',
+  smoothHint:
+    'Préparez une fois, puis Mettre à jour / Réparer pour appliquer. Les originaux sont conservés. Les animations déjà fluides gardent leur cadence d’origine.',
+  smoothingMode: 'Méthode de traitement',
+  smoothingFps: 'Cadence cible',
+  modeFast: 'Rapide · interpolation de mouvement · 720p · VP8',
+  modeQuality: 'Qualité · interpolation de mouvement · 1080p · VP9',
+  modeBlend: 'Très léger · mélange d’images · 720p · VP8',
+  smoothingModeHint:
+    'Rapide réduit la résolution de calcul et le coût de l’encodage. Très léger évite le calcul du mouvement, mais peut dédoubler les contours. Qualité est plus lent. Aucun agrandissement.',
+  phaseCoverCheck: 'Vérification de l’artwork fixe',
+  phaseCoverPrepare: 'Téléchargement et préparation de l’artwork fixe',
+  phasePausedGame: 'En pause pendant une partie Steam',
+  liveHistory: 'Historique en direct',
+  phaseProgress: 'Étape en cours',
+  overallProgress: 'Bibliothèque complète',
+  elapsed: 'Écoulé',
+  remainingTime: 'Restant estimé',
+  frames: 'images',
+  phaseChecking: 'Vérification des fichiers locaux existants',
+  phaseFinding: 'Recherche des illustrations sur SteamGridDB',
+  phaseInspect: 'Analyse de l’animation source',
+  phaseDecode: 'Reconstruction des images WebP (transparence et effacement)',
+  phaseSmoothing: 'Création des images intermédiaires et encodage WebM',
+  phaseVerify: 'Décodage du résultat pour vérifier sa durée et son intégrité',
+  phaseSave: 'Enregistrement de l’animation vérifiée',
+  phaseDone: 'Animation fluidifiée enregistrée',
+  phaseReady: 'Scène prête',
+  phaseMissing: 'Aucune animation adaptée',
+  phaseError: 'Échec du traitement',
+  phaseSmoothError: 'Échec de la fluidification ; original conservé',
+  phaseCompleted: 'Préparation de la bibliothèque terminée',
+  historyEmpty: 'Lancez la préparation pour suivre chaque opération ici.',
+  steamAccountTitle: 'Importer la bibliothèque Steam',
+  steamAccountBody:
+    'Facultatif. Retrouvez vos jeux possédés, même non installés. Utilise votre clé API Steam personnelle, enregistrée uniquement sur cet appareil. Aucun service à héberger.',
+  steamProfile: 'SteamID64 ou lien du profil Steam',
+  steamApiKey: 'Clé API Steam (distincte de SteamGridDB)',
+  saveSteamAccount: 'Enregistrer le compte Steam',
+  importSteam: 'Importer ma bibliothèque Steam',
+  steamAccountSaved: 'Compte Steam enregistré localement',
+  steamImportSuccess: 'Bibliothèque Steam importée',
+  steamImportHint:
+    'Les nouveaux jeux importés sont exclus au départ. Incluez ceux souhaités dans Ma bibliothèque. Les détails des jeux doivent être accessibles à l’API. Un échec conserve la bibliothèque précédente.',
+  steamGetKey: 'Créer ma clé API Steam',
+  steamForgetKey: 'Supprimer la clé API Steam',
+  steamImported: 'Dernier import',
+  notInstalledFilter: 'Non installés',
+  ownedFilter: 'Compte Steam',
+  steamImportedCount: 'jeux possédés',
+  importingSteam: 'Import de la bibliothèque Steam…'
+});
+function durationText(seconds) {
+  if (!Number.isFinite(seconds)) return '—';
+  const n = Math.max(0, Math.round(seconds));
+  return n >= 60 ? `${Math.floor(n / 60)} min ${n % 60} s` : `${n} s`;
+}
+function phaseLabel(stage, detail = {}) {
+  const key = {
+    downloading: 'stageDownloading',
+    validating: 'stageValidating',
+    optimizing: 'stageOptimizing',
+    saving: 'stageSaving',
+    'checking-local': 'phaseChecking',
+    'finding-artwork': 'phaseFinding',
+    'smoothing-inspect': 'phaseInspect',
+    'smoothing-decode': 'phaseDecode',
+    smoothing: 'phaseSmoothing',
+    'smoothing-verify': 'phaseVerify',
+    'smoothing-save': 'phaseSave',
+    'smoothing-done': 'phaseDone',
+    'game-ready': 'phaseReady',
+    'game-missing': 'phaseMissing',
+    'game-error': 'phaseError',
+    'smoothing-error': 'phaseSmoothError',
+    'cover-check': 'phaseCoverCheck',
+    'cover-prepare': 'phaseCoverPrepare',
+    'paused-game': 'phasePausedGame',
+    completed: 'phaseCompleted',
+    paused: 'paused',
+    cancelled: 'jobCancelled'
+  }[stage];
+  return (
+    (key ? t(key) : stage || t('unknownStage')) +
+    (detail.targetFps
+      ? ` · ${detail.targetFps} ${lang() === 'fr' ? 'i/s' : 'fps'} · ${String(detail.codec || '').toUpperCase()}`
+      : '')
+  );
+}
+function jobActivity(job) {
+  const d = job.detail || {},
+    stage = job.stage;
+  const explanation =
+    stage === 'smoothing'
+      ? t(d.mode === 'blend' ? 'modeBlend' : d.mode === 'quality' ? 'modeQuality' : 'modeFast')
+      : '';
+  const elapsed = job.stageElapsed ?? null;
+  return `<div class="job-detail"><p>${esc(explanation)}</p><div class="job-metrics">${Number.isFinite(d.frames) ? `<span>${Number(d.frames)} / ${Number(d.totalFrames) || '—'} ${esc(t('frames'))}</span>` : ''}${Number.isFinite(d.seconds) ? `<span>${d.seconds.toFixed(1)} / ${Number(d.duration).toFixed(1)} s</span>` : ''}${elapsed !== null && job.current ? `<span>${esc(t('elapsed'))} : ${durationText(elapsed)}</span>` : ''}${Number.isFinite(d.speed) ? `<span>×${d.speed.toFixed(2)}</span>` : ''}${Number.isFinite(d.eta) ? `<span>${esc(t('remainingTime'))} : ${durationText(d.eta)}</span>` : ''}</div></div><section class="job-history" aria-label="${esc(t('liveHistory'))}"><h3>${esc(t('liveHistory'))}</h3>${
+    job.history?.length
+      ? `<ol>${job.history
+          .slice(-100)
+          .reverse()
+          .map(
+            (e) =>
+              `<li><time datetime="${new Date(e.at).toISOString()}">${new Date(e.at).toLocaleTimeString(lang())}</time><div>${e.game ? `<strong>${esc(e.game)}</strong> · ` : ''}${esc(phaseLabel(e.stage, e))}${Number.isFinite(e.progress) ? ` <b>${Math.round(e.progress * 100)} %</b>` : ''}${e.frames ? ` · ${e.frames}/${e.totalFrames} ${esc(t('frames'))}` : ''}${e.message ? `<small>${esc(e.message)}</small>` : ''}</div></li>`
+          )
+          .join('')}</ol>`
+      : `<p>${esc(t('historyEmpty'))}</p>`
+  }</section>`;
+}
+function steamAccountPanel() {
+  const account = state.steamAccount || {};
+  return panel(
+    'steamAccountTitle',
+    'steam',
+    `<div id="steam-account-settings"><p>${esc(t('steamAccountBody'))}</p><form id="steam-account-form"><label class="account-field">${esc(t('steamProfile'))}<input class="field" id="steam-profile" value="${attr(account.profile || '')}" placeholder="https://steamcommunity.com/id/…" required></label><label class="account-field">${esc(t('steamApiKey'))}<input class="field" id="steam-api-key" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(account.hasKey ? 'replaceKey' : 'keyPlaceholder'))}"></label>${button(t('saveSteamAccount'), 'save-steam-account', 'check', true, 'type="submit"')}</form><div class="button-row" style="margin-top:16px">${button(t(importingSteam ? 'importingSteam' : 'importSteam'), 'import-steam', 'scan', false, !account.hasKey || !account.profile || importingSteam ? 'disabled' : '')}${account.hasKey ? button(t('steamForgetKey'), 'forget-steam-key', 'trash') : ''}</div><p>${esc(t('steamImportHint'))}</p>${account.lastImport ? `<p>${esc(t('steamImported'))} : ${esc(new Date(account.lastImport).toLocaleString(lang()))} · ${Number(account.count)} ${esc(t('steamImportedCount'))}</p>` : ''}<a class="key-link" href="https://steamcommunity.com/dev/apikey" target="_blank" rel="noopener noreferrer">${esc(t('steamGetKey'))} ↗</a></div>`
+  );
+}
 const app = document.querySelector('#app'),
   addDialog = document.querySelector('#add-dialog'),
   detailDialog = document.querySelector('#detail-dialog');
@@ -596,6 +768,8 @@ const defaultState = {
     showCover: true,
     coverPosition: 'beside-title',
     smoothMotion: false,
+    smoothingFps: 30,
+    smoothingMode: 'fast',
     maxSmoothingMB: 0,
     staticFallback: false,
     reducedMotion: false,
@@ -626,6 +800,7 @@ let state = structuredClone(defaultState),
   searchResults = null,
   searchTerm = '',
   searchPending = false,
+  importingSteam = false,
   toastTimer;
 const lang = () => (state.settings.language === 'fr' ? 'fr' : 'en');
 const t = (key) => translations[lang()][key] || translations.en[key] || key;
@@ -898,6 +1073,7 @@ async function run(action, payload = {}, message, options = {}) {
   mutationQueue = new Promise((resolve) => (release = resolve));
   await previous;
   pending = true;
+  document.body.setAttribute('aria-busy', 'true');
   document.querySelectorAll(`[data-action="${action}"]`).forEach((el) => (el.disabled = true));
   try {
     const result = await invoke(action, payload);
@@ -910,12 +1086,13 @@ async function run(action, payload = {}, message, options = {}) {
     return undefined;
   } finally {
     pending = false;
+    document.body.removeAttribute('aria-busy');
     document.querySelectorAll(`[data-action="${action}"]`).forEach((el) => (el.disabled = false));
     release();
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">SteamOS <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.3</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">SteamOS Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} SteamOS Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">SteamOS <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.4</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">SteamOS Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} SteamOS Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -955,7 +1132,7 @@ function homeView() {
 }
 function gameCard(g) {
   const image = thumbnail(g);
-  return `<article class="game-card"><label class="include-switch" title="${esc(t('include'))}"><input type="checkbox" data-include="${attr(g.id)}" ${g.included ? 'checked' : ''} aria-label="${esc(t('include') + ': ' + g.name)}">${icon('check')}</label><button class="game-visual" data-detail="${attr(g.id)}" aria-label="${esc(t('details') + ': ' + g.name)}">${previewImage([image, g.media?.file && localMedia(g.media.file), g.selectedAsset?.url], 'game', g.name, g.sgdbId, g.steamAppId)}<span class="game-status ${attr(g.status)}">${esc(statusName(g))}</span><span class="game-source">${esc(g.media ? (g.media.animated ? t('animated') : t('still')) : g.installed ? t('installed') : t('manual'))}</span></button><div class="game-info"><h3 class="game-name">${esc(g.name)}</h3><div class="game-meta"><span>${esc(g.media ? authorName(g.media.author) : t('noMedia'))}</span><button class="text-button" data-detail="${attr(g.id)}" aria-label="${esc(t('details') + ': ' + g.name)}">${icon('arrow')}</button></div></div></article>`;
+  return `<article class="game-card"><label class="include-switch" title="${esc(t('include'))}"><input type="checkbox" data-include="${attr(g.id)}" ${g.included ? 'checked' : ''} aria-label="${esc(t('include') + ': ' + g.name)}">${icon('check')}</label><button class="game-visual" data-detail="${attr(g.id)}" aria-label="${esc(t('details') + ': ' + g.name)}">${previewImage([image, g.media?.file && localMedia(g.media.file), g.selectedAsset?.url], 'game', g.name, g.sgdbId, g.steamAppId)}<span class="game-status ${attr(g.status)}">${esc(statusName(g))}</span><span class="game-source">${esc(g.media ? (g.media.animated ? t('animated') : t('still')) : g.installed ? t('installed') : g.sources?.includes('account') ? t('ownedFilter') : t('manual'))}</span></button><div class="game-info"><h3 class="game-name">${esc(g.name)}</h3><div class="game-meta"><span>${esc(g.media ? authorName(g.media.author) : t('noMedia'))}</span><button class="text-button" data-detail="${attr(g.id)}" aria-label="${esc(t('details') + ': ' + g.name)}">${icon('arrow')}</button></div></div></article>`;
 }
 function libraryView() {
   let games = state.games.filter(
@@ -965,6 +1142,8 @@ function libraryView() {
         (filter === 'ready' && g.status === 'ready') ||
         (filter === 'needsAttention' && g.status !== 'ready') ||
         (filter === 'installedFilter' && g.installed) ||
+        (filter === 'notInstalledFilter' && !g.installed) ||
+        (filter === 'ownedFilter' && g.sources?.includes('account')) ||
         (filter === 'manualFilter' && g.sources?.includes('manual')) ||
         (filter === 'animatedFilter' && (g.media?.animated || g.selectedAsset?.animated)) ||
         (filter === 'missingFilter' &&
@@ -974,13 +1153,14 @@ function libraryView() {
         (filter === 'excludedFilter' && !g.included)) &&
       g.name.toLowerCase().includes(query.toLowerCase())
   );
-  return `${heading('libraryEyebrow', 'libraryTitle', 'librarySub', button(t('scanAgain'), 'scan', 'scan', false, scanning ? 'disabled' : '') + button(t('addGame'), 'add-game', 'plus', true))}${state.games.length ? keyBanner() : ''}<div class="toolbar"><div class="filter-pills" role="group" aria-label="${esc(t('library'))}">${['all', 'installedFilter', 'manualFilter', 'ready', 'animatedFilter', 'missingFilter', 'excludedFilter'].map((f) => `<button data-filter="${f}" class="${filter === f ? 'active' : ''}">${esc(t(f))}${f === 'all' ? ` <span>(${state.games.length})</span>` : ''}</button>`).join('')}</div><label class="search-field">${icon('search')}<span class="visually-hidden">${esc(t('filterPlaceholder'))}</span><input class="field" id="library-filter" placeholder="${esc(t('filterPlaceholder'))}" value="${attr(query)}"></label></div>${!state.games.length ? noLibrary() : games.length ? `<div class="game-grid">${games.map(gameCard).join('')}</div>` : empty(t('noFilter'), t('noFilterBody'), '', 'search')}${state.games.length ? `<div class="button-row" style="margin-top:24px">${button(t('prepareScenes'), 'prepare-all', 'prepare', true, !state.hasKey || !state.games.some((g) => g.included) ? 'disabled' : '')}</div>` : ''}`;
+  return `${heading('libraryEyebrow', 'libraryTitle', 'librarySub', button(t('scanAgain'), 'scan', 'scan', false, scanning ? 'disabled' : '') + button(t('importSteam'), 'open-steam-account', 'steam') + button(t('addGame'), 'add-game', 'plus', true))}${state.games.length ? keyBanner() : ''}<div class="toolbar"><div class="filter-pills" role="group" aria-label="${esc(t('library'))}">${['all', 'installedFilter', 'notInstalledFilter', 'ownedFilter', 'manualFilter', 'ready', 'animatedFilter', 'missingFilter', 'excludedFilter'].map((f) => `<button data-filter="${f}" class="${filter === f ? 'active' : ''}">${esc(t(f))}${f === 'all' ? ` <span>(${state.games.length})</span>` : ''}</button>`).join('')}</div><label class="search-field">${icon('search')}<span class="visually-hidden">${esc(t('filterPlaceholder'))}</span><input class="field" id="library-filter" placeholder="${esc(t('filterPlaceholder'))}" value="${attr(query)}"></label></div>${!state.games.length ? noLibrary() : games.length ? `<div class="game-grid">${games.map(gameCard).join('')}</div>` : empty(t('noFilter'), t('noFilterBody'), '', 'search')}${state.games.length ? `<div class="button-row" style="margin-top:24px">${button(t('prepareScenes'), 'prepare-all', 'prepare', true, !state.hasKey || !state.games.some((g) => g.included) ? 'disabled' : '')}</div>` : ''}`;
 }
 function preparationView() {
   const job = state.job,
     status = job.status || 'idle',
     included = state.games.filter((g) => g.included),
-    percent = job.total ? Math.min(100, Math.round((job.processed / job.total) * 100)) : 0,
+    overall = job.total ? Math.min(100, Math.round((job.processed / job.total) * 100)) : 0,
+    percent = Number.isFinite(job.progress) ? Math.round(job.progress * 100) : null,
     active = status === 'running' || status === 'paused',
     playable = readyGames().length,
     remaining = included.length - playable,
@@ -1009,7 +1189,7 @@ function preparationView() {
     typeof job.current === 'object'
       ? job.current?.name
       : state.games.find((g) => g.id === job.current)?.name || job.current;
-  return `${heading('prepareEyebrow', 'prepareTitle', 'prepareSub')}${keyBanner()}<section class="progress-panel" aria-live="polite"><div class="progress-title"><div><h2>${esc(t(partial ? 'jobPartialTitle' : { idle: 'jobIdle', running: 'jobRunning', paused: 'jobPaused', completed: 'jobCompleted', cancelled: 'jobCancelled' }[status] || 'jobIdle'))}</h2><p>${active ? `${current ? esc(current) + ' · ' : ''}${esc(t({ downloading: 'stageDownloading', validating: 'stageValidating', optimizing: 'stageOptimizing', saving: 'stageSaving', smoothing: 'stageSmoothing' }[job.stage] || 'unknownStage'))}` : esc(partial ? t('jobPartialBody').replace('{ready}', playable).replace('{pending}', remaining) : t(status === 'completed' ? 'jobCompletedBody' : 'jobIdleBody'))}</p></div><div class="progress-percent">${percent}<span style="font-size:15px">%</span></div></div><div class="progress-track" role="progressbar" aria-label="${esc(t('preparation'))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><div class="progress-fill" style="width:${percent}%"></div></div><div class="progress-foot"><span>${Number(job.processed) || 0} / ${Number(job.total) || 0} ${esc(t('processed'))} &nbsp;·&nbsp; ${esc(bytes(job.bytes))} ${esc(t('bytesDownloaded'))}</span><div class="button-row">${controls}</div></div></section>${playable && !active ? `<div class="banner">${icon('check')}<span>${playable} ${esc(t('readyScenes'))}</span><div class="button-row">${button(t('openPreview'), 'open-preview', 'preview')}${state.steam.detected ? button(t(state.steam.installed ? 'repair' : 'install'), state.steam.installed ? 'update-install' : 'install', 'prepare', true) : button(t('settings'), 'open-settings', 'settings')}</div></div>` : ''}${job.errors?.length ? `<div class="banner error">${icon('info')}<div>${esc(t('errors'))}<br>${job.errors.map((e) => esc(typeof e === 'string' ? e : e.message || e.error || JSON.stringify(e))).join('<br>')}</div></div>` : ''}${optionalIssues.length ? `<div class="banner" role="status">${icon('info')}<div>${optionalIssues.map(esc).join('<br>')}</div></div>` : ''}<div class="section-heading"><h2>${esc(t('queueTitle'))}</h2><span class="text-button">${included.length} ${esc(t('scenes'))}</span></div>${
+  return `${heading('prepareEyebrow', 'prepareTitle', 'prepareSub')}${keyBanner()}<section class="progress-panel" aria-live="polite"><div class="progress-title"><div><h2>${esc(t(partial ? 'jobPartialTitle' : { idle: 'jobIdle', running: 'jobRunning', paused: 'jobPaused', completed: 'jobCompleted', cancelled: 'jobCancelled' }[status] || 'jobIdle'))}</h2><p>${active ? `${current ? esc(current) + ' · ' : ''}${esc(phaseLabel(job.stage, job.detail))}` : esc(partial ? t('jobPartialBody').replace('{ready}', playable).replace('{pending}', remaining) : t(status === 'completed' ? 'jobCompletedBody' : 'jobIdleBody'))}</p></div><div class="progress-percent" aria-label="${esc(t('phaseProgress'))}">${percent === null ? '…' : percent}<span style="font-size:15px">${percent === null ? '' : '%'}</span><small>${esc(t('phaseProgress'))}</small></div></div><div class="progress-track" role="progressbar" aria-label="${esc(t('preparation'))}" aria-valuemin="0" aria-valuemax="100" ${percent === null ? 'aria-valuetext="' + esc(phaseLabel(job.stage)) + '"' : 'aria-valuenow="' + percent + '"'}><div class="progress-fill ${percent === null ? 'indeterminate' : ''}" style="width:${percent === null ? 35 : percent}%"></div></div><div class="progress-foot"><span>${esc(t('overallProgress'))} : ${overall}% · ${Number(job.processed) || 0} / ${Number(job.total) || 0} ${esc(t('processed'))} &nbsp;·&nbsp; ${esc(bytes(job.bytes))} ${esc(t('bytesDownloaded'))}</span><div class="button-row">${controls}</div></div>${jobActivity(job)}</section>${playable && !active ? `<div class="banner">${icon('check')}<span>${playable} ${esc(t('readyScenes'))}</span><div class="button-row">${button(t('openPreview'), 'open-preview', 'preview')}${state.steam.detected ? button(t(state.steam.installed ? 'repair' : 'install'), state.steam.installed ? 'update-install' : 'install', 'prepare', true) : button(t('settings'), 'open-settings', 'settings')}</div></div>` : ''}${job.errors?.length ? `<div class="banner error">${icon('info')}<div>${esc(t('errors'))}<br>${job.errors.map((e) => esc(typeof e === 'string' ? e : e.message || e.error || JSON.stringify(e))).join('<br>')}</div></div>` : ''}${optionalIssues.length ? `<div class="banner" role="status">${icon('info')}<div>${optionalIssues.map(esc).join('<br>')}</div></div>` : ''}<div class="section-heading"><h2>${esc(t('queueTitle'))}</h2><span class="text-button">${included.length} ${esc(t('scenes'))}</span></div>${
     included.length
       ? `<div class="queue-list">${included
           .map((g) => {
@@ -1059,7 +1239,22 @@ const panel = (title, ic, body) =>
 function settingsView() {
   const used = Number(state.storage.used) || 0,
     max = Number(state.settings.maxStorageGB) || 10;
-  return `${heading('settingsEyebrow', 'settingsTitle', 'settingsSub')}<div class="settings-layout"><div class="settings-stack">${panel('steamGridDb', 'key', `<p>${esc(t('keyBody'))}</p><form id="key-form"><div class="key-input"><input class="field" id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(state.hasKey ? 'replaceKey' : 'keyPlaceholder'))}" aria-label="${esc(t('keyPlaceholder'))}" required>${button(t('saveKey'), 'save-key', 'key', true, 'type="submit"')}</div></form><div class="button-row" style="align-items:center;margin:13px 0"><span style="font-size:10px;color:var(--muted)">${state.hasKey ? '✓ ' : ''}${esc(t(state.hasKey ? 'keySaved' : 'keyMissing'))}</span>${state.hasKey ? button(t('validateKey'), 'validateKey', 'check') : ''}</div><a class="key-link" href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">${esc(t('getKey'))} ↗</a>`)}${panel('playback', 'play', `<label class="setting-row"><span class="setting-row-label">${esc(t('language'))}</span><select class="field" data-setting="language"><option value="en" ${lang() === 'en' ? 'selected' : ''}>English</option><option value="fr" ${lang() === 'fr' ? 'selected' : ''}>Français</option></select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('sceneDuration'))}</span><small>${esc(t('durationHint'))}</small></span><input class="field" data-setting="sceneDuration" type="number" min="8" max="180" step="1" value="${Number(state.settings.sceneDuration)}" aria-label="${esc(t('sceneDuration'))}"></label>${toggle('shuffle', 'shuffle', 'shuffleHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('transition'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition === 'crossfade' || state.settings.transition === 'fade' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label>${toggle('showLogos', 'showLogos', 'logosHint')}${toggle('showCover', 'showCover', 'coverHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('coverPosition'))}</span><select class="field" data-setting="coverPosition">${coverPositionOptions()}</select></label>${toggle('smoothMotion', 'smoothMotion', 'smoothHint')}<label class="setting-row"><span><span class="setting-row-label">${esc(t('maxSmoothingMB'))}</span><small>${esc(t('smoothingSizeHint'))}</small></span><input class="field" data-setting="maxSmoothingMB" type="number" min="0" max="1000000" step="1" value="${Number(state.settings.maxSmoothingMB) || 0}" aria-label="${esc(t('maxSmoothingMB'))}"></label>${toggle('staticFallback', 'staticFallback', 'staticHint')}${toggle('reducedMotion', 'reducedMotion', 'motionHint')}${toggle('pauseOnGame', 'pauseOnGame', 'pauseHint')}`)}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
+  return `${heading('settingsEyebrow', 'settingsTitle', 'settingsSub')}<div class="settings-layout"><div class="settings-stack">${panel('steamGridDb', 'key', `<p>${esc(t('keyBody'))}</p><form id="key-form"><div class="key-input"><input class="field" id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(state.hasKey ? 'replaceKey' : 'keyPlaceholder'))}" aria-label="${esc(t('keyPlaceholder'))}" required>${button(t('saveKey'), 'save-key', 'key', true, 'type="submit"')}</div></form><div class="button-row" style="align-items:center;margin:13px 0"><span style="font-size:10px;color:var(--muted)">${state.hasKey ? '✓ ' : ''}${esc(t(state.hasKey ? 'keySaved' : 'keyMissing'))}</span>${state.hasKey ? button(t('validateKey'), 'validateKey', 'check') : ''}</div><a class="key-link" href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">${esc(t('getKey'))} ↗</a>`)}${steamAccountPanel()}${panel(
+    'playback',
+    'play',
+    `<label class="setting-row"><span class="setting-row-label">${esc(t('language'))}</span><select class="field" data-setting="language"><option value="en" ${lang() === 'en' ? 'selected' : ''}>English</option><option value="fr" ${lang() === 'fr' ? 'selected' : ''}>Français</option></select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('sceneDuration'))}</span><small>${esc(t('durationHint'))}</small></span><input class="field" data-setting="sceneDuration" type="number" min="8" max="180" step="1" value="${Number(state.settings.sceneDuration)}" aria-label="${esc(t('sceneDuration'))}"></label>${toggle('shuffle', 'shuffle', 'shuffleHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('transition'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition === 'crossfade' || state.settings.transition === 'fade' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label>${toggle('showLogos', 'showLogos', 'logosHint')}${toggle('showCover', 'showCover', 'coverHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('coverPosition'))}</span><select class="field" data-setting="coverPosition">${coverPositionOptions()}</select></label>${toggle('smoothMotion', 'smoothMotion', 'smoothHint')}<label class="setting-row"><span><span class="setting-row-label">${esc(t('smoothingMode'))}</span><small>${esc(t('smoothingModeHint'))}</small></span><select class="field" data-setting="smoothingMode">${[
+      ['fast', 'modeFast'],
+      ['quality', 'modeQuality'],
+      ['blend', 'modeBlend']
+    ]
+      .map(
+        ([v, k]) =>
+          `<option value="${v}" ${state.settings.smoothingMode === v ? 'selected' : ''}>${esc(t(k))}</option>`
+      )
+      .join(
+        ''
+      )}</select></label><label class="setting-row"><span class="setting-row-label">${esc(t('smoothingFps'))}</span><select class="field" data-setting="smoothingFps">${[24, 30].map((n) => `<option value="${n}" ${state.settings.smoothingFps === n ? 'selected' : ''}>${n} ${lang() === 'fr' ? 'i/s' : 'fps'}</option>`).join('')}</select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('maxSmoothingMB'))}</span><small>${esc(t('smoothingSizeHint'))}</small></span><input class="field" data-setting="maxSmoothingMB" type="number" min="0" max="1000000" step="1" value="${Number(state.settings.maxSmoothingMB) || 0}" aria-label="${esc(t('maxSmoothingMB'))}"></label>${toggle('staticFallback', 'staticFallback', 'staticHint')}${toggle('reducedMotion', 'reducedMotion', 'motionHint')}${toggle('pauseOnGame', 'pauseOnGame', 'pauseHint')}`
+  )}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
 }
 function render() {
   const active = document.activeElement;
@@ -1123,7 +1318,14 @@ function sendCatalog(force = false) {
     version: 1,
     games: readyGames().map((g) => {
       const media =
-        state.settings.smoothMotion && g.smoothed && g.smoothed.sha256 === g.media.sha256
+        state.settings.smoothMotion &&
+        g.smoothed &&
+        g.smoothed.sha256 === g.media.sha256 &&
+        ((g.smoothed.smoothingConfig?.fps === state.settings.smoothingFps &&
+          g.smoothed.smoothingConfig?.mode === state.settings.smoothingMode) ||
+          (!g.smoothed.smoothingConfig &&
+            state.settings.smoothingMode === 'quality' &&
+            state.settings.smoothingFps === 30))
           ? g.smoothed
           : g.media;
       return {
@@ -1395,6 +1597,27 @@ async function handleAction(action) {
     case 'cancel':
       if (confirm(t('confirmCancel'))) await run('cancel');
       break;
+    case 'open-steam-account':
+      navigate('settings');
+      document
+        .querySelector('#steam-account-settings')
+        ?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      break;
+    case 'import-steam': {
+      if (pending || importingSteam) break;
+      importingSteam = true;
+      render();
+      const result = await run('importSteamLibrary', {}, 'steamImportSuccess');
+      importingSteam = false;
+      if (result) {
+        filter = 'ownedFilter';
+        navigate('library');
+      } else render();
+      break;
+    }
+    case 'forget-steam-key':
+      await run('setSteamAccount', { key: '' }, 'steamAccountSaved');
+      break;
     case 'save-key':
       break;
     case 'validateKey': {
@@ -1519,6 +1742,19 @@ document.addEventListener('submit', async (event) => {
     event.preventDefault();
     await searchGames();
   }
+  if (event.target.id === 'steam-account-form') {
+    event.preventDefault();
+    const profile = document.querySelector('#steam-profile').value.trim();
+    const input = document.querySelector('#steam-api-key'),
+      key = input.value.trim();
+    const result = await run(
+      'setSteamAccount',
+      { profile, ...(key ? { key } : {}) },
+      'steamAccountSaved'
+    );
+    if (result !== undefined && document.querySelector('#steam-api-key'))
+      document.querySelector('#steam-api-key').value = '';
+  }
   if (event.target.id === 'key-form') {
     event.preventDefault();
     const input = document.querySelector('#api-key'),
@@ -1543,7 +1779,11 @@ document.addEventListener('change', async (event) => {
   }
   if (el.dataset.setting) {
     let value =
-      el.type === 'checkbox' ? el.checked : el.type === 'number' ? Number(el.value) : el.value;
+      el.type === 'checkbox'
+        ? el.checked
+        : el.type === 'number' || el.dataset.setting === 'smoothingFps'
+          ? Number(el.value)
+          : el.value;
     if (el.type === 'number' && (!el.checkValidity() || !Number.isFinite(value))) {
       el.reportValidity();
       return;
@@ -1655,7 +1895,7 @@ if (!connectionError) {
 setInterval(() => {
   if (!document.hidden && !document.querySelector('dialog[open]') && !pending && !scanning)
     refresh();
-}, 1800);
+}, 800);
 document.addEventListener('visibilitychange', () => {
   if (!document.hidden) refresh();
 });

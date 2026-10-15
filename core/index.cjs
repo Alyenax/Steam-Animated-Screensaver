@@ -2,6 +2,8 @@
 const fs = require('node:fs/promises');
 const constants = require('node:fs').constants;
 const path = require('node:path');
+const { smoothingMatches, smoothingConfig } = require('./smoothing.cjs');
+const { createSteamAccount, parseProfile } = require('./steam-account.cjs');
 const { scanSteam, isSteamGameRunning } = require('./scanner.cjs');
 const { createSGDB, positiveId } = require('./sgdb.cjs');
 const { atomicWrite, readJSON, acquireLock, storageBytes, safeFilename } = require('./store.cjs');
@@ -14,6 +16,8 @@ const defaults = {
   showCover: true,
   coverPosition: 'beside-title',
   smoothMotion: false,
+  smoothingFps: 30,
+  smoothingMode: 'fast',
   maxSmoothingMB: 0,
   staticFallback: false,
   reducedMotion: false,
@@ -30,7 +34,10 @@ function newJob() {
     stage: '',
     errors: [],
     bytes: 0,
-    progress: 0
+    progress: null,
+    history: [],
+    detail: {},
+    stageStartedAt: null
   };
 }
 function validateSettings(p, initial = false) {
@@ -63,6 +70,10 @@ function validateSettings(p, initial = false) {
     } else if (k === 'sceneDuration') {
       if (!Number.isFinite(v) || v < 8 || v > 180)
         throw new Error('Scene duration must be 8–180 seconds.');
+    } else if (k === 'smoothingFps') {
+      if (![24, 30].includes(v)) throw new Error('Choose 24 or 30 frames per second.');
+    } else if (k === 'smoothingMode') {
+      if (!['fast', 'quality', 'blend'].includes(v)) throw new Error('Invalid smoothing mode.');
     } else if (k === 'maxSmoothingMB') {
       if (!Number.isFinite(v) || v < 0 || v > 1000000)
         throw new Error('Video size limit must be 0 (no limit) or a value up to 1000000 MB.');
@@ -81,7 +92,9 @@ function cleanGame(g) {
     steamAppId: Number.isSafeInteger(g.steamAppId) && g.steamAppId > 0 ? g.steamAppId : null,
     sgdbId: Number.isSafeInteger(g.sgdbId) && g.sgdbId > 0 ? g.sgdbId : null,
     name: g.name.slice(0, 300),
-    sources: [...new Set((g.sources || []).filter((s) => ['installed', 'manual'].includes(s)))],
+    sources: [
+      ...new Set((g.sources || []).filter((s) => ['installed', 'manual', 'account'].includes(s)))
+    ],
     installed: !!g.installed,
     included: g.included !== false,
     status: ['new', 'ready', 'missing', 'error'].includes(g.status) ? g.status : 'new',
@@ -115,6 +128,7 @@ function createCore(options = {}) {
   const dataDir = path.resolve(options.dataDir);
   const catalogFile = path.join(dataDir, 'catalog.json');
   const keyFile = path.join(dataDir, 'steamgriddb.key');
+  const steamKeyFile = path.join(dataDir, 'steam-api.key');
   let state = {
     version: 1,
     games: [],
@@ -122,9 +136,11 @@ function createCore(options = {}) {
     job: newJob(),
     steam: { detected: false, roots: [], installed: false },
     storage: { used: 0 },
+    steamAccount: { profile: '', steamId: null, hasKey: false, lastImport: null, count: 0 },
     hasKey: false
   };
   let key = '',
+    steamKey = '',
     pending = [],
     runner = null,
     controller = null,
@@ -139,10 +155,13 @@ function createCore(options = {}) {
   const lifetime = new AbortController();
   const media = options.media || require('./media.cjs').createMedia({ dataDir });
   const sgdb = options.sgdb || createSGDB({ getKey: () => key, signal: lifetime.signal });
+  const steamAccount = options.steamAccount || createSteamAccount({ getKey: () => steamKey });
   const runningCheck = options.isGameRunning || isSteamGameRunning;
   function publicState() {
     const s = clone(state);
     s.job.pending = pending.length;
+    if (s.job.status === 'running' && s.job.stageStartedAt)
+      s.job.stageElapsed = Math.floor((Date.now() - s.job.stageStartedAt) / 1000);
     return s;
   }
   function save() {
@@ -154,7 +173,37 @@ function createCore(options = {}) {
   function safeError(error) {
     let value = String(error?.message || error || 'Operation failed.');
     if (key) value = value.split(key).join('[redacted]');
+    if (steamKey) value = value.split(steamKey).join('[redacted]');
     return value.slice(0, 500);
+  }
+  function jobProgress(p, force = false) {
+    if (!p || typeof p !== 'object') return;
+    const stage = String(p.stage || state.job.stage),
+      changed = stage !== state.job.stage;
+    const progress = Number.isFinite(p.progress) ? Math.max(0, Math.min(1, p.progress)) : null;
+    const previousBucket = Math.floor((state.job.progress ?? -1) * 10);
+    if (changed) state.job.stageStartedAt = Date.now();
+    state.job.stage = stage;
+    state.job.progress = progress;
+    state.job.detail = { ...p, stage: undefined, progress: undefined };
+    if (changed || force || (progress !== null && Math.floor(progress * 10) > previousBucket)) {
+      const game = state.games.find((g) => g.id === state.job.current);
+      state.job.history = [
+        ...(state.job.history || []),
+        {
+          at: Date.now(),
+          game: game?.name || null,
+          stage,
+          progress,
+          frames: p.frames,
+          totalFrames: p.totalFrames,
+          targetFps: p.targetFps,
+          mode: p.mode,
+          codec: p.codec,
+          message: p.message
+        }
+      ].slice(-250);
+    }
   }
   async function refreshStorage() {
     state.storage.used = await storageBytes(dataDir);
@@ -179,6 +228,17 @@ function createCore(options = {}) {
           .map(cleanGame)
           .filter(Boolean);
         state.settings = { ...defaults, ...validateSettings(saved.settings || {}, true) };
+        if (saved.settings?.smoothingMode === undefined && saved.settings?.smoothMotion)
+          state.settings.smoothingMode = 'quality';
+        if (saved.steamAccount && typeof saved.steamAccount.profile === 'string') {
+          state.steamAccount = {
+            ...state.steamAccount,
+            profile: saved.steamAccount.profile.slice(0, 200),
+            steamId: saved.steamAccount.steamId,
+            lastImport: saved.steamAccount.lastImport,
+            count: saved.steamAccount.count
+          };
+        }
         state.job = {
           ...newJob(),
           ...saved.job,
@@ -206,6 +266,21 @@ function createCore(options = {}) {
       } catch (e) {
         if (e.code !== 'ENOENT') throw new Error('The API key file could not be read safely.');
       }
+      try {
+        const handle = await fs.open(steamKeyFile, constants.O_RDONLY | constants.O_NOFOLLOW);
+        try {
+          if ((await handle.stat()).size > 128) throw new Error('Invalid Steam API key file.');
+          steamKey = (await handle.readFile('utf8')).trim();
+          if (steamKey && !/^[a-fA-F0-9]{32}$/.test(steamKey))
+            throw new Error('Invalid Steam API key file.');
+        } finally {
+          await handle.close();
+        }
+        await fs.chmod(steamKeyFile, 0o600);
+      } catch (error) {
+        if (error.code !== 'ENOENT') throw new Error('The Steam API key could not be read safely.');
+      }
+      state.steamAccount.hasKey = !!steamKey;
       state.hasKey = !!key;
       await refreshStorage();
       await save();
@@ -274,6 +349,7 @@ function createCore(options = {}) {
   async function enrichMedia(g, signal) {
     if (state.settings.showCover && sgdb.covers) {
       try {
+        jobProgress({ stage: 'cover-check' });
         if (
           !g.cover ||
           g.cover.animated !== false ||
@@ -292,6 +368,7 @@ function createCore(options = {}) {
               const cover = await media.prepare(asset, {
                 signal,
                 requireStatic: true,
+                onProgress: (p) => jobProgress({ ...p, stage: 'cover-prepare' }),
                 maxBytes: await optionalBudget(12 * 1024 * 1024)
               });
               if (cover.animated !== false || !(await media.validate(cover, { signal })))
@@ -315,6 +392,7 @@ function createCore(options = {}) {
       try {
         if (
           !g.smoothed ||
+          !smoothingMatches(g.smoothed, state.settings) ||
           g.smoothed.sha256 !== g.media.sha256 ||
           !(await media.validate(g.smoothed, { signal })) ||
           (state.settings.maxSmoothingMB > 0 &&
@@ -322,10 +400,15 @@ function createCore(options = {}) {
               state.settings.maxSmoothingMB * 1024 * 1024)
         ) {
           g.smoothed = null;
-          state.job.stage = 'smoothing';
+          jobProgress({ stage: 'smoothing-inspect' });
           await save();
+          const smoothingSettings = { ...state.settings };
           const smoothed = await media.smooth(g.media, {
             signal,
+            settings: smoothingSettings,
+            onProgress: (p) => {
+              if (!signal.aborted) jobProgress(p);
+            },
             maxBytes: await optionalBudget(
               state.settings.maxSmoothingMB > 0
                 ? state.settings.maxSmoothingMB * 1024 * 1024
@@ -334,12 +417,13 @@ function createCore(options = {}) {
           });
           if (!(await media.validate(smoothed, { signal })))
             throw new Error('Smoothed media failed final validation.');
-          g.smoothed = smoothed;
+          g.smoothed = { ...smoothed, smoothingConfig: smoothingConfig(smoothingSettings) };
         }
         delete g.smoothingError;
       } catch (error) {
         if (signal.aborted) throw error;
         g.smoothingError = safeError(error);
+        jobProgress({ stage: 'smoothing-error', message: g.smoothingError }, true);
       }
     }
   }
@@ -350,7 +434,7 @@ function createCore(options = {}) {
           autoPaused = true;
           state.job.status = 'paused';
           state.job.pauseReason = 'game';
-          state.job.stage = 'Paused while a Steam game is running.';
+          jobProgress({ stage: 'paused-game' }, true);
           await save();
           break;
         }
@@ -365,8 +449,7 @@ function createCore(options = {}) {
           continue;
         }
         state.job.current = id;
-        state.job.progress = 0;
-        state.job.stage = 'Checking local media';
+        jobProgress({ stage: 'checking-local' }, true);
         await save();
         try {
           if (!g.sgdbId && g.steamAppId && state.games.some((old) => old.sgdbId && !old.steamAppId))
@@ -381,7 +464,7 @@ function createCore(options = {}) {
             g.status = 'ready';
             delete g.error;
           } else {
-            state.job.stage = 'Finding animated artwork';
+            jobProgress({ stage: 'finding-artwork' });
             await save();
             let candidates =
               g.manualSelection && g.selectedAsset
@@ -414,7 +497,7 @@ function createCore(options = {}) {
                   throw new Error(
                     'Not enough free disk space. Free at least 128 MB before preparing.'
                   );
-                state.job.stage = 'Downloading artwork';
+                jobProgress({ stage: 'downloading', progress: 0 });
                 await save();
                 const downloadedBefore = state.job.bytes;
                 try {
@@ -423,17 +506,17 @@ function createCore(options = {}) {
                     maxBytes: Math.min(remaining, free - 64 * 1024 * 1024),
                     onProgress: (p) => {
                       if (state.job.current !== id) return;
-                      if (typeof p === 'string') state.job.stage = p;
+                      if (typeof p === 'string') jobProgress({ stage: p });
                       else if (p) {
-                        state.job.stage = p.stage || state.job.stage;
-                        state.job.progress = Number.isFinite(p.progress)
-                          ? p.progress
-                          : p.total > 0
-                            ? Math.min(1, p.bytes / p.total)
-                            : state.job.progress;
-                        state.job.bytes = Number.isFinite(p.bytes)
-                          ? downloadedBefore + p.bytes
-                          : state.job.bytes;
+                        jobProgress({
+                          ...p,
+                          progress: Number.isFinite(p.progress)
+                            ? p.progress
+                            : p.total > 0
+                              ? p.bytes / p.total
+                              : null
+                        });
+                        if (Number.isFinite(p.bytes)) state.job.bytes = downloadedBefore + p.bytes;
                       }
                     }
                   });
@@ -481,7 +564,7 @@ function createCore(options = {}) {
           if (signal.aborted) throw signal.reason || new Error('Preparation paused.');
           pending.shift();
           state.job.processed++;
-          state.job.progress = 1;
+          jobProgress({ stage: g.status === 'ready' ? 'game-ready' : 'game-missing', progress: 1 });
           await save();
         } catch (e) {
           if (signal.aborted) {
@@ -491,6 +574,7 @@ function createCore(options = {}) {
           g.status = 'error';
           g.error = safeError(e);
           state.job.errors.push({ id, message: g.error });
+          jobProgress({ stage: 'game-error', message: g.error }, true);
           pending.shift();
           state.job.processed++;
           await save();
@@ -501,7 +585,7 @@ function createCore(options = {}) {
       if (!pending.length && state.job.status === 'running') {
         state.job.status = 'completed';
         state.job.current = null;
-        state.job.stage = 'Library preparation complete';
+        jobProgress({ stage: 'completed', progress: 1 }, true);
         await save();
       }
     } catch (e) {
@@ -529,6 +613,7 @@ function createCore(options = {}) {
       pending = [];
       state.job.stage = 'Preparation cancelled';
     } else state.job.stage = 'Preparation paused';
+    jobProgress({ stage: status }, true);
     await save();
   }
   const monitor = setInterval(async () => {
@@ -544,7 +629,7 @@ function createCore(options = {}) {
         state.job.pauseReason = 'game';
         controller?.abort(new Error('Paused while a Steam game is running.'));
         if (runner) await runner;
-        state.job.stage = 'Paused while a Steam game is running.';
+        jobProgress({ stage: 'paused-game' }, true);
         await save();
       } else if (!playing && autoPaused && state.job.status === 'paused') {
         autoPaused = false;
@@ -565,6 +650,61 @@ function createCore(options = {}) {
     if (!p || typeof p !== 'object' || Array.isArray(p)) throw new Error('Invalid action payload.');
     if (action === 'state') return publicState();
     if (runner && state.job.status === 'completed') await runner;
+    if (action === 'setSteamAccount') {
+      const profile = String(p.profile ?? state.steamAccount.profile).trim();
+      if (profile) parseProfile(profile);
+      if (p.key !== undefined) {
+        const next = String(p.key).trim();
+        if (next && !/^[a-fA-F0-9]{32}$/.test(next))
+          throw new Error('Enter a 32-character Steam Web API key.');
+        if (next) await atomicWrite(steamKeyFile, next + '\n');
+        else await fs.rm(steamKeyFile, { force: true });
+        steamKey = next;
+      }
+      state.steamAccount.profile = profile;
+      state.steamAccount.hasKey = !!steamKey;
+      await save();
+      return publicState();
+    }
+    if (action === 'importSteamLibrary') {
+      if (runner) throw new Error('Pause preparation before importing your Steam library.');
+      const result = await steamAccount.owned(state.steamAccount.profile, {
+        signal: lifetime.signal
+      });
+      const owned = new Set(result.games.map((g) => g.steamAppId));
+      for (const game of state.games)
+        if (!owned.has(game.steamAppId)) game.sources = game.sources.filter((s) => s !== 'account');
+      let added = 0;
+      const byAppId = new Map(
+        state.games.filter((g) => g.steamAppId).map((g) => [g.steamAppId, g])
+      );
+      for (const game of result.games) {
+        const existing = byAppId.get(game.steamAppId);
+        if (existing) existing.sources = [...new Set([...existing.sources, 'account'])];
+        else {
+          state.games.push(
+            cleanGame({
+              ...game,
+              id: `steam:${game.steamAppId}`,
+              sources: ['account'],
+              installed: false,
+              included: false,
+              status: 'new'
+            })
+          );
+          added++;
+        }
+      }
+      state.steamAccount = {
+        ...state.steamAccount,
+        steamId: result.steamId,
+        lastImport: new Date().toISOString(),
+        count: result.games.length,
+        added
+      };
+      await save();
+      return publicState();
+    }
     if (action === 'setKey') {
       const next = String(p.key || '').trim();
       if (next && !/^[A-Za-z0-9_-]{16,256}$/.test(next))

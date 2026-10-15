@@ -4,7 +4,7 @@
 
 - Linux x86_64, graphical Desktop Mode, current Steam client supporting custom screensavers.
 - User-space writable home directory, working Chromium sandbox/user namespaces, and the GTK/NSS/GBM/audio libraries expected by Electron. The package bundles Chromium but does not claim to bundle an entire Linux userspace.
-- Internet and one personal SteamGridDB key for discovery/preparation. Playback needs neither.
+- Internet and one personal SteamGridDB key for discovery/preparation. An optional separate Steam Web API key imports owned games, including non-installed ones, directly without a hosted service. Playback needs neither.
 - Space for the application, cached source media, thumbnails, and an installed playback copy. Cache defaults to a configurable 10 GB maximum; Steam's installed snapshot occupies additional space.
 
 The installer does not install system libraries, bypass the sandbox, request root, modify the immutable system partition, or auto-start a daemon. If startup fails, run the executable from a terminal and preserve the diagnostic. Do not add `--no-sandbox` as a routine workaround. Actual SteamOS and Linux runtime testing are still required.

@@ -33,6 +33,25 @@ async function run() {
     await page.locator('[data-route="preview"]').first().waitFor();
     assert.equal(await page.title(), 'SteamOS Animated Screensaver');
     assert.equal(await page.locator('.local-badge').count(), 0);
+    const accountCheck = await page.evaluate(async () => {
+      await window.cinema.invoke('setSteamAccount', {
+        profile: '76561198000000000',
+        key: '0123456789abcdef'.repeat(2)
+      });
+      const saved = await window.cinema.invoke('state');
+      await window.cinema.invoke('setSteamAccount', { key: '' });
+      const removed = await window.cinema.invoke('state');
+      await window.cinema.invoke('settings', { smoothingFps: 24, smoothingMode: 'blend' });
+      const configured = await window.cinema.invoke('state');
+      return {
+        saved: saved.steamAccount.hasKey,
+        removed: removed.steamAccount.hasKey,
+        fps: configured.settings.smoothingFps,
+        mode: configured.settings.smoothingMode
+      };
+    });
+    assert.deepEqual(accountCheck, { saved: true, removed: false, fps: 24, mode: 'blend' });
+    await assert.rejects(fs.stat(path.join(fixture.dataDir, 'steam-api.key')), { code: 'ENOENT' });
     const normalizedImage = await page.evaluate(async () => {
       const state = await window.cinema.invoke('state');
       return window.cinema.invoke('previewImage', { file: state.games[0].media.file });
@@ -98,9 +117,10 @@ async function run() {
     await frame.waitForFunction(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
-    await frame.waitForFunction(
-      () => getComputedStyle(document.querySelector('.scene.visible')).opacity === '1'
-    );
+    await frame.waitForFunction(() => {
+      const scene = document.querySelector('.scene.visible');
+      return !!scene && getComputedStyle(scene).opacity === '1';
+    });
     assert.equal(
       await frame
         .locator('video')
@@ -130,6 +150,7 @@ async function run() {
           checks: [
             'Actual app:// protocol media playback',
             'Native image-preview IPC and JPEG decoding',
+            'Native Steam key save/removal and 24 fps profile settings IPC',
             'Full product name and no Local-first badge',
             'Real Electron preview pause',
             'Sender/action restrictions',

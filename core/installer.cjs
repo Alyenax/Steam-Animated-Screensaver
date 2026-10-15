@@ -2,6 +2,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { smoothingMatches } = require('./smoothing.cjs');
 // Steam maps installed screensaver directories to virtual HTTPS host names.
 // Keep this filesystem identifier a valid lower-case DNS label; the UI title is separate.
 const NAME = 'steamos-animated-screensaver';
@@ -117,7 +118,8 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
           media:
             settings.smoothMotion &&
             original.smoothed &&
-            original.smoothed.sha256 === original.media.sha256
+            original.smoothed.sha256 === original.media.sha256 &&
+            smoothingMatches(original.smoothed, settings)
               ? original.smoothed
               : original.media
         };

@@ -43,6 +43,8 @@ const actions = new Set([
   'retry',
   'settings',
   'setKey',
+  'setSteamAccount',
+  'importSteamLibrary',
   'validateKey',
   'clearUnused',
   'repair',
@@ -76,9 +78,12 @@ function createWindow() {
         !target.username &&
         !target.password &&
         !target.port &&
-        ['www.steamgriddb.com', 'cdn.steamgriddb.com', 'cdn2.steamgriddb.com'].includes(
-          target.hostname
-        )
+        [
+          'www.steamgriddb.com',
+          'cdn.steamgriddb.com',
+          'cdn2.steamgriddb.com',
+          'steamcommunity.com'
+        ].includes(target.hostname)
       )
         shell.openExternal(target.href);
     } catch {}
