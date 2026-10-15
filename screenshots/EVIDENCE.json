@@ -1,0 +1,19 @@
+{
+  "fixture": "Original self-authored QA media. Mocked SGDB search/artwork responses. No personal key or third-party artwork.",
+  "checks": [
+    "First-run onboarding and automatic Steam scan, no fake library",
+    "Manual search disambiguates two mocked homonyms; explicit Add updates unified catalog",
+    "Live preparation, real progress, pause persisted",
+    "Resume completes media preparation with real FFmpeg",
+    "Manager preview uses real offline media and pauses",
+    "Fullscreen entry and immediate Escape exit",
+    "Screensaver install from actual Settings into isolated Steam fixture",
+    "Update/Repair publishes changed settings and catalog",
+    "Export plays directly over file:// with zero HTTP requests and no manager dependency",
+    "All five spaces at 1280, 800, 390 px in English and French without horizontal overflow",
+    "No uncaught browser errors",
+    "Screensaver removal leaves catalog/media intact"
+  ],
+  "consoleErrors": [],
+  "preparedFiles": 4
+}

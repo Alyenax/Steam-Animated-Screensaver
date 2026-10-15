@@ -1,0 +1,344 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs/promises');
+const { existsSync } = require('node:fs');
+const path = require('node:path');
+const os = require('node:os');
+const http = require('node:http');
+const { spawnSync } = require('node:child_process');
+const { pathToFileURL } = require('node:url');
+const { install } = require('../core/installer.cjs');
+let chromium, ffmpeg;
+try {
+  chromium = require('playwright').chromium;
+  ffmpeg = require('ffmpeg-static');
+} catch {}
+const browserPath =
+  process.env.CINEMA_TEST_BROWSER ||
+  (chromium && existsSync(chromium.executablePath())
+    ? chromium.executablePath()
+    : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome');
+test(
+  'real browser plays offline, skips bad media, bounds decoders, pauses, resizes and destroys',
+  { skip: !chromium || !ffmpeg || !existsSync(browserPath), timeout: 30000 },
+  async (t) => {
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-player-browser-'));
+    t.after(() => fs.rm(root, { recursive: true, force: true }));
+    for (const [name, args] of [
+      [
+        'scene.webm',
+        [
+          '-f',
+          'lavfi',
+          '-i',
+          'testsrc=size=160x90:rate=12:duration=2',
+          '-c:v',
+          'libvpx-vp9',
+          '-pix_fmt',
+          'yuv420p'
+        ]
+      ],
+      ['scene.gif', ['-f', 'lavfi', '-i', 'testsrc=size=160x90:rate=8:duration=2']],
+      [
+        'scene.webp',
+        [
+          '-f',
+          'lavfi',
+          '-i',
+          'testsrc=size=160x90:rate=8:duration=2',
+          '-c:v',
+          'libwebp_anim',
+          '-loop',
+          '0'
+        ]
+      ],
+      ['thumb.jpg', ['-f', 'lavfi', '-i', 'color=navy:size=160x90', '-frames:v', '1']]
+    ]) {
+      const r = spawnSync(ffmpeg, ['-v', 'error', ...args, '-y', path.join(root, name)]);
+      assert.equal(r.status, 0, r.stderr.toString());
+    }
+    const playerRoot = path.join(__dirname, '..', 'player');
+    const server = http.createServer(async (req, res) => {
+      try {
+        const u = new URL(req.url, 'http://localhost'),
+          p = u.pathname;
+        if (p === '/preview.html') {
+          res.setHeader('content-type', 'text/html');
+          res.end(
+            '<!doctype html><iframe title="preview" src="/player/index.html" style="position:fixed;inset:0;width:100%;height:100%;border:0"></iframe>'
+          );
+          return;
+        }
+        if (p === '/player/catalog.js') {
+          res.setHeader('content-type', 'text/javascript');
+          res.end('window.CINEMA_CATALOG={version:1,games:[],settings:{}};');
+          return;
+        }
+        const files = {
+          '/player/index.html': ['index.html', 'text/html'],
+          '/player/player.js': ['player.js', 'text/javascript'],
+          '/player/player.css': ['player.css', 'text/css'],
+          '/media/scene.webm': [path.join(root, 'scene.webm'), 'video/webm'],
+          '/media/thumb.jpg': [path.join(root, 'thumb.jpg'), 'image/jpeg'],
+          '/media/scene.gif': [path.join(root, 'scene.gif'), 'image/gif'],
+          '/media/scene.webp': [path.join(root, 'scene.webp'), 'image/webp']
+        };
+        const item = files[p];
+        if (!item) {
+          res.writeHead(404);
+          res.end();
+          return;
+        }
+        res.setHeader('content-type', item[1]);
+        res.end(
+          await fs.readFile(path.isAbsolute(item[0]) ? item[0] : path.join(playerRoot, item[0]))
+        );
+      } catch {
+        res.writeHead(500);
+        res.end();
+      }
+    });
+    await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+    t.after(() => new Promise((resolve) => server.close(resolve)));
+    const origin = `http://127.0.0.1:${server.address().port}`;
+    const browser = await chromium.launch({
+      executablePath: browserPath,
+      headless: true,
+      args: ['--autoplay-policy=no-user-gesture-required']
+    });
+    t.after(() => browser.close());
+    const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
+    const requests = [];
+    page.on('request', (r) => requests.push(r.url()));
+    await page.goto(`${origin}/preview.html`);
+    const frame = page.frames().find((f) => f.url().includes('/player/index.html'));
+    await frame.waitForFunction(() => !!window.CinemaPlayer);
+    assert.equal(await frame.locator('#empty').isVisible(), true);
+    const makeGame = (id, media = '/media/scene.webm') => ({
+      id,
+      name: `Game ${id}`,
+      included: true,
+      status: 'ready',
+      media: {
+        file: media,
+        thumbnail: '/media/thumb.jpg',
+        format: 'webm',
+        animated: true,
+        author: { name: 'Test artist' }
+      }
+    });
+    const send = async (data) =>
+      page.evaluate(
+        (data) =>
+          document
+            .querySelector('iframe')
+            .contentWindow.postMessage({ type: 'cinema', ...data }, location.origin),
+        data
+      );
+    await send({
+      action: 'catalog',
+      catalog: {
+        version: 1,
+        games: [makeGame('one'), makeGame('two'), makeGame('three')],
+        settings: { shuffle: false, sceneDuration: 8, reducedMotion: true }
+      }
+    });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible video')?.currentTime > 0.1
+    );
+    assert.equal(await frame.locator('#empty').isVisible(), false);
+    await send({ action: 'pause' });
+    await frame.waitForFunction(() => document.querySelector('video').paused);
+    const paused = await frame.locator('video').evaluate((v) => v.currentTime);
+    await page.waitForTimeout(180);
+    assert(Math.abs((await frame.locator('video').evaluate((v) => v.currentTime)) - paused) < 0.05);
+    await send({ action: 'next' });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible h1')?.textContent === 'Game two'
+    );
+    await send({ action: 'previous' });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible h1')?.textContent === 'Game one'
+    );
+    await send({ action: 'settings', settings: { reducedMotion: false, transition: 'crossfade' } });
+    await send({ action: 'next' });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible h1')?.textContent === 'Game two'
+    );
+    assert((await frame.locator('video').count()) <= 2);
+    await page.waitForTimeout(1300);
+    assert.equal(await frame.locator('video').count(), 1);
+    await send({ action: 'settings', settings: { transition: 'fade-black' } });
+    await send({ action: 'next' });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible h1')?.textContent === 'Game three'
+    );
+    assert((await frame.locator('video').count()) <= 2);
+    await page.waitForTimeout(1300);
+    assert.equal(await frame.locator('video').count(), 1);
+    await send({ action: 'settings', settings: { reducedMotion: true } });
+    // Rapid preview navigation must release pending decoders as well as retiring scenes.
+    for (let i = 0; i < 12; i++) await send({ action: 'next' });
+    assert((await frame.locator('video').count()) <= 2);
+    await send({ action: 'play' });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible video')?.paused === false
+    );
+    await page.setViewportSize({ width: 800, height: 1280 });
+    assert.equal(
+      await frame
+        .locator('.scene.visible .artwork')
+        .evaluate((el) => getComputedStyle(el).objectFit),
+      'contain'
+    );
+    await send({
+      action: 'catalog',
+      catalog: {
+        version: 1,
+        games: [makeGame('broken', '/media/missing.webm'), makeGame('working')],
+        settings: { shuffle: false, reducedMotion: true }
+      }
+    });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible h1')?.textContent === 'Game working'
+    );
+    await send({
+      action: 'catalog',
+      catalog: {
+        version: 1,
+        games: [makeGame('broken', '/media/missing.webm')],
+        settings: { shuffle: false }
+      }
+    });
+    await frame.waitForFunction(() => !document.querySelector('#empty').hidden);
+    assert.match(await frame.locator('#empty h1').textContent(), /unavailable/);
+    const staticGame = makeGame('static', '/media/thumb.jpg');
+    staticGame.media.format = 'jpg';
+    staticGame.media.animated = false;
+    await send({
+      action: 'catalog',
+      catalog: {
+        version: 1,
+        games: [staticGame],
+        settings: { shuffle: false, staticFallback: true, reducedMotion: false }
+      }
+    });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible img.artwork')?.naturalWidth > 0
+    );
+    await send({ action: 'pause' });
+    await frame.waitForFunction(
+      () =>
+        getComputedStyle(document.querySelector('.scene.visible .artwork')).animationPlayState ===
+        'paused'
+    );
+    const pausedTransform = await frame
+      .locator('.scene.visible .artwork')
+      .evaluate((el) => getComputedStyle(el).transform);
+    await page.waitForTimeout(180);
+    assert.equal(
+      await frame
+        .locator('.scene.visible .artwork')
+        .evaluate((el) => getComputedStyle(el).transform),
+      pausedTransform
+    );
+    await send({ action: 'play' });
+    await frame.waitForFunction(
+      () =>
+        getComputedStyle(document.querySelector('.scene.visible .artwork')).animationPlayState ===
+        'running'
+    );
+    // Native GIF/WebP animation must really stop, not merely pause playlist rotation.
+    for (const format of ['gif', 'webp']) {
+      const game = makeGame(`native-${format}`, `/media/scene.${format}`);
+      game.media.format = format;
+      await send({
+        action: 'catalog',
+        catalog: { version: 1, games: [game], settings: { shuffle: false, reducedMotion: true } }
+      });
+      await frame.waitForFunction(
+        () => document.querySelector('.scene.visible img.artwork')?.naturalWidth > 0
+      );
+      const movingA = await frame.locator('#stage').screenshot();
+      await page.waitForTimeout(350);
+      const movingB = await frame.locator('#stage').screenshot();
+      assert(!movingA.equals(movingB), `${format} must animate before pause`);
+      await send({ action: 'pause' });
+      await frame.waitForFunction(
+        () =>
+          document.querySelectorAll('.frozen-artwork').length === 1 &&
+          !document.querySelector('img.artwork').hasAttribute('src')
+      );
+      const stillA = await frame.locator('#stage').screenshot();
+      await page.waitForTimeout(420);
+      const stillB = await frame.locator('#stage').screenshot();
+      assert(stillA.equals(stillB), `${format} pixels must remain identical while paused`);
+      assert.equal(await frame.locator('#empty').isVisible(), false);
+      await send({ action: 'play' });
+      await frame.waitForFunction(
+        () =>
+          document.querySelectorAll('.frozen-artwork').length === 0 &&
+          document.querySelector('img.artwork')?.naturalWidth > 0
+      );
+      const resumedA = await frame.locator('#stage').screenshot();
+      await page.waitForTimeout(350);
+      const resumedB = await frame.locator('#stage').screenshot();
+      assert(!resumedA.equals(resumedB), `${format} must animate after resume`);
+      for (let i = 0; i < 3; i++) {
+        await send({ action: 'pause' });
+        await frame.waitForFunction(
+          () => document.querySelectorAll('.frozen-artwork').length === 1
+        );
+        await send({ action: 'play' });
+        await frame.waitForFunction(
+          () => document.querySelectorAll('.frozen-artwork').length === 0
+        );
+      }
+    }
+    await send({ action: 'pause' });
+    await frame.waitForFunction(() => document.querySelectorAll('.frozen-artwork').length === 1);
+    assert(
+      requests.every((u) => u.startsWith(origin)),
+      JSON.stringify(requests)
+    );
+    await frame.evaluate(() => window.CinemaPlayer.destroy());
+    assert.equal(await frame.locator('video').count(), 0);
+    assert.equal(await frame.locator('.scene').count(), 0);
+    assert.equal(await frame.locator('canvas').count(), 0);
+    // Exercise the actual installer and direct file:// host, with no HTTP server dependencies.
+    const dataDir = path.join(root, 'offline-data'),
+      steamRoot = path.join(root, 'steam');
+    await fs.mkdir(path.join(dataDir, 'media'), { recursive: true });
+    await fs.mkdir(steamRoot);
+    for (const file of ['scene.webm', 'thumb.jpg'])
+      await fs.copyFile(path.join(root, file), path.join(dataDir, 'media', file));
+    const game = makeGame('offline');
+    game.media.file = 'scene.webm';
+    game.media.thumbnail = 'thumb.jpg';
+    const installed = await install({
+      dataDir,
+      steamRoot,
+      games: [game],
+      settings: { shuffle: false, reducedMotion: true }
+    });
+    const offlinePage = await browser.newPage();
+    await offlinePage.bringToFront();
+    offlinePage.setDefaultTimeout(8000);
+    const offlineRequests = [];
+    offlinePage.on('request', (r) => offlineRequests.push(r.url()));
+    await offlinePage.goto(pathToFileURL(path.join(installed.path, 'index.html')).href);
+    await offlinePage.waitForFunction(
+      () => document.querySelector('.scene.visible video')?.currentTime > 0.1,
+      {},
+      { timeout: 8000 }
+    );
+    assert.equal(await offlinePage.locator('#empty').isVisible(), false);
+    assert(
+      offlineRequests.every((u) => u.startsWith('file://')),
+      JSON.stringify(offlineRequests)
+    );
+    assert.equal(await offlinePage.locator('video').evaluate((v) => v.error), null);
+    await offlinePage.close();
+  }
+);

@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' app:; media-src 'self' app:; connect-src 'none'; font-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+    <title>SteamOS Animated Screensaver</title>
+    <link rel="stylesheet" href="player.css" />
+  </head>
+  <body>
+    <main id="stage" aria-label="Animated game artwork"></main>
+    <div id="empty" role="status">
+      <span class="spark">✧</span>
+      <h1>Bring your library to life.</h1>
+      <p>Prepare your favorite game animations in the Manager.</p>
+    </div>
+    <script src="catalog.js"></script>
+    <script src="player.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1403 @@
+const icons = {
+  film: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4m10 0h4M3 15h4m10 0h4"/>',
+  home: '<path d="m3 10 9-7 9 7v10H3zM9 20v-7h6v7"/>',
+  library:
+    '<rect x="3" y="5" width="5" height="15" rx="1"/><rect x="11" y="5" width="5" height="15" rx="1"/><path d="m18 5 3 14"/>',
+  prepare: '<path d="M12 3v12m-4-4 4 4 4-4M4 16v5h16v-5"/>',
+  preview:
+    '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="m10 8 5 3-5 3zM8 21h8m-4-4v4"/>',
+  settings:
+    '<path d="m9 3-1 3-3 1-2 5 2 5 3 1 1 3h6l1-3 3-1 2-5-2-5-3-1-1-3z"/><circle cx="12" cy="12" r="3"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  arrow: '<path d="M4 12h15m-5-5 5 5-5 5"/>',
+  scan: '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/><path d="M7 12h10"/>',
+  check: '<path d="m5 12 4 4L19 6"/>',
+  close: '<path d="m6 6 12 12M6 18 18 6"/>',
+  search: '<circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/>',
+  shield: '<path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/><path d="m8 12 3 3 5-6"/>',
+  play: '<path d="m8 4 12 8-12 8z"/>',
+  pause: '<path d="M8 4v16M16 4v16"/>',
+  previous: '<path d="M5 5v14m14-14L7 12l12 7z"/>',
+  next: '<path d="M19 5v14M5 5l12 7-12 7z"/>',
+  fullscreen: '<path d="M8 3H3v5m13-5h5v5M3 16v5h5m13-5v5h-5"/>',
+  key: '<circle cx="8" cy="9" r="5"/><path d="m12 13 8 8m-4-4 3-3m-6 0 3-3"/>',
+  drive: '<path d="M5 4h14l3 12v4H2v-4zM2 16h20M17 18h2"/>',
+  info: '<circle cx="12" cy="12" r="9"/><path d="M12 11v6m0-10v.1"/>',
+  globe:
+    '<circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/>',
+  external: '<path d="M14 3h7v7m0-7L10 14M11 5H4v15h15v-7"/>',
+  refresh: '<path d="M20 7v5h-5M4 17v-5h5"/><path d="M6 6a8 8 0 0 1 14 6M4 12a8 8 0 0 0 14 6"/>',
+  trash: '<path d="M3 6h18M9 6V3h6v3M5 6l1 15h12l1-15M10 10v7m4-7v7"/>',
+  image:
+    '<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8" cy="8" r="1"/><path d="m3 17 6-6 4 4 3-3 5 5"/>',
+  stop: '<rect x="5" y="5" width="14" height="14" rx="1"/>'
+};
+const icon = (name) =>
+  `<svg viewBox="0 0 24 24" aria-hidden="true">${icons[name] || icons.film}</svg>`;
+const translations = {
+  en: {
+    home: 'Home',
+    library: 'Library',
+    preparation: 'Preparation',
+    preview: 'Preview',
+    settings: 'Settings',
+    local: 'LOCAL-FIRST BY DESIGN',
+    tagline: 'STEAMOS ANIMATED SCREENSAVER',
+    connected: 'Steam library detected',
+    notDetected: 'Steam not detected',
+    sidebarFoot: 'Made for the moments between games.\nPowered by SteamGridDB.',
+    collection: 'YOUR GAMES. ANOTHER PERSPECTIVE.',
+    homeTitle: 'Your Steam Library. Beautifully Alive.',
+    homeSub: 'A cinematic screensaver, built from the games you love.',
+    addGame: 'Add a game',
+    heroEyebrow: 'THE INTERMISSION, REIMAGINED',
+    heroTitle: 'Great games deserve\na beautiful intermission.',
+    heroBody:
+      'Turn your Steam library into an ever-changing collection of animated artwork. Curated by you. Played entirely offline.',
+    discover: 'Build your collection',
+    openPreview: 'Open preview',
+    libraryGames: 'Games in your library',
+    readyScenes: 'Scenes ready to play',
+    includedGames: 'Included games',
+    storageUsed: 'Local storage used',
+    collectionTitle: 'Your collection',
+    viewAll: 'View library',
+    emptyTitle: 'Your next scene starts here.',
+    emptyBody:
+      'We look for games installed on this device. You can also add any title from SteamGridDB, whether you own it here or elsewhere.',
+    scan: 'Scan Steam library',
+    scanAgain: 'Scan again',
+    scanning: 'Scanning Steam libraries…',
+    step1: 'Find your games',
+    step1Body: 'Scan your installed Steam library or search for a title to add it yourself.',
+    step2: 'Make it yours',
+    step2Body: 'Connect SteamGridDB, choose artwork, and prepare your scenes locally.',
+    step3: 'Take an intermission',
+    step3Body: 'Preview the same player, then install into your Steam screensavers folder.',
+    libraryEyebrow: 'A COLLECTION THAT FEELS LIKE YOU',
+    libraryTitle: 'Your library',
+    librarySub: 'Choose the games that set the scene.',
+    prepareScreensaver: 'Prepare My Screensaver',
+    updateScreensaver: 'Update My Screensaver',
+    installedFilter: 'Installed',
+    manualFilter: 'Manually added',
+    animatedFilter: 'Animated available',
+    missingFilter: 'Missing animation',
+    excludedFilter: 'Excluded',
+    previous: 'Previous scene',
+    next: 'Next scene',
+    repairLibrary: 'Repair library',
+    automaticChoice: 'Use automatic matching',
+    stageDownloading: 'Downloading artwork',
+    stageValidating: 'Checking local media',
+    stageOptimizing: 'Optimizing for playback',
+    stageSaving: 'Saving your scene',
+    shuffleShort: 'Shuffle',
+    titlesShort: 'Titles',
+    transitionShort: 'Transition',
+    fadeBlack: 'Fade to black',
+    prepareScenes: 'Prepare scenes',
+    all: 'All games',
+    included: 'Included',
+    ready: 'Ready',
+    needsAttention: 'To prepare',
+    filterPlaceholder: 'Filter your games…',
+    noFilter: 'No games match this view.',
+    noFilterBody: 'Try a different filter or search term.',
+    noKey: 'Connect SteamGridDB to find artwork and prepare your scenes.',
+    connect: 'Connect SteamGridDB',
+    gameReady: 'Ready',
+    gameNew: 'To prepare',
+    gameMissing: 'No artwork',
+    gameError: 'Needs attention',
+    installed: 'Installed',
+    manual: 'Added manually',
+    include: 'Include in rotation',
+    details: 'View artwork',
+    animated: 'Animated',
+    still: 'Still image',
+    noMedia: 'No local scene yet',
+    prepareEyebrow: 'FROM ARTWORK TO ATMOSPHERE',
+    prepareTitle: 'Prepare your scenes',
+    prepareSub: 'Artwork is downloaded and checked locally. Your player stays offline.',
+    queueTitle: 'Preparation queue',
+    queueEmpty: 'Your queue is clear.',
+    queueEmptyBody:
+      'Include games in your library, then prepare them to create your offline rotation.',
+    jobIdle: 'Ready when you are.',
+    jobRunning: 'Creating your intermission.',
+    jobPaused: 'A moment on pause.',
+    duration: 'Duration',
+    durationUnknown: 'Not provided',
+    jobPartialTitle: 'Preparation finished. Some scenes need attention.',
+    jobPartialBody:
+      '{ready} playable scenes ready. {pending} included games still need preparation.',
+    jobCompleted: 'Your scenes are ready.',
+    jobCancelled: 'Preparation stopped.',
+    jobIdleBody:
+      'Included games will be matched with artwork, downloaded, and checked for playback.',
+    jobCompletedBody: 'Prepared scenes are available in your library and preview.',
+    processed: 'processed',
+    pause: 'Pause',
+    resume: 'Resume',
+    cancel: 'Cancel',
+    retry: 'Retry failed',
+    start: 'Start preparation',
+    preparing: 'Preparing',
+    waiting: 'Waiting',
+    excluded: 'Excluded',
+    current: 'Current game',
+    bytesDownloaded: 'downloaded',
+    errors: 'Some scenes need attention',
+    previewEyebrow: 'THE SAME PLAYER. YOUR COLLECTION.',
+    previewTitle: 'A little cinematic escape.',
+    previewSub: 'Preview your prepared rotation exactly where it belongs: on screen.',
+    previewEmpty: 'The screen is yours to fill.',
+    previewEmptyBody: 'Prepare at least one included scene to start your local preview.',
+    fullscreen: 'Fullscreen',
+    exitFullscreen: 'Exit fullscreen',
+    playing: 'Playing your local collection',
+    paused: 'Preview paused',
+    previewMediaError: 'A prepared scene could not be played. Repair the library in Settings.',
+    previewNote:
+      'Space to pause · ← / → to change scene · F for fullscreen · Escape to exit fullscreen. The installed player uses the same prepared files.',
+    settingsEyebrow: 'THE DETAILS MAKE THE DIFFERENCE',
+    settingsTitle: 'Make yourself at home.',
+    settingsSub: 'Your collection, your pace, your device.',
+    steamGridDb: 'SteamGridDB connection',
+    keyBody:
+      'Use your personal SteamGridDB API key to discover artwork. It stays on this device and is never sent to the player.',
+    keyPlaceholder: 'Paste your SteamGridDB API key',
+    replaceKey: 'Replace your saved key',
+    saveKey: 'Save key',
+    validateKey: 'Validate connection',
+    getKey: 'Get a free SteamGridDB API key',
+    keySaved: 'A personal key is saved on this device.',
+    keyMissing: 'No API key saved yet.',
+    playback: 'Playback',
+    language: 'Language',
+    sceneDuration: 'Time per scene',
+    durationHint: 'Seconds before the next artwork.',
+    shuffle: 'Shuffle rotation',
+    shuffleHint: 'A different order for each intermission.',
+    transition: 'Transition',
+    crossfade: 'Crossfade',
+    cut: 'Cut',
+    showLogos: 'Show game titles',
+    logosHint: 'Let the artwork speak, or keep a title on screen.',
+    staticFallback: 'Allow still artwork',
+    staticHint: 'Use still images when no animation is available.',
+    reducedMotion: 'Reduce motion',
+    motionHint: 'Reduce transitions and interface motion.',
+    pauseOnGame: 'Pause preparation during games',
+    pauseHint: 'Pause background preparation when a Steam game is detected on Linux.',
+    storage: 'Local storage',
+    storageLimit: 'Storage limit',
+    storageHint: 'Maximum space reserved for prepared media.',
+    clearUnused: 'Remove unused media',
+    steamIntegration: 'Steam integration',
+    steamInstallBody:
+      'Copy the standalone player and prepared scenes into the Steam screensavers folder. Select SteamOS Animated Screensaver in Steam settings afterward.',
+    install: 'Install screensaver',
+    repair: 'Update / repair',
+    uninstall: 'Uninstall',
+    integrationInstalled: 'Cinema is installed',
+    integrationNotInstalled: 'Cinema is not installed',
+    integrationNoSteam: 'Steam installation not found. Install and launch Steam, then scan again.',
+    runtimeNote:
+      'Installation copies the player files. Playback inside Steam must be verified on your device.',
+    privacyTitle: 'Yours, even offline.',
+    privacyBody:
+      'Only artwork discovery and preparation need the internet. Playback runs from local files, with no account, trackers, or remote player code.',
+    credit:
+      'Artwork belongs to its respective artists and rights holders. Artist credit is kept with each prepared scene.',
+    saveSuccess: 'Settings saved.',
+    keySuccess: 'API key saved.',
+    keyValid: 'SteamGridDB connection verified.',
+    keyInvalid: 'The key could not be verified.',
+    scanSuccess: 'Steam library scan complete.',
+    prepareSuccess: 'Preparation started.',
+    removeSuccess: 'Game removed from your library.',
+    includeSuccess: 'Rotation updated.',
+    assetSuccess: 'Artwork selected. Prepare the game to use it in your rotation.',
+    clearSuccess: 'Unused media removed.',
+    installSuccess:
+      'Screensaver installed. Select SteamOS Animated Screensaver in Steam, then verify playback on your device.',
+    repairSuccess: 'Screensaver files updated.',
+    uninstallSuccess: 'Screensaver uninstalled.',
+    operationError: 'Something went wrong.',
+    connectionError:
+      'Cannot connect to the local service. Start the Cinema app or development server, then retry.',
+    retryConnection: 'Reconnect',
+    addTitle: 'Find your next scene.',
+    addBody: 'Search SteamGridDB and choose the exact game or edition you want.',
+    searchPlaceholder: 'Game title, Steam AppID, or Steam Store URL…',
+    search: 'Search',
+    searchHint:
+      'Search by title, numeric Steam AppID, or a Steam Store URL. Check names and app IDs to distinguish editions.',
+    searchStart:
+      'Your collection goes beyond this device.\nFind a game to make it part of the intermission.',
+    searching: 'Searching SteamGridDB…',
+    noResults: 'No games found. Try a shorter title or a different spelling.',
+    alreadyAdded: 'In library',
+    add: 'Add',
+    addedSuccess: 'Game added to your library.',
+    searchKeyNeeded: 'Add a SteamGridDB API key in Settings to search for games.',
+    close: 'Close',
+    artworkTitle: 'Choose the scene.',
+    artworkBody:
+      'Automatic matching picks suitable artwork. Select an alternative to make the choice yours.',
+    loadArtworks: 'Find artwork alternatives',
+    artworksLoading: 'Finding artwork…',
+    noArtworks: 'No compatible artwork found. Try enabling still artwork in Settings.',
+    artworkCredit: 'Artwork by',
+    selected: 'Selected',
+    choose: 'Choose artwork',
+    automatic: 'Automatic match',
+    manualChoice: 'Your selection',
+    source: 'View original artwork',
+    removeGame: 'Remove game',
+    noArtworkYet:
+      'Prepare this game to find and download its artwork, or browse alternatives below.',
+    steamId: 'Steam app',
+    sgdbId: 'SGDB',
+    size: 'Size',
+    scene: 'scene',
+    scenes: 'scenes',
+    noGamesFound: 'No installed Steam games found. Add a game by title to begin.',
+    scanDetected: 'Your Steam library is ready to explore.',
+    sourceUnknown: 'Community artist',
+    searchError: 'Search could not complete.',
+    offlineOnly: 'Local playback',
+    loading: 'Opening your collection…',
+    seconds: 's',
+    of: 'of',
+    confirmRemove: 'Remove this game from your library? Its Steam installation is unchanged.',
+    confirmUninstall: 'Remove only the Cinema screensaver files from Steam?',
+    confirmCancel: 'Stop preparation? Completed scenes will be kept.',
+    unknownStage: 'Preparing local media',
+    notIncluded: 'This game is excluded from rotation.',
+    connectionLost: 'The local service is unavailable. Reconnecting…',
+    notReady: 'No prepared scene',
+    emptyReady: 'No prepared scenes yet.',
+    emptyReadyBody: 'Prepare your included games to see them here.',
+    returnLibrary: 'Go to library'
+  },
+  fr: {
+    home: 'Accueil',
+    library: 'Bibliothèque',
+    preparation: 'Préparation',
+    preview: 'Aperçu',
+    settings: 'Réglages',
+    local: 'LE LOCAL, PAR NATURE',
+    tagline: 'ÉCRAN DE VEILLE ANIMÉ STEAMOS',
+    connected: 'Bibliothèque Steam détectée',
+    notDetected: 'Steam non détecté',
+    sidebarFoot: 'Pour les instants entre deux jeux.\nAvec SteamGridDB.',
+    collection: 'VOS JEUX. UN AUTRE REGARD.',
+    homeTitle: 'Votre bibliothèque Steam. Plus vivante que jamais.',
+    homeSub: 'Un écran de veille cinématographique, inspiré des jeux que vous aimez.',
+    addGame: 'Ajouter un jeu',
+    heroEyebrow: 'RÉINVENTEZ L’ENTRACTE',
+    heroTitle: 'Les grands jeux méritent\nun bel entracte.',
+    heroBody:
+      'Transformez votre bibliothèque Steam en une collection d’illustrations animées. Choisie par vous. Lue entièrement hors ligne.',
+    discover: 'Créer ma collection',
+    openPreview: 'Ouvrir l’aperçu',
+    libraryGames: 'Jeux dans la bibliothèque',
+    readyScenes: 'Scènes prêtes à lire',
+    includedGames: 'Jeux inclus',
+    storageUsed: 'Stockage local utilisé',
+    collectionTitle: 'Votre collection',
+    viewAll: 'Voir la bibliothèque',
+    emptyTitle: 'Votre prochaine scène commence ici.',
+    emptyBody:
+      'Nous recherchons les jeux installés sur cet appareil. Vous pouvez aussi ajouter un titre SteamGridDB, que vous y jouiez ici ou ailleurs.',
+    scan: 'Analyser la bibliothèque Steam',
+    scanAgain: 'Relancer l’analyse',
+    scanning: 'Analyse des bibliothèques Steam…',
+    step1: 'Retrouvez vos jeux',
+    step1Body: 'Analysez votre bibliothèque Steam ou recherchez un titre pour l’ajouter vous-même.',
+    step2: 'Composez votre collection',
+    step2Body:
+      'Connectez SteamGridDB, choisissez les illustrations et préparez vos scènes en local.',
+    step3: 'Place à l’entracte',
+    step3Body:
+      'Découvrez le lecteur, puis installez-le dans le dossier des écrans de veille Steam.',
+    libraryEyebrow: 'UNE COLLECTION À VOTRE IMAGE',
+    libraryTitle: 'Votre bibliothèque',
+    librarySub: 'Choisissez les jeux qui plantent le décor.',
+    prepareScreensaver: 'Préparer mon écran de veille',
+    updateScreensaver: 'Actualiser mon écran de veille',
+    installedFilter: 'Installés',
+    manualFilter: 'Ajouts manuels',
+    animatedFilter: 'Animations disponibles',
+    missingFilter: 'Animation manquante',
+    excludedFilter: 'Exclus',
+    previous: 'Scène précédente',
+    next: 'Scène suivante',
+    repairLibrary: 'Réparer la bibliothèque',
+    automaticChoice: 'Revenir à la sélection automatique',
+    stageDownloading: 'Téléchargement de l’illustration',
+    stageValidating: 'Vérification des médias locaux',
+    stageOptimizing: 'Optimisation pour la lecture',
+    stageSaving: 'Enregistrement de votre scène',
+    shuffleShort: 'Aléatoire',
+    titlesShort: 'Titres',
+    transitionShort: 'Transition',
+    fadeBlack: 'Fondu au noir',
+    prepareScenes: 'Préparer les scènes',
+    all: 'Tous les jeux',
+    included: 'Inclus',
+    ready: 'Prêts',
+    needsAttention: 'À préparer',
+    filterPlaceholder: 'Filtrer vos jeux…',
+    noFilter: 'Aucun jeu dans cette vue.',
+    noFilterBody: 'Essayez un autre filtre ou un autre terme.',
+    noKey: 'Connectez SteamGridDB pour trouver les illustrations et préparer vos scènes.',
+    connect: 'Connecter SteamGridDB',
+    gameReady: 'Prêt',
+    gameNew: 'À préparer',
+    gameMissing: 'Sans illustration',
+    gameError: 'À vérifier',
+    installed: 'Installé',
+    manual: 'Ajout manuel',
+    include: 'Inclure dans la rotation',
+    details: 'Voir les illustrations',
+    animated: 'Animée',
+    still: 'Image fixe',
+    noMedia: 'Aucune scène locale',
+    prepareEyebrow: 'DE L’ILLUSTRATION À L’AMBIANCE',
+    prepareTitle: 'Préparez vos scènes',
+    prepareSub:
+      'Les illustrations sont téléchargées et vérifiées en local. Le lecteur reste hors ligne.',
+    queueTitle: 'File de préparation',
+    queueEmpty: 'Votre file est vide.',
+    queueEmptyBody:
+      'Incluez des jeux dans la bibliothèque, puis préparez votre rotation hors ligne.',
+    jobIdle: 'Quand vous voulez.',
+    jobRunning: 'Votre entracte prend forme.',
+    jobPaused: 'Un instant de pause.',
+    duration: 'Durée',
+    durationUnknown: 'Non fournie',
+    jobPartialTitle: 'Préparation terminée. Certaines scènes restent à vérifier.',
+    jobPartialBody: '{ready} scènes prêtes à lire. {pending} jeux inclus restent à préparer.',
+    jobCompleted: 'Vos scènes sont prêtes.',
+    jobCancelled: 'Préparation arrêtée.',
+    jobIdleBody:
+      'Les jeux inclus seront associés à une illustration, téléchargés et vérifiés pour la lecture.',
+    jobCompletedBody: 'Retrouvez vos scènes préparées dans la bibliothèque et l’aperçu.',
+    processed: 'traités',
+    pause: 'Pause',
+    resume: 'Reprendre',
+    cancel: 'Arrêter',
+    retry: 'Réessayer les échecs',
+    start: 'Lancer la préparation',
+    preparing: 'Préparation',
+    waiting: 'En attente',
+    excluded: 'Exclu',
+    current: 'Jeu en cours',
+    bytesDownloaded: 'téléchargés',
+    errors: 'Certaines scènes nécessitent votre attention',
+    previewEyebrow: 'LE MÊME LECTEUR. VOTRE COLLECTION.',
+    previewTitle: 'Une petite évasion cinématographique.',
+    previewSub: 'Découvrez votre rotation préparée, à sa place : à l’écran.',
+    previewEmpty: 'Cet écran vous appartient.',
+    previewEmptyBody: 'Préparez au moins une scène incluse pour lancer votre aperçu local.',
+    fullscreen: 'Plein écran',
+    exitFullscreen: 'Quitter le plein écran',
+    playing: 'Lecture de votre collection locale',
+    paused: 'Aperçu en pause',
+    previewMediaError:
+      'Une scène préparée est illisible. Réparez la bibliothèque dans les réglages.',
+    previewNote:
+      'Espace pour mettre en pause · ← / → pour changer de scène · F pour le plein écran · Échap pour quitter. Le lecteur installé utilise les mêmes fichiers préparés.',
+    settingsEyebrow: 'TOUT EST DANS LES DÉTAILS',
+    settingsTitle: 'Faites comme chez vous.',
+    settingsSub: 'Votre collection, votre rythme, votre appareil.',
+    steamGridDb: 'Connexion SteamGridDB',
+    keyBody:
+      'Utilisez votre clé API personnelle SteamGridDB pour découvrir des illustrations. Elle reste sur cet appareil et n’est jamais transmise au lecteur.',
+    keyPlaceholder: 'Collez votre clé API SteamGridDB',
+    replaceKey: 'Remplacer la clé enregistrée',
+    saveKey: 'Enregistrer la clé',
+    validateKey: 'Vérifier la connexion',
+    getKey: 'Obtenir une clé API SteamGridDB gratuite',
+    keySaved: 'Une clé est enregistrée sur cet appareil.',
+    keyMissing: 'Aucune clé API enregistrée.',
+    playback: 'Lecture',
+    language: 'Langue',
+    sceneDuration: 'Durée de chaque scène',
+    durationHint: 'Secondes avant l’illustration suivante.',
+    shuffle: 'Lecture aléatoire',
+    shuffleHint: 'Un ordre différent pour chaque entracte.',
+    transition: 'Transition',
+    crossfade: 'Fondu enchaîné',
+    cut: 'Coupe directe',
+    showLogos: 'Afficher les titres des jeux',
+    logosHint: 'Laissez parler l’image ou gardez le titre à l’écran.',
+    staticFallback: 'Autoriser les images fixes',
+    staticHint: 'Utiliser une image fixe lorsqu’aucune animation n’est disponible.',
+    reducedMotion: 'Réduire les animations',
+    motionHint: 'Réduire les transitions et les animations de l’interface.',
+    pauseOnGame: 'Suspendre la préparation pendant les jeux',
+    pauseHint: 'Suspendre la préparation lorsqu’un jeu Steam est détecté sous Linux.',
+    storage: 'Stockage local',
+    storageLimit: 'Limite de stockage',
+    storageHint: 'Espace maximal réservé aux médias préparés.',
+    clearUnused: 'Supprimer les médias inutilisés',
+    steamIntegration: 'Intégration Steam',
+    steamInstallBody:
+      'Copiez le lecteur autonome et ses scènes dans le dossier des écrans de veille Steam. Sélectionnez ensuite SteamOS Animated Screensaver dans les réglages Steam.',
+    install: 'Installer l’écran de veille',
+    repair: 'Mettre à jour / réparer',
+    uninstall: 'Désinstaller',
+    integrationInstalled: 'Cinema est installé',
+    integrationNotInstalled: 'Cinema n’est pas installé',
+    integrationNoSteam:
+      'Installation Steam introuvable. Installez et lancez Steam, puis relancez l’analyse.',
+    runtimeNote:
+      'L’installation copie les fichiers du lecteur. La lecture dans Steam doit être vérifiée sur votre appareil.',
+    privacyTitle: 'À vous, même hors ligne.',
+    privacyBody:
+      'Seules la recherche et la préparation nécessitent Internet. La lecture utilise les fichiers locaux, sans compte, traceurs ou code distant.',
+    credit:
+      'Les illustrations appartiennent à leurs artistes et ayants droit. Chaque scène conserve le crédit de son artiste.',
+    saveSuccess: 'Réglages enregistrés.',
+    keySuccess: 'Clé API enregistrée.',
+    keyValid: 'Connexion SteamGridDB vérifiée.',
+    keyInvalid: 'La clé n’a pas pu être vérifiée.',
+    scanSuccess: 'Analyse de la bibliothèque terminée.',
+    prepareSuccess: 'Préparation lancée.',
+    removeSuccess: 'Jeu retiré de votre bibliothèque.',
+    includeSuccess: 'Rotation mise à jour.',
+    assetSuccess: 'Illustration choisie. Préparez le jeu pour l’utiliser dans votre rotation.',
+    clearSuccess: 'Médias inutilisés supprimés.',
+    installSuccess:
+      'Écran de veille installé. Sélectionnez SteamOS Animated Screensaver dans Steam, puis vérifiez la lecture sur votre appareil.',
+    repairSuccess: 'Fichiers de l’écran de veille mis à jour.',
+    uninstallSuccess: 'Écran de veille désinstallé.',
+    operationError: 'Une erreur est survenue.',
+    connectionError:
+      'Connexion au service local impossible. Lancez Cinema ou le serveur de développement, puis réessayez.',
+    retryConnection: 'Reconnecter',
+    addTitle: 'Trouvez votre prochaine scène.',
+    addBody: 'Recherchez sur SteamGridDB et choisissez le jeu ou l’édition souhaitée.',
+    searchPlaceholder: 'Titre, AppID Steam ou URL du magasin Steam…',
+    search: 'Rechercher',
+    searchHint:
+      'Recherchez un titre, un AppID numérique ou une URL du magasin Steam. Vérifiez le nom et l’identifiant pour distinguer les éditions.',
+    searchStart:
+      'Votre collection dépasse cet appareil.\nTrouvez un jeu pour lui offrir une place dans l’entracte.',
+    searching: 'Recherche sur SteamGridDB…',
+    noResults: 'Aucun jeu trouvé. Essayez un titre plus court ou une autre orthographe.',
+    alreadyAdded: 'Déjà ajouté',
+    add: 'Ajouter',
+    addedSuccess: 'Jeu ajouté à votre bibliothèque.',
+    searchKeyNeeded: 'Ajoutez une clé API SteamGridDB dans les réglages pour rechercher des jeux.',
+    close: 'Fermer',
+    artworkTitle: 'Choisissez votre scène.',
+    artworkBody:
+      'La sélection automatique trouve une illustration adaptée. Choisissez une alternative pour personnaliser votre collection.',
+    loadArtworks: 'Trouver d’autres illustrations',
+    artworksLoading: 'Recherche d’illustrations…',
+    noArtworks:
+      'Aucune illustration compatible. Essayez d’autoriser les images fixes dans les réglages.',
+    artworkCredit: 'Illustration de',
+    selected: 'Sélectionnée',
+    choose: 'Choisir l’illustration',
+    automatic: 'Sélection automatique',
+    manualChoice: 'Votre sélection',
+    source: 'Voir l’illustration originale',
+    removeGame: 'Retirer le jeu',
+    noArtworkYet:
+      'Préparez ce jeu pour télécharger son illustration, ou explorez les alternatives ci-dessous.',
+    steamId: 'Application Steam',
+    sgdbId: 'SGDB',
+    size: 'Taille',
+    scene: 'scène',
+    scenes: 'scènes',
+    noGamesFound: 'Aucun jeu Steam installé trouvé. Ajoutez un jeu par son titre pour commencer.',
+    scanDetected: 'Votre bibliothèque Steam est prête à être explorée.',
+    sourceUnknown: 'Artiste communautaire',
+    searchError: 'La recherche n’a pas abouti.',
+    offlineOnly: 'Lecture locale',
+    loading: 'Ouverture de votre collection…',
+    seconds: 's',
+    of: 'sur',
+    confirmRemove: 'Retirer ce jeu de votre bibliothèque ? Son installation Steam est conservée.',
+    confirmUninstall: 'Supprimer uniquement les fichiers Cinema des écrans de veille Steam ?',
+    confirmCancel: 'Arrêter la préparation ? Les scènes terminées seront conservées.',
+    unknownStage: 'Préparation des médias locaux',
+    notIncluded: 'Ce jeu est exclu de la rotation.',
+    connectionLost: 'Service local indisponible. Reconnexion en cours…',
+    notReady: 'Aucune scène préparée',
+    emptyReady: 'Aucune scène prête pour le moment.',
+    emptyReadyBody: 'Préparez les jeux inclus pour les retrouver ici.',
+    returnLibrary: 'Voir la bibliothèque'
+  }
+};
+const app = document.querySelector('#app'),
+  addDialog = document.querySelector('#add-dialog'),
+  detailDialog = document.querySelector('#detail-dialog');
+const defaultState = {
+  games: [],
+  settings: {
+    language: 'en',
+    sceneDuration: 24,
+    shuffle: true,
+    transition: 'crossfade',
+    showLogos: true,
+    staticFallback: false,
+    reducedMotion: false,
+    maxStorageGB: 10,
+    pauseOnGame: true
+  },
+  job: { status: 'idle', total: 0, processed: 0, errors: [], bytes: 0 },
+  steam: { detected: false, installed: false, roots: [] },
+  storage: { used: 0 },
+  hasKey: false
+};
+let state = structuredClone(defaultState),
+  route = 'home',
+  filter = 'all',
+  query = '',
+  loaded = false,
+  connectionError = false,
+  scanning = false,
+  pending = false,
+  lastSnapshot = '',
+  previewPlaying = true,
+  previewSignature = '',
+  polling = false,
+  detailId = null,
+  assets = null,
+  searchResults = null,
+  searchTerm = '',
+  searchPending = false,
+  toastTimer;
+const lang = () => (state.settings.language === 'fr' ? 'fr' : 'en');
+const t = (key) => translations[lang()][key] || translations.en[key] || key;
+const esc = (value) =>
+  String(value ?? '').replace(
+    /[&<>"']/g,
+    (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+  );
+const attr = esc;
+const bytes = (value) => {
+  const n = Number(value) || 0;
+  return n >= 1073741824
+    ? `${(n / 1073741824).toLocaleString(lang(), { maximumFractionDigits: 1 })} GB`
+    : n >= 1048576
+      ? `${(n / 1048576).toLocaleString(lang(), { maximumFractionDigits: 1 })} MB`
+      : `${Math.round(n / 1024)} KB`;
+};
+window.addEventListener('message', (event) => {
+  if (
+    event.source !== document.querySelector('#player-frame')?.contentWindow ||
+    event.origin !== location.origin ||
+    event.data?.type !== 'cinema-player'
+  )
+    return;
+  if (event.data.status === 'media-error') toast(t('previewMediaError'));
+});
+const readyGames = () =>
+  state.games.filter(
+    (g) =>
+      g.included &&
+      g.status === 'ready' &&
+      g.media?.file &&
+      (g.media.animated || state.settings.staticFallback)
+  );
+const button = (label, action, ic = '', primary = false, extra = '') =>
+  `<button class="button ${primary ? 'primary' : ''} ${['uninstall', 'remove-game'].includes(action) ? 'danger' : ''}" data-action="${action}" ${extra}>${ic ? icon(ic) : ''}${esc(label)}</button>`;
+const statusName = (g) =>
+  t(
+    { ready: 'gameReady', new: 'gameNew', missing: 'gameMissing', error: 'gameError' }[g.status] ||
+      'gameNew'
+  );
+const empty = (title, body, actions = '', ic = 'film') =>
+  `<div class="empty"><div class="empty-symbol">${icon(ic)}</div><h3>${esc(title)}</h3><p>${esc(body)}</p>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
+const safeRemote = (value) => {
+  try {
+    const u = new URL(value);
+    return u.protocol === 'https:' &&
+      ['cdn2.steamgriddb.com', 'cdn.steamgriddb.com', 'www.steamgriddb.com'].includes(u.hostname)
+      ? u.href
+      : '';
+  } catch {
+    return '';
+  }
+};
+const localMedia = (value) => {
+  if (!value) return '';
+  const file = String(value).split('/').pop();
+  return new URL(`/media/${encodeURIComponent(file)}`, location.href).href;
+};
+const thumbnail = (g) =>
+  g.media?.thumbnail ? localMedia(g.media.thumbnail) : safeRemote(g.selectedAsset?.thumb);
+const authorName = (value) =>
+  typeof value === 'string' ? value : value?.name || t('sourceUnknown');
+async function invoke(action, payload = {}) {
+  if (window.cinema?.invoke) return window.cinema.invoke(action, payload);
+  const response = await fetch('/api/invoke', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ action, payload })
+  });
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw Error(t('connectionError'));
+  }
+  if (!response.ok || data.error) throw Error(data.error || t('operationError'));
+  return Object.hasOwn(data, 'result') ? data.result : data;
+}
+function toast(message) {
+  const el = document.querySelector('#toast');
+  el.textContent = message;
+  el.classList.add('visible');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('visible'), 4800);
+}
+async function refresh(force = false) {
+  if (polling) return;
+  polling = true;
+  try {
+    const previousLanguage = lang();
+    const next = await invoke('state');
+    if (!next || !Array.isArray(next.games)) throw Error(t('connectionError'));
+    state = {
+      ...defaultState,
+      ...next,
+      settings: { ...defaultState.settings, ...next.settings },
+      job: { ...defaultState.job, ...next.job },
+      steam: { ...defaultState.steam, ...next.steam },
+      storage: { ...defaultState.storage, ...next.storage }
+    };
+    const snapshot = JSON.stringify(route === 'preparation' ? state : { ...state, job: null });
+    const changed = snapshot !== lastSnapshot || connectionError;
+    connectionError = false;
+    loaded = true;
+    lastSnapshot = snapshot;
+    if (force || changed) {
+      if (
+        (!['INPUT', 'SELECT'].includes(document.activeElement?.tagName) || force) &&
+        !(
+          route === 'preview' &&
+          document.querySelector('#player-frame') &&
+          readyGames().length &&
+          lang() === previousLanguage
+        )
+      )
+        render();
+      if (route === 'preview') sendCatalog();
+    }
+  } catch (error) {
+    connectionError = true;
+    if (!loaded) {
+      loaded = true;
+      render();
+    } else if (!document.querySelector('.connection-error')) render();
+  } finally {
+    polling = false;
+  }
+}
+let mutationQueue = Promise.resolve();
+async function run(action, payload = {}, message, options = {}) {
+  const previous = mutationQueue;
+  let release;
+  mutationQueue = new Promise((resolve) => (release = resolve));
+  await previous;
+  pending = true;
+  document.querySelectorAll(`[data-action="${action}"]`).forEach((el) => (el.disabled = true));
+  try {
+    const result = await invoke(action, payload);
+    await refresh(true);
+    if (message) toast(t(message));
+    return result;
+  } catch (error) {
+    if (['updateGame', 'settings'].includes(action)) await refresh(true);
+    toast(error.message || t('operationError'));
+    return undefined;
+  } finally {
+    pending = false;
+    document.querySelectorAll(`[data-action="${action}"]`).forEach((el) => (el.disabled = false));
+    release();
+  }
+}
+function shell() {
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">CINEMA</div><div class="brand-caption">STEAMOS SCREENSAVER</div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.0</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Cinema ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} CINEMA</div><div class="top-actions"><span class="local-badge">${icon('shield')}${esc(t('local'))}</span><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+}
+function heading(eyebrow, title, sub, actions = '') {
+  return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
+}
+function noLibrary() {
+  return empty(
+    t('emptyTitle'),
+    t('emptyBody'),
+    button(t(scanning ? 'scanning' : 'scan'), 'scan', 'scan', false, scanning ? 'disabled' : '') +
+      button(t('addGame'), 'add-game', 'plus', true),
+    'library'
+  );
+}
+function keyBanner() {
+  return !state.hasKey
+    ? `<div class="banner">${icon('key')}<span>${esc(t('noKey'))}</span>${button(t('connect'), 'open-settings', 'arrow')}</div>`
+    : '';
+}
+function homeView() {
+  const count = state.games.length,
+    ready = readyGames().length,
+    featured = readyGames()[0],
+    reduced =
+      state.settings.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const heroMedia = featured
+    ? !reduced && featured.media.animated && /\.(mp4|webm)$/i.test(featured.media.file)
+      ? `<video class="hero-media" src="${attr(localMedia(featured.media.file))}" poster="${attr(thumbnail(featured))}" autoplay muted loop playsinline aria-hidden="true"></video>`
+      : `<img class="hero-media" src="${attr(!reduced && featured.media.animated ? localMedia(featured.media.file) : thumbnail(featured) || localMedia(featured.media.file))}" alt="">`
+    : '';
+  return `${heading('collection', 'homeTitle', 'homeSub', button(t('addGame'), 'add-game', 'plus'))}<section class="hero ${featured ? 'has-media' : ''}">${heroMedia}<div class="hero-copy"><div class="eyebrow">${esc(t('heroEyebrow'))}</div><h2>${esc(t('heroTitle')).replace('\n', '<br>')}</h2><p>${esc(t('heroBody'))}</p>${button(t(ready ? 'updateScreensaver' : 'prepareScreensaver'), 'prepare-home', 'prepare', true) + ` <button class="button ghost" data-action="${ready ? 'open-preview' : 'open-library'}">${icon(ready ? 'preview' : 'library')}${esc(t(ready ? 'openPreview' : 'discover'))}</button>`}</div>${!featured ? `<div class="hero-orbit" aria-hidden="true"></div><div class="cinema-window" aria-hidden="true">${icon('film')}</div>` : `<div class="hero-credit">${esc(featured.name)}<span>${esc(t('artworkCredit'))} ${esc(authorName(featured.media.author))}</span></div>`}</section><div class="stats"><div class="stat"><div class="stat-number">${count.toString().padStart(2, '0')}</div><div class="stat-label">${esc(t('libraryGames'))}</div></div><div class="stat"><div class="stat-number">${ready.toString().padStart(2, '0')}</div><div class="stat-label">${esc(t('readyScenes'))}</div></div><div class="stat"><div class="stat-number">${state.games
+    .filter((g) => g.included)
+    .length.toString()
+    .padStart(
+      2,
+      '0'
+    )}</div><div class="stat-label">${esc(t('includedGames'))}</div></div><div class="stat"><div class="stat-number">${esc(bytes(state.storage.used))}</div><div class="stat-label">${esc(t('storageUsed'))}</div></div></div><section><div class="section-heading"><h2>${esc(t('collectionTitle'))}</h2><button class="text-button" data-route="library">${esc(t('viewAll'))}${icon('arrow')}</button></div>${count ? `<div class="game-grid">${state.games.slice(0, 6).map(gameCard).join('')}</div>` : noLibrary()}</section>${!count ? `<section class="guide-grid">${[1, 2, 3].map((i) => `<div class="guide-card"><div class="guide-number">0${i}</div><h3>${esc(t('step' + i))}</h3><p>${esc(t('step' + i + 'Body'))}</p></div>`).join('')}</section>` : ''}`;
+}
+function gameCard(g) {
+  const image = thumbnail(g);
+  return `<article class="game-card"><label class="include-switch" title="${esc(t('include'))}"><input type="checkbox" data-include="${attr(g.id)}" ${g.included ? 'checked' : ''} aria-label="${esc(t('include') + ': ' + g.name)}">${icon('check')}</label><button class="game-visual" data-detail="${attr(g.id)}" aria-label="${esc(t('details') + ': ' + g.name)}">${image ? `<img src="${attr(image)}" alt="" loading="lazy">` : `<span class="game-placeholder">${icon('image')}</span>`}<span class="game-status ${attr(g.status)}">${esc(statusName(g))}</span><span class="game-source">${esc(g.media ? (g.media.animated ? t('animated') : t('still')) : g.installed ? t('installed') : t('manual'))}</span></button><div class="game-info"><h3 class="game-name">${esc(g.name)}</h3><div class="game-meta"><span>${esc(g.media ? authorName(g.media.author) : t('noMedia'))}</span><button class="text-button" data-detail="${attr(g.id)}" aria-label="${esc(t('details') + ': ' + g.name)}">${icon('arrow')}</button></div></div></article>`;
+}
+function libraryView() {
+  let games = state.games.filter(
+    (g) =>
+      (filter === 'all' ||
+        (filter === 'included' && g.included) ||
+        (filter === 'ready' && g.status === 'ready') ||
+        (filter === 'needsAttention' && g.status !== 'ready') ||
+        (filter === 'installedFilter' && g.installed) ||
+        (filter === 'manualFilter' && g.sources?.includes('manual')) ||
+        (filter === 'animatedFilter' && (g.media?.animated || g.selectedAsset?.animated)) ||
+        (filter === 'missingFilter' &&
+          (g.status === 'missing' ||
+            (g.media && g.media.animated === false) ||
+            (g.selectedAsset && g.selectedAsset.animated === false))) ||
+        (filter === 'excludedFilter' && !g.included)) &&
+      g.name.toLowerCase().includes(query.toLowerCase())
+  );
+  return `${heading('libraryEyebrow', 'libraryTitle', 'librarySub', button(t('scanAgain'), 'scan', 'scan', false, scanning ? 'disabled' : '') + button(t('addGame'), 'add-game', 'plus', true))}${state.games.length ? keyBanner() : ''}<div class="toolbar"><div class="filter-pills" role="group" aria-label="${esc(t('library'))}">${['all', 'installedFilter', 'manualFilter', 'ready', 'animatedFilter', 'missingFilter', 'excludedFilter'].map((f) => `<button data-filter="${f}" class="${filter === f ? 'active' : ''}">${esc(t(f))}${f === 'all' ? ` <span>(${state.games.length})</span>` : ''}</button>`).join('')}</div><label class="search-field">${icon('search')}<span class="visually-hidden">${esc(t('filterPlaceholder'))}</span><input class="field" id="library-filter" placeholder="${esc(t('filterPlaceholder'))}" value="${attr(query)}"></label></div>${!state.games.length ? noLibrary() : games.length ? `<div class="game-grid">${games.map(gameCard).join('')}</div>` : empty(t('noFilter'), t('noFilterBody'), '', 'search')}${state.games.length ? `<div class="button-row" style="margin-top:24px">${button(t('prepareScenes'), 'prepare-all', 'prepare', true, !state.hasKey || !state.games.some((g) => g.included) ? 'disabled' : '')}</div>` : ''}`;
+}
+function preparationView() {
+  const job = state.job,
+    status = job.status || 'idle',
+    included = state.games.filter((g) => g.included),
+    percent = job.total ? Math.min(100, Math.round((job.processed / job.total) * 100)) : 0,
+    active = status === 'running' || status === 'paused',
+    playable = readyGames().length,
+    remaining = included.length - playable,
+    partial = status === 'completed' && (remaining > 0 || job.errors?.length);
+  let controls = active
+    ? button(
+        t(status === 'paused' ? 'resume' : 'pause'),
+        status === 'paused' ? 'resume' : 'pause',
+        status === 'paused' ? 'play' : 'pause',
+        true
+      ) + button(t('cancel'), 'cancel', 'stop')
+    : button(
+        t('start'),
+        'prepare-all',
+        'prepare',
+        true,
+        !included.length || !state.hasKey ? 'disabled' : ''
+      );
+  if (job.errors?.length) controls += button(t('retry'), 'retry', 'refresh');
+  const current =
+    typeof job.current === 'object'
+      ? job.current?.name
+      : state.games.find((g) => g.id === job.current)?.name || job.current;
+  return `${heading('prepareEyebrow', 'prepareTitle', 'prepareSub')}${keyBanner()}<section class="progress-panel" aria-live="polite"><div class="progress-title"><div><h2>${esc(t(partial ? 'jobPartialTitle' : { idle: 'jobIdle', running: 'jobRunning', paused: 'jobPaused', completed: 'jobCompleted', cancelled: 'jobCancelled' }[status] || 'jobIdle'))}</h2><p>${active ? `${current ? esc(current) + ' · ' : ''}${esc(t({ downloading: 'stageDownloading', validating: 'stageValidating', optimizing: 'stageOptimizing', saving: 'stageSaving' }[job.stage] || 'unknownStage'))}` : esc(partial ? t('jobPartialBody').replace('{ready}', playable).replace('{pending}', remaining) : t(status === 'completed' ? 'jobCompletedBody' : 'jobIdleBody'))}</p></div><div class="progress-percent">${percent}<span style="font-size:15px">%</span></div></div><div class="progress-track" role="progressbar" aria-label="${esc(t('preparation'))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><div class="progress-fill" style="width:${percent}%"></div></div><div class="progress-foot"><span>${Number(job.processed) || 0} / ${Number(job.total) || 0} ${esc(t('processed'))} &nbsp;·&nbsp; ${esc(bytes(job.bytes))} ${esc(t('bytesDownloaded'))}</span><div class="button-row">${controls}</div></div></section>${playable && !active ? `<div class="banner">${icon('check')}<span>${playable} ${esc(t('readyScenes'))}</span><div class="button-row">${button(t('openPreview'), 'open-preview', 'preview')}${state.steam.detected ? button(t(state.steam.installed ? 'repair' : 'install'), state.steam.installed ? 'update-install' : 'install', 'prepare', true) : button(t('settings'), 'open-settings', 'settings')}</div></div>` : ''}${job.errors?.length ? `<div class="banner error">${icon('info')}<div>${esc(t('errors'))}<br>${job.errors.map((e) => esc(typeof e === 'string' ? e : e.message || e.error || JSON.stringify(e))).join('<br>')}</div></div>` : ''}<div class="section-heading"><h2>${esc(t('queueTitle'))}</h2><span class="text-button">${included.length} ${esc(t('scenes'))}</span></div>${
+    included.length
+      ? `<div class="queue-list">${included
+          .map((g) => {
+            const im = thumbnail(g),
+              isCurrent = active && (g.id === job.current || g.name === current),
+              label = isCurrent
+                ? t('preparing')
+                : g.status === 'ready'
+                  ? t('ready')
+                  : g.status === 'error'
+                    ? t('gameError')
+                    : g.status === 'missing'
+                      ? t('gameMissing')
+                      : t('waiting');
+            return `<div class="queue-row">${im ? `<img class="queue-thumb" src="${attr(im)}" alt="">` : `<span class="queue-thumb">${icon('image')}</span>`}<div><div class="queue-title">${esc(g.name)}</div><div class="queue-sub">${esc(g.error || g.media?.format || t(g.manualSelection ? 'manualChoice' : 'automatic'))}</div></div><span class="queue-status ${g.status === 'ready' ? 'ready' : ''}">${isCurrent ? '<span class="spinner"></span>' : g.status === 'ready' ? icon('check') : ''}${esc(label)}</span></div>`;
+          })
+          .join('')}</div>`
+      : empty(
+          t('queueEmpty'),
+          t('queueEmptyBody'),
+          button(t('returnLibrary'), 'open-library', 'library'),
+          'prepare'
+        )
+  }`;
+}
+function previewView() {
+  const games = readyGames();
+  return `${heading('previewEyebrow', 'previewTitle', 'previewSub')}${games.length ? `<div id="preview-shell" class="preview-shell"><iframe id="player-frame" src="../player/index.html" title="Cinema ${esc(t('preview'))}" allow="autoplay; fullscreen" tabindex="-1"></iframe><button class="button ghost fullscreen-exit" data-action="exit-fullscreen">${icon('close')}${esc(t('exitFullscreen'))}</button></div><div class="preview-controls"><div class="playback-buttons"><button class="icon-button" data-action="previous" aria-label="${esc(t('previous') || 'Previous')}">${icon('previous')}</button><button class="icon-button" data-action="toggle-play" aria-label="${esc(t(previewPlaying ? 'pause' : 'resume'))}">${icon(previewPlaying ? 'pause' : 'play')}</button><button class="icon-button" data-action="next" aria-label="${esc(t('next') || 'Next')}">${icon('next')}</button><span class="playback-note">${esc(t(previewPlaying ? 'playing' : 'paused'))} · ${games.length} ${esc(t(games.length === 1 ? 'scene' : 'scenes'))}</span></div>${button(t('fullscreen'), 'fullscreen', 'fullscreen')}</div><div class="preview-options"><label class="preview-option"><input type="checkbox" data-setting="shuffle" ${state.settings.shuffle ? 'checked' : ''}>${esc(t('shuffleShort'))}</label><label class="preview-option"><input type="checkbox" data-setting="showLogos" ${state.settings.showLogos ? 'checked' : ''}>${esc(t('titlesShort'))}</label><label class="preview-option"><span>${esc(t('transitionShort'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition !== 'fade-black' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label></div><p class="preview-caption">${esc(t('previewNote'))}</p>` : empty(t('previewEmpty'), t('previewEmptyBody'), button(t('prepareScenes'), 'open-preparation', 'prepare', true), 'preview')}`;
+}
+const toggle = (key, label, hint) =>
+  `<label class="setting-row"><span><span class="setting-row-label">${esc(t(label))}</span>${hint ? `<small>${esc(t(hint))}</small>` : ''}</span><span class="switch"><input type="checkbox" data-setting="${key}" ${state.settings[key] ? 'checked' : ''}><span></span></span></label>`;
+const panel = (title, ic, body) =>
+  `<section class="settings-panel"><div class="panel-title">${icon(ic)}<h2>${esc(t(title))}</h2></div><div class="panel-body">${body}</div></section>`;
+function settingsView() {
+  const used = Number(state.storage.used) || 0,
+    max = Number(state.settings.maxStorageGB) || 10;
+  return `${heading('settingsEyebrow', 'settingsTitle', 'settingsSub')}<div class="settings-layout"><div class="settings-stack">${panel('steamGridDb', 'key', `<p>${esc(t('keyBody'))}</p><form id="key-form"><div class="key-input"><input class="field" id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(state.hasKey ? 'replaceKey' : 'keyPlaceholder'))}" aria-label="${esc(t('keyPlaceholder'))}" required>${button(t('saveKey'), 'save-key', 'key', true, 'type="submit"')}</div></form><div class="button-row" style="align-items:center;margin:13px 0"><span style="font-size:10px;color:var(--muted)">${state.hasKey ? '✓ ' : ''}${esc(t(state.hasKey ? 'keySaved' : 'keyMissing'))}</span>${state.hasKey ? button(t('validateKey'), 'validateKey', 'check') : ''}</div><a class="key-link" href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">${esc(t('getKey'))} ↗</a>`)}${panel('playback', 'play', `<label class="setting-row"><span class="setting-row-label">${esc(t('language'))}</span><select class="field" data-setting="language"><option value="en" ${lang() === 'en' ? 'selected' : ''}>English</option><option value="fr" ${lang() === 'fr' ? 'selected' : ''}>Français</option></select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('sceneDuration'))}</span><small>${esc(t('durationHint'))}</small></span><input class="field" data-setting="sceneDuration" type="number" min="8" max="180" step="1" value="${Number(state.settings.sceneDuration)}" aria-label="${esc(t('sceneDuration'))}"></label>${toggle('shuffle', 'shuffle', 'shuffleHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('transition'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition === 'crossfade' || state.settings.transition === 'fade' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label>${toggle('showLogos', 'showLogos', 'logosHint')}${toggle('staticFallback', 'staticFallback', 'staticHint')}${toggle('reducedMotion', 'reducedMotion', 'motionHint')}${toggle('pauseOnGame', 'pauseOnGame', 'pauseHint')}`)}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
+}
+function render() {
+  const active = document.activeElement;
+  const focusAttribute = [
+    'data-route',
+    'data-action',
+    'data-setting',
+    'data-include',
+    'data-detail',
+    'data-filter'
+  ].find((k) => active?.hasAttribute?.(k));
+  const focusSelector = active?.id
+    ? `#${CSS.escape(active.id)}`
+    : focusAttribute
+      ? `[${focusAttribute}="${CSS.escape(active.getAttribute(focusAttribute))}"]`
+      : null;
+  document.documentElement.lang = lang();
+  document.body.classList.toggle('reduced-motion', !!state.settings.reducedMotion);
+  const focused = document.activeElement?.id;
+  const selection = focused === 'library-filter' ? document.activeElement.selectionStart : null;
+  const scrollY = window.scrollY;
+  app.innerHTML = shell();
+  if (route === 'preview') {
+    previewSignature = '';
+    document.querySelector('#player-frame')?.addEventListener('load', () => sendCatalog(true));
+  }
+  if (focused === 'library-filter') {
+    const field = document.querySelector('#library-filter');
+    field?.focus();
+    field?.setSelectionRange(selection, selection);
+  }
+  if (focusSelector && focused !== 'library-filter')
+    app.querySelector(focusSelector)?.focus({ preventScroll: true });
+  window.scrollTo(0, scrollY);
+}
+function navigate(next) {
+  if (!['home', 'library', 'preparation', 'preview', 'settings'].includes(next)) return;
+  route = next;
+  previewPlaying = true;
+  render();
+  window.scrollTo(0, 0);
+}
+function postPlayer(action, extra = {}) {
+  document
+    .querySelector('#player-frame')
+    ?.contentWindow?.postMessage(
+      { type: 'cinema', action, ...extra },
+      location.origin === 'null' ? '*' : location.origin
+    );
+}
+const playerMedia = (file) =>
+  location.protocol === 'app:'
+    ? localMedia(file)
+    : `/media/${encodeURIComponent(
+        String(file || '')
+          .split('/')
+          .pop()
+      )}`;
+function sendCatalog(force = false) {
+  const catalog = {
+    version: 1,
+    games: readyGames().map((g) => ({
+      ...g,
+      media: {
+        ...g.media,
+        file: playerMedia(g.media.file),
+        thumbnail: playerMedia(g.media.thumbnail)
+      }
+    })),
+    settings: state.settings
+  };
+  const signature = JSON.stringify(catalog);
+  if (force || previewSignature !== signature) {
+    postPlayer('catalog', { catalog });
+    previewSignature = signature;
+    if (!previewPlaying) postPlayer('pause');
+  }
+}
+function showAdd() {
+  searchResults = null;
+  searchTerm = '';
+  searchPending = false;
+  renderAdd();
+  addDialog.showModal();
+  setTimeout(() => document.querySelector('#game-search')?.focus(), 30);
+}
+function renderAdd() {
+  const wasOpen = addDialog.open,
+    scrollTop = addDialog.scrollTop;
+  addDialog.innerHTML = `<div class="dialog-head"><div><div class="eyebrow">STEAMGRIDDB</div><h2 id="add-title">${esc(t('addTitle'))}</h2><p>${esc(t('addBody'))}</p></div><button class="icon-button" data-action="close-add" aria-label="${esc(t('close'))}">${icon('close')}</button></div><div class="dialog-body">${!state.hasKey ? `<div class="banner">${icon('key')}<span>${esc(t('searchKeyNeeded'))}</span>${button(t('settings'), 'modal-settings', 'arrow')}</div>` : ''}<form id="search-form"><div class="modal-search"><input class="field" id="game-search" aria-label="${esc(t('searchPlaceholder'))}" placeholder="${esc(t('searchPlaceholder'))}" value="${attr(searchTerm)}" ${!state.hasKey ? 'disabled' : ''} minlength="2" maxlength="150" required><button class="button primary" type="submit" ${!state.hasKey || searchPending ? 'disabled' : ''}>${searchPending ? '<span class="spinner"></span>' : icon('search')}${esc(t('search'))}</button></div></form><div class="modal-hint">${esc(t('searchHint'))}</div><div class="search-results" aria-live="polite">${
+    searchPending
+      ? `<div class="dialog-empty"><span class="spinner"></span> ${esc(t('searching'))}</div>`
+      : searchResults === null
+        ? `<div class="dialog-empty">${esc(t('searchStart')).replace('\n', '<br>')}</div>`
+        : searchResults.length
+          ? searchResults
+              .map((g, i) => {
+                const im = safeRemote(g.thumb),
+                  present = g.present || state.games.some((x) => x.sgdbId === g.sgdbId);
+                return `<div class="result">${im ? `<img src="${attr(im)}" alt="">` : `<span class="result-placeholder">${icon('image')}</span>`}<div><div class="result-name">${esc(g.name)}</div><div class="result-meta">SGDB #${esc(g.sgdbId)}${g.steamAppId ? ` · Steam #${esc(g.steamAppId)}` : ''}</div></div><button class="button ${present ? '' : 'primary'}" data-add-result="${i}" ${present ? 'disabled' : ''}>${icon(present ? 'check' : 'plus')}${esc(t(present ? 'alreadyAdded' : 'add'))}</button></div>`;
+              })
+              .join('')
+          : `<div class="dialog-empty">${esc(t('noResults'))}</div>`
+  }</div></div>`;
+  if (wasOpen) {
+    const target =
+      !searchPending && searchResults?.length
+        ? addDialog.querySelector('[data-add-result]:not([disabled])')
+        : null;
+    (target || addDialog.querySelector('#game-search'))?.focus({ preventScroll: true });
+    addDialog.scrollTop = scrollTop;
+  }
+}
+async function searchGames() {
+  if (searchPending) return;
+  const input = document.querySelector('#game-search');
+  searchTerm = input.value.trim();
+  if (searchTerm.length < 2) return;
+  searchPending = true;
+  renderAdd();
+  try {
+    const result = await invoke('search', { query: searchTerm });
+    searchResults = Array.isArray(result) ? result : result?.results || result?.games || [];
+  } catch (error) {
+    toast(error.message || t('searchError'));
+    searchResults = [];
+  }
+  searchPending = false;
+  renderAdd();
+}
+async function showDetail(id) {
+  detailId = id;
+  assets = null;
+  renderDetail();
+  detailDialog.showModal();
+}
+function renderDetail(preferArtwork = false) {
+  const wasOpen = detailDialog.open,
+    scrollTop = detailDialog.scrollTop,
+    active = document.activeElement;
+  const focusedChoice = active?.dataset?.selectAsset;
+  const focusedAction = active?.dataset?.action;
+  const g = state.games.find((x) => x.id === detailId);
+  if (!g) {
+    detailDialog.close();
+    return;
+  }
+  const im = thumbnail(g),
+    reduced =
+      state.settings.reducedMotion || matchMedia('(prefers-reduced-motion: reduce)').matches,
+    animated = g.media?.animated && !reduced,
+    detailMedia =
+      animated && /\.(mp4|webm)$/i.test(g.media.file)
+        ? `<video class="detail-cover" src="${attr(localMedia(g.media.file))}" poster="${attr(im)}" autoplay muted loop playsinline preload="metadata"></video>`
+        : im || g.media?.file
+          ? `<img class="detail-cover" src="${attr(animated ? localMedia(g.media.file) : im || localMedia(g.media.file))}" alt="${esc(g.name)}">`
+          : '';
+  detailDialog.innerHTML = `<div class="dialog-head"><div><div class="eyebrow">${esc(t(g.manualSelection ? 'manualChoice' : 'automatic'))}</div><h2 id="detail-title">${esc(g.name)}</h2><p>${esc(statusName(g))}${!g.included ? ' · ' + esc(t('notIncluded')) : ''}</p></div><button class="icon-button" data-action="close-detail" aria-label="${esc(t('close'))}">${icon('close')}</button></div><div class="dialog-body">${detailMedia}<div class="detail-meta">${g.steamAppId ? `<span>Steam #${esc(g.steamAppId)}</span>` : ''}${g.sgdbId ? `<span>SGDB #${esc(g.sgdbId)}</span>` : ''}${g.media ? `<span>${g.media.width} × ${g.media.height} · ${esc(g.media.format)}${g.media.animated ? ` · ${esc(t('duration'))}: ${Number(g.media.duration) > 0 ? Number(g.media.duration).toLocaleString(lang(), { maximumFractionDigits: 1 }) + ' s' : esc(t('durationUnknown'))}` : ''}</span><span>${esc(t('artworkCredit'))} ${esc(authorName(g.media.author))}</span>` : ''}</div>${g.error ? `<div class="banner error">${esc(g.error)}</div>` : ''}<div class="detail-actions"><div class="button-row">${button(t('prepareScenes'), 'prepare-game', 'prepare', true, !state.hasKey ? 'disabled' : '')}${safeRemote(g.media?.sourceUrl || g.selectedAsset?.url) ? `<a class="button ghost" href="${attr(safeRemote(g.media?.sourceUrl || g.selectedAsset?.url))}" target="_blank" rel="noopener noreferrer">${icon('external')}${esc(t('source'))}</a>` : ''}</div>${button(t('removeGame'), 'remove-game', 'trash')}</div>${g.manualSelection ? `<div style="margin-bottom:20px">${button(t('automaticChoice'), 'automatic-choice', 'refresh')}</div>` : ''}<div class="section-heading"><div><h2>${esc(t('artworkTitle'))}</h2><p>${esc(t('artworkBody'))}</p></div></div>${
+    assets === null
+      ? `<p class="modal-hint">${esc(t('noArtworkYet'))}</p>${button(t('loadArtworks'), 'load-artworks', 'image', false, !state.hasKey ? 'disabled' : '')}`
+      : assets === 'loading'
+        ? `<div class="dialog-empty"><span class="spinner"></span> ${esc(t('artworksLoading'))}</div>`
+        : assets.length
+          ? `<div class="asset-grid">${assets
+              .map((a, i) => {
+                const image = safeRemote(a.thumb) || safeRemote(a.url),
+                  selected = g.selectedAsset?.id === a.id;
+                return `<button class="asset-choice ${selected ? 'selected' : ''}" data-select-asset="${i}" aria-label="${esc(t('choose') + ' ' + (i + 1))}" aria-pressed="${selected}">${image ? `<img src="${attr(image)}" alt="${esc(g.name + ' ' + (i + 1))}" loading="lazy">` : ''}<span class="asset-badge">${esc(t(selected ? 'selected' : a.animated ? 'animated' : 'still'))}</span><div class="asset-caption"><strong>${esc(authorName(a.author))}</strong><br>${Number(a.width) || '?'} × ${Number(a.height) || '?'} · ${esc(a.kind || 'hero')}${a.reasons?.length ? `<br>${esc(a.reasons.join(' · '))}` : ''}</div></button>`;
+              })
+              .join('')}</div>`
+          : `<div class="dialog-empty">${esc(t('noArtworks'))}</div>`
+  }</div>`;
+  if (wasOpen) {
+    let target = preferArtwork
+      ? detailDialog.querySelector('[data-select-asset]')
+      : focusedChoice !== undefined
+        ? detailDialog.querySelector(`[data-select-asset="${CSS.escape(focusedChoice)}"]`)
+        : focusedAction
+          ? detailDialog.querySelector(`[data-action="${CSS.escape(focusedAction)}"]`)
+          : null;
+    (
+      target ||
+      detailDialog.querySelector('[data-select-asset].selected') ||
+      detailDialog.querySelector('[data-select-asset]') ||
+      detailDialog.querySelector('[data-action="close-detail"]')
+    )?.focus({ preventScroll: true });
+    detailDialog.scrollTop = scrollTop;
+  }
+}
+async function loadArtworks() {
+  assets = 'loading';
+  renderDetail();
+  try {
+    const result = await invoke('artworks', { id: detailId });
+    assets = Array.isArray(result) ? result : result?.assets || result?.artworks || [];
+  } catch (error) {
+    toast(error.message);
+    assets = [];
+  }
+  renderDetail(true);
+}
+async function scan() {
+  if (scanning) return;
+  scanning = true;
+  render();
+  try {
+    await invoke('scan');
+    await refresh(true);
+    toast(t(state.games.length ? 'scanSuccess' : 'noGamesFound'));
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    scanning = false;
+    render();
+  }
+}
+async function fullscreen() {
+  const shell = document.querySelector('#preview-shell');
+  if (!shell) return;
+  try {
+    if (document.fullscreenElement) await document.exitFullscreen();
+    else await shell.requestFullscreen();
+  } catch (error) {
+    toast(error.message);
+  }
+}
+async function handleAction(action) {
+  switch (action) {
+    case 'add-game':
+      showAdd();
+      break;
+    case 'close-add':
+      addDialog.close();
+      break;
+    case 'close-detail':
+      detailDialog.close();
+      break;
+    case 'modal-settings':
+      addDialog.close();
+      navigate('settings');
+      break;
+    case 'open-settings':
+      navigate('settings');
+      break;
+    case 'open-library':
+      navigate('library');
+      break;
+    case 'open-preparation':
+      navigate('preparation');
+      break;
+    case 'open-preview':
+      navigate('preview');
+      break;
+    case 'reconnect':
+      await refresh(true);
+      break;
+    case 'scan':
+      await scan();
+      break;
+    case 'language':
+      await run('settings', { language: lang() === 'en' ? 'fr' : 'en' });
+      break;
+    case 'prepare-home':
+      if (!state.games.some((g) => g.included)) {
+        navigate('library');
+        break;
+      }
+      if (!state.hasKey) {
+        navigate('settings');
+        break;
+      }
+      navigate('preparation');
+      await run('prepare', {}, 'prepareSuccess');
+      break;
+    case 'prepare-all':
+      navigate('preparation');
+      await run('prepare', {}, 'prepareSuccess');
+      break;
+    case 'prepare-game': {
+      const id = detailId;
+      detailDialog.close();
+      navigate('preparation');
+      await run('prepare', { ids: [id] }, 'prepareSuccess');
+      break;
+    }
+    case 'pause':
+    case 'resume':
+    case 'retry':
+      await run(action);
+      break;
+    case 'cancel':
+      if (confirm(t('confirmCancel'))) await run('cancel');
+      break;
+    case 'save-key':
+      break;
+    case 'validateKey': {
+      const result = await run('validateKey');
+      if (result !== undefined)
+        toast(t(result === false || result?.valid === false ? 'keyInvalid' : 'keyValid'));
+      break;
+    }
+    case 'clearUnused':
+      await run(action, {}, 'clearSuccess');
+      break;
+    case 'install':
+      await run(action, {}, 'installSuccess');
+      break;
+    case 'repair':
+      await run(action, {}, 'repairSuccess');
+      break;
+    case 'update-install':
+      await run('install', {}, 'repairSuccess');
+      break;
+    case 'uninstall':
+      if (confirm(t('confirmUninstall'))) await run(action, {}, 'uninstallSuccess');
+      break;
+    case 'toggle-play':
+      previewPlaying = !previewPlaying;
+      postPlayer(previewPlaying ? 'play' : 'pause');
+      {
+        const b = document.querySelector('[data-action="toggle-play"]');
+        if (b) {
+          b.innerHTML = icon(previewPlaying ? 'pause' : 'play');
+          b.setAttribute('aria-label', t(previewPlaying ? 'pause' : 'resume'));
+        }
+        const note = document.querySelector('.playback-note');
+        if (note)
+          note.textContent = `${t(previewPlaying ? 'playing' : 'paused')} · ${readyGames().length} ${t('scenes')}`;
+      }
+      break;
+    case 'next':
+    case 'previous':
+      postPlayer(action);
+      break;
+    case 'fullscreen':
+      await fullscreen();
+      break;
+    case 'exit-fullscreen':
+      if (document.fullscreenElement) await document.exitFullscreen();
+      break;
+    case 'automatic-choice':
+      await run('updateGame', { id: detailId, selectedAsset: null }, 'includeSuccess');
+      renderDetail();
+      break;
+    case 'load-artworks':
+      await loadArtworks();
+      break;
+    case 'remove-game':
+      if (confirm(t('confirmRemove'))) {
+        const id = detailId;
+        detailDialog.close();
+        await run('remove', { id }, 'removeSuccess');
+      }
+      break;
+  }
+}
+document.addEventListener('click', async (event) => {
+  const nav = event.target.closest('[data-route]');
+  if (nav) {
+    navigate(nav.dataset.route);
+    return;
+  }
+  const action = event.target.closest('[data-action]');
+  if (action) {
+    if (action.type === 'submit' && action.form) return;
+    await handleAction(action.dataset.action);
+    return;
+  }
+  const f = event.target.closest('[data-filter]');
+  if (f) {
+    filter = f.dataset.filter;
+    render();
+    return;
+  }
+  const detail = event.target.closest('[data-detail]');
+  if (detail) {
+    showDetail(detail.dataset.detail);
+    return;
+  }
+  const add = event.target.closest('[data-add-result]');
+  if (add) {
+    const g = searchResults[Number(add.dataset.addResult)];
+    add.disabled = true;
+    try {
+      await invoke('add', { sgdbId: g.sgdbId, steamAppId: g.steamAppId, name: g.name });
+      await refresh(true);
+      toast(t('addedSuccess'));
+      renderAdd();
+    } catch (error) {
+      toast(error.message);
+      add.disabled = false;
+    }
+    return;
+  }
+  const choice = event.target.closest('[data-select-asset]');
+  if (choice && Array.isArray(assets)) {
+    const asset = assets[Number(choice.dataset.selectAsset)];
+    await run('updateGame', { id: detailId, selectedAsset: asset }, 'assetSuccess');
+    renderDetail();
+  }
+});
+document.addEventListener('submit', async (event) => {
+  if (event.target.id === 'search-form') {
+    event.preventDefault();
+    await searchGames();
+  }
+  if (event.target.id === 'key-form') {
+    event.preventDefault();
+    const input = document.querySelector('#api-key'),
+      key = input.value.trim();
+    if (!key) return;
+    const result = await run('setKey', { key }, 'keySuccess');
+    if (result !== undefined && document.querySelector('#api-key'))
+      document.querySelector('#api-key').value = '';
+  }
+});
+document.addEventListener('input', (event) => {
+  if (event.target.id === 'library-filter') {
+    query = event.target.value;
+    render();
+  }
+});
+document.addEventListener('change', async (event) => {
+  const el = event.target;
+  if (el.dataset.include) {
+    await run('updateGame', { id: el.dataset.include, included: el.checked });
+    return;
+  }
+  if (el.dataset.setting) {
+    let value =
+      el.type === 'checkbox' ? el.checked : el.type === 'number' ? Number(el.value) : el.value;
+    if (el.type === 'number' && (!el.checkValidity() || !Number.isFinite(value))) {
+      el.reportValidity();
+      return;
+    }
+    await run('settings', { [el.dataset.setting]: value }, 'saveSuccess');
+  }
+});
+document.addEventListener('keydown', (event) => {
+  if (
+    route !== 'preview' ||
+    addDialog.open ||
+    detailDialog.open ||
+    /INPUT|SELECT|TEXTAREA/.test(event.target.tagName) ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.altKey
+  )
+    return;
+  if (event.code === 'Space') {
+    event.preventDefault();
+    handleAction('toggle-play');
+  } else if (event.key === 'ArrowRight') {
+    event.preventDefault();
+    postPlayer('next');
+  } else if (event.key === 'ArrowLeft') {
+    event.preventDefault();
+    postPlayer('previous');
+  } else if (event.key.toLowerCase() === 'f') {
+    event.preventDefault();
+    fullscreen();
+  } else if (event.key === 'Escape' && document.fullscreenElement) {
+    document.exitFullscreen();
+  }
+});
+for (const dialog of [addDialog, detailDialog])
+  dialog.addEventListener('click', (event) => {
+    if (event.target === dialog) {
+      const r = dialog.getBoundingClientRect();
+      if (
+        event.clientX < r.left ||
+        event.clientX > r.right ||
+        event.clientY < r.top ||
+        event.clientY > r.bottom
+      )
+        dialog.close();
+    }
+  });
+let hoveredVideo = null,
+  hoveredImage = null;
+function clearHover() {
+  hoveredVideo?.pause();
+  hoveredVideo?.remove();
+  hoveredVideo = null;
+  if (hoveredImage) {
+    hoveredImage.el.src = hoveredImage.original;
+    hoveredImage = null;
+  }
+}
+detailDialog.addEventListener('close', () => {
+  for (const v of detailDialog.querySelectorAll('video')) {
+    v.pause();
+    v.removeAttribute('src');
+    v.load();
+  }
+  for (const im of detailDialog.querySelectorAll('.detail-cover')) im.removeAttribute('src');
+});
+app.addEventListener('pointerover', (event) => {
+  const card = event.target.closest('[data-detail].game-visual');
+  if (
+    !card ||
+    card.contains(event.relatedTarget) ||
+    state.settings.reducedMotion ||
+    matchMedia('(prefers-reduced-motion: reduce)').matches
+  )
+    return;
+  const game = state.games.find((g) => g.id === card.dataset.detail);
+  if (!game?.media?.animated) return;
+  clearHover();
+  if (/\.(mp4|webm)$/i.test(game.media.file)) {
+    const v = document.createElement('video');
+    v.src = localMedia(game.media.file);
+    v.muted = true;
+    v.loop = true;
+    v.playsInline = true;
+    v.preload = 'none';
+    v.setAttribute('aria-hidden', 'true');
+    card.append(v);
+    hoveredVideo = v;
+    v.play()
+      .then(() => v.classList.add('active'))
+      .catch(() => v.remove());
+  } else {
+    const im = card.querySelector('img');
+    if (im) {
+      hoveredImage = { el: im, original: im.src };
+      im.src = localMedia(game.media.file);
+    }
+  }
+});
+app.addEventListener('pointerout', (event) => {
+  const card = event.target.closest('[data-detail].game-visual');
+  if (card && !card.contains(event.relatedTarget)) clearHover();
+});
+app.innerHTML = `<div class="loading-screen"><span><span class="spinner"></span>${esc(t('loading'))}</span></div>`;
+await refresh(true);
+if (!connectionError) {
+  scan();
+}
+setInterval(() => {
+  if (!document.hidden && !document.querySelector('dialog[open]') && !pending && !scanning)
+    refresh();
+}, 1800);
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) refresh();
+});

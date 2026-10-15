@@ -1,0 +1,131 @@
+'use strict';
+const fs = require('node:fs/promises');
+const path = require('node:path');
+const os = require('node:os');
+const assert = require('node:assert/strict');
+async function run() {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-electron-qa-'));
+  let browser, app;
+  try {
+    const { chromium, _electron } = require('playwright');
+    browser = await chromium.launch({ channel: 'chrome', headless: true });
+    const fixture = await require('./qa-fixture.cjs').createFixture({ root, browser });
+    await fixture.add(901);
+    await fixture.core.invoke('prepare');
+    for (let i = 0; i < 200; i++) {
+      if ((await fixture.core.invoke('state')).job.status === 'completed') break;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    assert.equal((await fixture.core.invoke('state')).games[0].status, 'ready');
+    await fixture.core.close();
+    await browser.close();
+    browser = null;
+    app = await _electron.launch({
+      executablePath: require('electron'),
+      args: [path.resolve(__dirname, '..')],
+      env: { ...process.env, CINEMA_DATA_DIR: fixture.dataDir, STEAM_ROOT: fixture.steamRoot },
+      timeout: 20000
+    });
+    const page = await app.firstWindow();
+    page.setDefaultTimeout(10000);
+    const errors = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    await page.locator('[data-route="preview"]').first().waitFor();
+    const isolation = await page.evaluate(() => ({
+      node: typeof require,
+      bridge: typeof window.cinema?.invoke
+    }));
+    assert.deepEqual(isolation, { node: 'undefined', bridge: 'function' });
+    const preferences = await app.evaluate(({ BrowserWindow }) => {
+      const p = BrowserWindow.getAllWindows()[0].webContents.getLastWebPreferences();
+      return {
+        sandbox: p.sandbox,
+        contextIsolation: p.contextIsolation,
+        nodeIntegration: p.nodeIntegration
+      };
+    });
+    assert.deepEqual(preferences, {
+      sandbox: true,
+      contextIsolation: true,
+      nodeIntegration: false
+    });
+    assert.equal(
+      await page.evaluate(() => fetch('app://cinema/core/index.cjs').then((r) => r.status)),
+      404
+    );
+    assert.equal(
+      await page.evaluate(() =>
+        window.cinema.invoke('unsafeAction').then(
+          () => false,
+          () => true
+        )
+      ),
+      true
+    );
+    await page.locator('[data-route="preview"]').first().click();
+    await page.locator('#player-frame').waitFor();
+    let frame;
+    for (let i = 0; i < 100; i++) {
+      frame = page.frames().find((f) => f.url().includes('/player/index.html'));
+      if (frame) break;
+      await page.waitForTimeout(20);
+    }
+    assert.ok(frame, 'Player frame navigates to app://');
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible video')?.currentTime > 0.1
+    );
+    await frame.waitForFunction(
+      () => getComputedStyle(document.querySelector('.scene.visible')).opacity === '1'
+    );
+    assert.equal(
+      await frame
+        .locator('video')
+        .first()
+        .evaluate((video) => video.error),
+      null
+    );
+    await page.screenshot({
+      path: path.resolve(__dirname, '..', 'screenshots', '09-electron-preview-qa.png'),
+      fullPage: true
+    });
+    await page.locator('[data-action="toggle-play"]').click();
+    await frame.waitForFunction(() => document.querySelector('.scene.visible video')?.paused);
+    await app.close();
+    app = null;
+    assert.equal(
+      await fs.stat(path.join(fixture.dataDir, '.manager.lock')).catch(() => null),
+      null
+    );
+    assert.deepEqual(errors, []);
+    console.log(
+      JSON.stringify(
+        {
+          result: 'passed',
+          isolation,
+          preferences,
+          checks: [
+            'Actual app:// protocol media playback',
+            'Real Electron preview pause',
+            'Sender/action restrictions',
+            'No Node in renderer',
+            'Sandbox enabled',
+            'Library lock released on close'
+          ],
+          pageErrors: errors
+        },
+        null,
+        2
+      )
+    );
+  } finally {
+    if (app) await app.close().catch(() => {});
+    if (browser) await browser.close();
+    await fs.rm(root, { recursive: true, force: true });
+  }
+}
+if (require.main === module)
+  run().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+module.exports = { run };

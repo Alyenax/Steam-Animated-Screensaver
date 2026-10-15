@@ -1,0 +1,45 @@
+{
+  "date": "2026-10-15T19:26:20.282Z",
+  "provider": "Live official SteamGridDB v2 with temporary personal key",
+  "checks": [
+    "Personal API key accepted by live SteamGridDB",
+    "Live name search returns selectable matches and real thumbnail metadata",
+    "Steam AppID and Store URL resolve to distinct SteamGridDB identities",
+    "Two non-installed games added manually without Steam account credentials",
+    "Actual animated Hero alternatives available; explicit artist selection persisted",
+    "Live artwork download, integrity validation, real animation detection and thumbnails completed for both games",
+    "Offline rescan merges a simulated subsequent installation and preserves downloaded/manual artwork",
+    "Both real downloaded artworks play from installed files with manager closed, zero network requests, pause and next"
+  ],
+  "games": [
+    {
+      "steamAppId": 620,
+      "sgdbId": 17830,
+      "name": "Portal 2",
+      "assetId": 29084,
+      "kind": "hero",
+      "format": "webp",
+      "width": 1920,
+      "height": 620,
+      "duration": 6.296999999999993,
+      "author": "Moofy",
+      "manualSelection": true
+    },
+    {
+      "steamAppId": 1091500,
+      "sgdbId": 5209422,
+      "name": "Cyberpunk 2077",
+      "assetId": 130287,
+      "kind": "hero",
+      "format": "webp",
+      "width": 3840,
+      "height": 1240,
+      "duration": 15.032999999999989,
+      "author": "fewwan",
+      "manualSelection": false
+    }
+  ],
+  "screenshots": "Local only, not committed or distributed",
+  "physicalSteamOS": false,
+  "storageUsed": 53834268
+}
