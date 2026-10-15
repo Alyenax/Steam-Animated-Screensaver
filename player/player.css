@@ -28,6 +28,10 @@ body {
   opacity: 0;
   transition: opacity 1.2s ease;
   isolation: isolate;
+  --caption-x: 5.6vw;
+  --caption-y: 7vh;
+  --cover-width: min(clamp(56px, 7.5vw, 144px), 20vh);
+  --cover-gap: clamp(12px, 2vw, 32px);
   overflow: hidden;
 }
 .scene.visible {
@@ -67,18 +71,14 @@ body {
 }
 .caption {
   position: absolute;
-  left: 5.6%;
-  right: 5.6%;
-  bottom: 7%;
+  left: var(--caption-x);
+  right: var(--caption-x);
+  bottom: var(--caption-y);
+  display: flex;
+  align-items: flex-end;
+  gap: var(--cover-gap);
   z-index: 2;
   text-shadow: 0 2px 22px #000;
-}
-.caption .eyebrow {
-  font-size: clamp(8px, 0.85vw, 14px);
-  letter-spacing: 0.2em;
-  color: #b7c7d8;
-  text-transform: uppercase;
-  margin: 0 0 0.8em;
 }
 .caption h1 {
   font-size: clamp(24px, 4.1vw, 76px);
@@ -86,7 +86,8 @@ body {
   line-height: 1.05;
   letter-spacing: -0.035em;
   margin: 0 0 0.34em;
-  max-width: 85%;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 .caption .credit {
   font-size: clamp(9px, 1vw, 16px);
@@ -154,4 +155,47 @@ body {
 
 .scene.paused {
   transition: none;
+}
+
+.caption-copy {
+  min-width: 0;
+  max-width: 100%;
+}
+.caption-cover {
+  display: block;
+  width: var(--cover-width);
+  height: calc(var(--cover-width) * 1.5);
+  flex: 0 0 auto;
+  object-fit: contain;
+  object-position: bottom left;
+  filter: drop-shadow(0 4px 18px #0009);
+  z-index: 2;
+}
+.caption-cover[hidden],
+.cover-credit[hidden] {
+  display: none;
+}
+.scene:not([data-cover-position='beside-title']) > .caption-cover {
+  position: absolute;
+}
+.scene[data-cover-position='bottom-right'] > .caption-cover {
+  right: var(--caption-x);
+  bottom: var(--caption-y);
+  object-position: bottom right;
+}
+.scene[data-cover-position='bottom-right'].has-cover .caption {
+  padding-right: calc(var(--cover-width) + var(--cover-gap));
+}
+.scene[data-cover-position='top-right'] > .caption-cover {
+  right: var(--caption-x);
+  top: var(--caption-y);
+  object-position: top right;
+}
+.scene[data-cover-position='top-left'] > .caption-cover {
+  left: var(--caption-x);
+  top: var(--caption-y);
+  object-position: top left;
+}
+.caption .cover-credit {
+  margin-top: 0.35em;
 }

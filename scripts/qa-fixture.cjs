@@ -17,7 +17,8 @@ async function createFixture({ root, browser }) {
   await fs.mkdir(sourceDir, { recursive: true });
   const art = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   await art.setContent('<canvas width="1280" height="720"></canvas>');
-  const sources = [];
+  const sources = [],
+    covers = [];
   for (let index = 0; index < 3; index++) {
     const png = await art.evaluate((index) => {
       const c = document.querySelector('canvas'),
@@ -110,6 +111,20 @@ async function createFixture({ root, browser }) {
       '-y',
       webm
     ]);
+    const coverFile = path.join(sourceDir, `${index}.cover.png`);
+    execFileSync(require('ffmpeg-static'), [
+      '-v',
+      'error',
+      '-i',
+      pngFile,
+      '-vf',
+      'crop=480:720:640:0,scale=240:360',
+      '-frames:v',
+      '1',
+      '-y',
+      coverFile
+    ]);
+    covers.push(coverFile);
     sources.push(webm);
   }
   await art.close();
@@ -132,8 +147,9 @@ async function createFixture({ root, browser }) {
           signal?.addEventListener('abort', abort, { once: true });
           if (signal?.aborted) abort();
         });
-      const index = Number(new URL(url).pathname.match(/(\d+)\.webm$/)?.[1]) % 3;
-      await fs.copyFile(sources[index], dest);
+      const isCover = url.endsWith('.png');
+      const index = Number(new URL(url).pathname.match(/(\d+)\.(?:webm|png)$/)?.[1]) % 3;
+      await fs.copyFile((isCover ? covers : sources)[index], dest);
       prepares++;
       onProgress?.({ stage: 'downloading', bytes: (await fs.stat(dest)).size });
     }
@@ -165,6 +181,17 @@ async function createFixture({ root, browser }) {
       { sgdbId: 905, steamAppId: 7000905, name: 'Orbit II · QA homonym result', thumb: null }
     ],
     artworks: async (id) => assets(id),
+    covers: async (id) => [
+      {
+        ...assets(id)[0],
+        url: `https://cdn2.steamgriddb.com/grid/${id % 3}.png`,
+        width: 240,
+        height: 360,
+        animated: false,
+        kind: 'grid',
+        author: { name: 'Original validation cover' }
+      }
+    ],
     validateKey: async () => ({ valid: true })
   };
   const core = require('../core/index.cjs').createCore({

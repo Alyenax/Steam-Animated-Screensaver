@@ -1,13 +1,15 @@
-# 0.1.1-rc.1 — Steam screensaver identifier correction
+# 0.1.2-rc.1 — Fixed covers, placement and optional smoothing
 
-The user reported error -105 when previewing the 0.1.0 screensaver and when its one-minute idle timeout elapsed on a Steam Machine in Gamescope. Inspection of the extracted Steam frontend confirmed that custom players load through a virtual HTTPS hostname, whereas our first tests had primarily exercised file:// playback.
+A static game cover can now appear beside the title, bottom right, top right or top left, using the same margins as the title. Change its position or visibility from Preview or Settings. Preparation caches a static portrait SteamGridDB Grid with artist credit; existing local thumbnails provide an offline fallback.
 
-The installer now uses the lowercase DNS-safe directory `steamos-animated-screensaver`, separately from the product title. It stages and commits a complete replacement before removing an owned legacy export. Migration failure preserves prior files; unowned folders remain untouched. A small `repair-steam-screensaver.sh` can rename an existing owned export without downloading artwork again.
+Optional **Smooth animations · 30 fps** prepares low-frame-rate GIF, WebP and WebM animations as separate silent VP9 videos, up to 1080p. Original bytes are retained; disabling the option restores original playback without downloading again. Already fluid media keeps its frame rate. Interpolation may distort movement, takes additional preparation/storage and cannot fix a broken loop. Bounded failures remain visible and retain the original animation.
 
-After repair, fully restart Steam and reselect **steamos-animated-screensaver** under Settings → Customization. Verify Preview and automatic activation after the configured idle timeout. Update the Manager to 0.1.1 before its next install/update action, because 0.1.0 would recreate the old name.
+## Apply the update
 
-The new software checks cover DNS-safe identifiers, owned migration/uninstall, failed migration preservation, repeatable repair, and playback from the actual export under a locally mapped HTTPS steamscreensavers.host test origin. This emulates the origin boundary, not Steam's C++ domain mapper or Gamescope. Physical confirmation of the fix is still required; the exact failed URL from the affected client has not been collected.
+1. In SteamOS Desktop Mode, close the Manager, extract the Linux x64 package and run `./install.sh`. Existing catalog, key and media are preserved.
+2. In Settings, choose the cover position and optionally enable smoothing. Prepare the library to fetch covers/process selected animations.
+3. Inspect Preview, then choose **Update / repair** to copy the new player, settings and selected media into Steam. Restart Steam if it retains the previous page.
 
-The prior live SteamGridDB preparation and offline playback checks on Portal 2 and Cyberpunk 2077 remain documented. No temporary key or downloaded game artwork is distributed. The repository/release remain private pending target-device acceptance and corresponding-source redistribution review for the separate GPL media executables. No GitHub Actions workflow is present or triggered.
+The “Your library. Beautifully alive.” promotional sentence and its French equivalent are removed from every scene. The standalone `remove-screensaver-tagline.sh` is also supplied for users who only want to hide that sentence in existing owned installations, with a CSS backup and no media preparation. That script alone does not add covers or smoothing.
 
-The Linux x64 package includes the updated Manager, player installer, repair script, documentation and FFmpeg/FFprobe. The source archive and checksum files are supplied separately. Not affiliated with or endorsed by Valve or SteamGridDB.
+The DNS-safe installation identifier and owned legacy migration from 0.1.1 are preserved. The repository/release stays private, GitHub Actions remains disabled, and no downloaded game artworks or secrets are distributed. Local software/browser/FFmpeg checks are recorded in VALIDATION.md. The reported Steam Machine error -105 still requires physical re-test; this package is an installation candidate.

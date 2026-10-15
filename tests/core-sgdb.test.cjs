@@ -201,3 +201,35 @@ test('lifetime cancellation interrupts a pending API request without exposing au
   lifetime.abort(new Error('Manager closed'));
   await assert.rejects(request, /Stopped/);
 });
+test('still cover lookup uses portrait Grid dimensions and strict filters with deterministic ranking', async () => {
+  const urls = [];
+  const sg = createSGDB({
+    getKey: () => 'personal',
+    minInterval: 0,
+    fetchImpl: async (url) => {
+      urls.push(url);
+      return reply(
+        [3, 2, 1].map((id) => ({
+          id,
+          url: `https://cdn2.steamgriddb.com/grid/${id}.png`,
+          width: id === 3 ? 920 : 600,
+          height: id === 3 ? 430 : 900,
+          score: 10,
+          author: { name: 'Cover artist' }
+        }))
+      );
+    }
+  });
+  const covers = await sg.covers(9);
+  assert.deepEqual(
+    covers.map((a) => a.id),
+    [1, 2]
+  );
+  assert(covers.every((a) => a.animated === false && a.author.name === 'Cover artist'));
+  const query = new URL(urls[0]);
+  assert.equal(query.pathname, '/api/v2/grids/game/9');
+  for (const field of ['nsfw', 'humor', 'epilepsy'])
+    assert.equal(query.searchParams.get(field), 'false');
+  assert.equal(query.searchParams.get('types'), 'static');
+  assert.equal(query.searchParams.get('dimensions'), '600x900,342x482');
+});

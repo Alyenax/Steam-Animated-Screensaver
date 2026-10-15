@@ -172,3 +172,30 @@ test('standalone repair script renames only owned legacy files and is repeatable
   assert.notEqual(spawnSync('sh', [script, f.steamRoot]).status, 0);
   assert.equal(await fs.readFile(path.join(legacy, 'keep'), 'utf8'), 'unrelated');
 });
+test('export retains cover credits and position, chooses smoothing only when enabled, and omits stale cover files', async (t) => {
+  const f = await fixture(t),
+    game = f.games[0];
+  await fs.writeFile(path.join(f.dataDir, 'media', 'cover.png'), 'static cover');
+  await fs.writeFile(path.join(f.dataDir, 'media', 'smooth.webm'), 'interpolated');
+  game.media.sha256 = 'original-hash';
+  game.cover = { file: 'cover.png', animated: false, author: { name: 'Cover artist' } };
+  game.smoothed = { ...game.media, file: 'smooth.webm', format: 'webm' };
+  f.settings = { ...f.settings, showCover: true, coverPosition: 'top-left', smoothMotion: true };
+  const read = async () => {
+    const result = await install(f),
+      context = { window: {} };
+    vm.runInNewContext(await fs.readFile(path.join(result.path, 'catalog.js'), 'utf8'), context);
+    return context.window.CINEMA_CATALOG;
+  };
+  let catalog = await read();
+  assert.equal(catalog.games[0].media.file, 'media/smooth.webm');
+  assert.equal(catalog.games[0].cover.file, 'media/cover.png');
+  assert.equal(catalog.games[0].cover.author.name, 'Cover artist');
+  assert.equal(catalog.settings.coverPosition, 'top-left');
+  f.settings.smoothMotion = false;
+  catalog = await read();
+  assert.equal(catalog.games[0].media.file, 'media/animation.gif');
+  await fs.rm(path.join(f.dataDir, 'media', 'cover.png'));
+  catalog = await read();
+  assert.equal(catalog.games[0].cover, null);
+});

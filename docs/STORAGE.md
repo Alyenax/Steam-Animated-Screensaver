@@ -23,7 +23,13 @@ For at most 100 candidates per requested asset type/filter, score:
 
 Ties use type then numeric artwork ID. Animated assets always outrank still fallbacks. An animated landscape Hero outranks a portrait Grid even when the Grid has more votes. The API filters out NSFW, humor and epilepsy-tagged media. An API content label is not an independent content audit.
 
-These weights reflect known metadata, not an invented aesthetic measurement. Candidate codec, duration and true frame count are verified by the media engine; automatic preparation tries at most the first three ranked candidates when a download or validation fails, recording rejection reasons. Manual selection attempts only the selected artwork and never substitutes silently. Artistic loop continuity, black-ending detection, logo presence, smoothness and subjective composition are not scored in this version. The original visual is never cropped or retimed to conceal an assumed artistic flaw. Use the alternate-artwork gallery when automatic selection is unsuitable. An explicit manual choice is not overwritten by automatic matching.
+These weights reflect known metadata, not an invented aesthetic measurement. Candidate codec, duration and true frame count are verified by the media engine; automatic preparation tries at most the first three ranked candidates when a download or validation fails, recording rejection reasons. Manual selection attempts only the selected artwork and never substitutes silently. Artistic loop continuity, black-ending detection, logo presence, smoothness and subjective composition are not scored in this version. Original artwork is never modified to conceal an assumed artistic flaw; optional interpolation creates a separate explicitly requested derivative. Use the alternate-artwork gallery when automatic selection is unsuitable. An explicit manual choice is not overwritten by automatic matching.
+
+## Optional derivatives
+
+`cover` stores independently validated static portrait Grid media and author credit. Candidates use the official static Grid filter, portrait dimensions 600×900 or 342×482, the same content exclusions, votes descending, then resolution and ID. Up to three candidates are attempted. Covers do not enable the full-screen static fallback setting. Existing ready animations need no download when adding a missing cover.
+
+`smoothed` stores an optional 30 fps VP9 derivative keyed to the original source SHA-256. Its original, thumbnail and both playback variants remain referenced through unused-media cleanup. `coverError` and `smoothingError` record optional failures without marking an otherwise playable animation broken. Core state retains these fields across restart. Export selects one playback variant plus the cover and thumbnail; source URLs and processing errors stay in the Manager.
 
 ## Work scheduling
 

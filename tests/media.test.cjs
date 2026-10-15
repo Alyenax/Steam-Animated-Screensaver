@@ -238,3 +238,188 @@ test(
     );
   }
 );
+test(
+  'real interpolation produces 30 fps VP9 from GIF, WebP and WebM without downloading again',
+  { skip: !ffmpeg, timeout: 45000 },
+  async (t) => {
+    const root = await temporary(t);
+    for (const format of ['gif', 'webp', 'webm']) {
+      const source = path.join(root, `smooth.${format}`);
+      const args = ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc=size=96x54:rate=6:duration=1'];
+      if (format === 'webp') args.push('-c:v', 'libwebp_anim', '-lossless', '0', '-loop', '0');
+      if (format === 'webm') args.push('-c:v', 'libvpx-vp9', '-pix_fmt', 'yuv420p');
+      const r = spawnSync(ffmpeg, [...args, '-y', source]);
+      assert.equal(r.status, 0, r.stderr.toString());
+      const dataDir = path.join(root, `smooth-${format}`);
+      let downloads = 0;
+      const media = createMedia({
+        dataDir,
+        downloadImpl: async (_, dest) => {
+          downloads++;
+          await fs.copyFile(source, dest);
+        }
+      });
+      const original = await media.prepare({ url, animated: true });
+      const smooth = await media.smooth(original);
+      assert.equal(downloads, 1);
+      assert.equal(smooth.format, 'webm');
+      assert.equal(smooth.smoothing, 'interpolate-30-v1');
+      assert.equal(await media.validate(smooth), true);
+      assert.equal(await media.validate(original), true);
+      assert.deepEqual(
+        await fs.readFile(path.join(dataDir, 'media', original.sourceFile)),
+        await fs.readFile(source)
+      );
+      assert(Math.abs(smooth.duration - original.duration) < 0.1);
+      const probe = JSON.parse(
+        spawnSync(require('ffprobe-static').path, [
+          '-v',
+          'error',
+          '-count_frames',
+          '-show_entries',
+          'stream=nb_read_frames,codec_name,r_frame_rate',
+          '-of',
+          'json',
+          path.join(dataDir, 'media', smooth.file)
+        ]).stdout
+      );
+      assert.equal(probe.streams[0].codec_name, 'vp9');
+      assert.equal(probe.streams[0].r_frame_rate, '30/1');
+      assert(Number(probe.streams[0].nb_read_frames) >= 29);
+      const hashes = spawnSync(ffmpeg, [
+        '-v',
+        'error',
+        '-i',
+        path.join(dataDir, 'media', smooth.file),
+        '-f',
+        'framemd5',
+        '-'
+      ])
+        .stdout.toString()
+        .split('\n')
+        .filter((line) => line && !line.startsWith('#'))
+        .map((line) => line.split(',').at(-1).trim());
+      assert(
+        new Set(hashes).size > 10,
+        `${format} must generate intermediate frames, not only duplicate originals`
+      );
+      await assert.rejects(media.smooth(original, { maxBytes: 2 }), /storage/);
+      await assert.rejects(media.smooth(original, { signal: AbortSignal.abort() }), {
+        name: 'AbortError'
+      });
+      assert(
+        (await fs.readdir(path.join(dataDir, 'media'))).every(
+          (name) => !name.endsWith('.frames') && !name.endsWith('.partial')
+        )
+      );
+    }
+  }
+);
+test(
+  'static cover validation rejects an animation even when provider calls it static',
+  { skip: !ffmpeg },
+  async (t) => {
+    const root = await temporary(t),
+      source = path.join(root, 'animated.gif');
+    const r = spawnSync(ffmpeg, [
+      '-v',
+      'error',
+      '-f',
+      'lavfi',
+      '-i',
+      'testsrc=size=96x54:rate=6:duration=1',
+      '-y',
+      source
+    ]);
+    assert.equal(r.status, 0, r.stderr.toString());
+    const media = fixtureMedia({ source, dataDir: path.join(root, 'data') });
+    await assert.rejects(
+      media.prepare({ url, animated: false }, { requireStatic: true }),
+      /still image/
+    );
+  }
+);
+test(
+  'WebP interpolation composes offset alpha frames with disposal rather than treating delta rectangles as full images',
+  { skip: !ffmpeg },
+  async (t) => {
+    const root = await temporary(t);
+    const chunk = (type, data) => {
+      const header = Buffer.alloc(8);
+      header.write(type);
+      header.writeUInt32LE(data.length, 4);
+      return Buffer.concat([header, data, ...(data.length % 2 ? [Buffer.alloc(1)] : [])]);
+    };
+    const vp8x = Buffer.alloc(10);
+    vp8x[0] = 0x12;
+    vp8x.writeUIntLE(95, 4, 3);
+    vp8x.writeUIntLE(53, 7, 3);
+    const parts = [chunk('VP8X', vp8x), chunk('ANIM', Buffer.alloc(6))];
+    for (const [i, [width, height, x, y, color, flags]] of [
+      [96, 54, 0, 0, [255, 0, 0, 255], 2],
+      [32, 20, 10, 10, [0, 255, 0, 128], 0],
+      [32, 20, 20, 20, [0, 0, 255, 255], 1],
+      [32, 20, 0, 0, [0, 255, 255, 200], 0]
+    ].entries()) {
+      const frame = path.join(root, `delta-${i}.webp`),
+        rgba = Buffer.alloc(width * height * 4);
+      for (let p = 0; p < rgba.length; p += 4) rgba.set(color, p);
+      const r = spawnSync(
+        ffmpeg,
+        [
+          '-v',
+          'error',
+          '-f',
+          'rawvideo',
+          '-pixel_format',
+          'rgba',
+          '-video_size',
+          `${width}x${height}`,
+          '-i',
+          'pipe:0',
+          '-frames:v',
+          '1',
+          '-c:v',
+          'libwebp',
+          '-lossless',
+          i === 1 ? '0' : '1',
+          '-y',
+          frame
+        ],
+        { input: rgba }
+      );
+      assert.equal(r.status, 0, r.stderr.toString());
+      const still = await fs.readFile(frame),
+        payload = [];
+      for (let offset = 12; offset + 8 <= still.length;) {
+        const size = still.readUInt32LE(offset + 4);
+        if (still.toString('ascii', offset, offset + 4) !== 'VP8X')
+          payload.push(still.subarray(offset, offset + 8 + size + (size % 2)));
+        offset += 8 + size + (size % 2);
+      }
+      const header = Buffer.alloc(16);
+      header.writeUIntLE(x / 2, 0, 3);
+      header.writeUIntLE(y / 2, 3, 3);
+      header.writeUIntLE(width - 1, 6, 3);
+      header.writeUIntLE(height - 1, 9, 3);
+      header.writeUIntLE(250, 12, 3);
+      header[15] = flags;
+      parts.push(chunk('ANMF', Buffer.concat([header, ...payload])));
+    }
+    const body = Buffer.concat(parts),
+      riff = Buffer.alloc(12);
+    riff.write('RIFF');
+    riff.writeUInt32LE(body.length + 4, 4);
+    riff.write('WEBP', 8);
+    const source = path.join(root, 'delta.webp');
+    await fs.writeFile(source, Buffer.concat([riff, body]));
+    const dataDir = path.join(root, 'data'),
+      media = fixtureMedia({ source, dataDir });
+    const original = await media.prepare({ url, animated: true });
+    const result = await media.smooth(original);
+    assert.equal(await media.validate(result), true);
+    assert.equal(result.width, 96);
+    assert.equal(result.height, 54);
+    assert(Math.abs(result.duration - 1) < 0.1);
+  }
+);

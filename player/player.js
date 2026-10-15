@@ -6,6 +6,8 @@
     shuffle: true,
     transition: 'crossfade',
     showLogos: true,
+    showCover: true,
+    coverPosition: 'beside-title',
     staticFallback: false,
     reducedMotion: false,
     language: 'en'
@@ -27,6 +29,12 @@
         ? input.transition
         : 'crossfade',
       showLogos: input.showLogos !== false,
+      showCover: input.showCover !== false,
+      coverPosition: ['beside-title', 'bottom-right', 'top-right', 'top-left'].includes(
+        input.coverPosition
+      )
+        ? input.coverPosition
+        : 'beside-title',
       staticFallback: input.staticFallback === true,
       reducedMotion: input.reducedMotion === true,
       language: input.language === 'fr' ? 'fr' : 'en'
@@ -210,6 +218,18 @@
     if (order.length > 1 && order[0]?.id === lastId) [order[0], order[1]] = [order[1], order[0]];
     position = -1;
   }
+  function placeCover(scene) {
+    const cover = scene.querySelector('.caption-cover');
+    scene.dataset.coverPosition = options.coverPosition;
+    if (!cover) return;
+    cover.hidden = !options.showCover || cover.dataset.failed === 'true';
+    const caption = scene.querySelector('.caption');
+    if (options.coverPosition === 'beside-title') caption.prepend(cover);
+    else scene.append(cover);
+    scene.classList.toggle('has-cover', !cover.hidden);
+    const credit = scene.querySelector('.cover-credit');
+    if (credit) credit.hidden = cover.hidden || cover.dataset.fallback === 'true';
+  }
   function sceneFor(game) {
     const scene = doc.createElement('section');
     scene.className = `scene ${!game.media.animated ? 'static ' : ''}${options.reducedMotion ? 'reduced instant' : ''}`;
@@ -237,27 +257,46 @@
     scene.append(shade);
     const caption = doc.createElement('div');
     caption.className = 'caption';
-    const eyebrow = doc.createElement('p');
-    eyebrow.className = 'eyebrow';
-    eyebrow.textContent = french()
-      ? 'Votre bibliothèque. En mouvement.'
-      : 'Your library. Beautifully alive.';
     const title = doc.createElement('h1');
     title.textContent = String(game.name || '');
     title.hidden = !options.showLogos;
     const credit = doc.createElement('p');
     credit.className = 'credit';
     credit.textContent = `${french() ? 'Artwork de' : 'Artwork by'} ${String(game.media.author?.name || 'Unknown')} · SteamGridDB`;
-    caption.append(eyebrow, title, credit);
+    const copy = doc.createElement('div');
+    copy.className = 'caption-copy';
+    copy.append(title, credit);
+    const cover = doc.createElement('img');
+    cover.className = 'caption-cover';
+    cover.alt = french() ? `Jaquette de ${game.name}` : `${game.name} cover`;
+    const hasCover = game.cover?.animated === false && localMedia(game.cover.file);
+    cover.dataset.fallback = String(!hasCover);
+    cover.src = hasCover ? game.cover.file : game.media.thumbnail;
+    cover.addEventListener('error', () => {
+      if (cover._cinemaReleased) return;
+      if (cover.dataset.fallback !== 'true') {
+        cover.dataset.fallback = 'true';
+        cover.src = game.media.thumbnail;
+      } else cover.dataset.failed = 'true';
+      placeCover(scene);
+    });
+    if (hasCover) {
+      const coverCredit = doc.createElement('p');
+      coverCredit.className = 'credit cover-credit';
+      coverCredit.textContent = `${french() ? 'Jaquette de' : 'Cover by'} ${String(game.cover.author?.name || 'Unknown')} · SteamGridDB`;
+      copy.append(coverCredit);
+    }
+    caption.append(cover, copy);
     if (!game.media.animated) {
       const badge = doc.createElement('p');
       badge.className = 'static-note';
       badge.textContent = french()
         ? 'Illustration statique · Repli optionnel'
         : 'Static artwork · Optional fallback';
-      caption.append(badge);
+      copy.append(badge);
     }
     scene.append(caption);
+    placeCover(scene);
     return { scene, art, isVideo };
   }
   function display(game, remember = true) {
@@ -424,6 +463,7 @@
       scene.classList.toggle('reduced', options.reducedMotion);
       scene.classList.toggle('instant', options.reducedMotion);
       scene.querySelector('h1').hidden = !options.showLogos;
+      placeCover(scene);
     }
     schedule();
   }

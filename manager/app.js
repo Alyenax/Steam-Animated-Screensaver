@@ -185,6 +185,18 @@ const translations = {
     cut: 'Cut',
     showLogos: 'Show game titles',
     logosHint: 'Let the artwork speak, or keep a title on screen.',
+    showCover: 'Show a still cover',
+    coverHint:
+      'Prepare your library to download covers. A local still frame is used when unavailable.',
+    coverPosition: 'Cover position',
+    besideTitle: 'Beside the title',
+    bottomRight: 'Bottom right',
+    topRight: 'Top right',
+    topLeft: 'Top left',
+    smoothMotion: 'Smooth animations · 30 fps',
+    smoothHint:
+      'Optional offline interpolation, up to 1080p. Can take several minutes and create visual artifacts. Prepare again, then Update / Repair to apply. Originals are kept.',
+    stageSmoothing: 'Interpolating animation · 30 fps',
     staticFallback: 'Allow still artwork',
     staticHint: 'Use still images when no animation is available.',
     reducedMotion: 'Reduce motion',
@@ -436,6 +448,18 @@ const translations = {
     cut: 'Coupe directe',
     showLogos: 'Afficher les titres des jeux',
     logosHint: 'Laissez parler l’image ou gardez le titre à l’écran.',
+    showCover: 'Afficher une jaquette fixe',
+    coverHint:
+      'Préparez la bibliothèque pour télécharger les jaquettes. Une image locale sert de repli si aucune n’est disponible.',
+    coverPosition: 'Emplacement de la jaquette',
+    besideTitle: 'À côté du titre',
+    bottomRight: 'En bas à droite',
+    topRight: 'En haut à droite',
+    topLeft: 'En haut à gauche',
+    smoothMotion: 'Fluidifier les animations · 30 i/s',
+    smoothHint:
+      'Interpolation optionnelle hors ligne, jusqu’à 1080p. Peut prendre plusieurs minutes et créer des déformations. Préparez à nouveau, puis Mettre à jour / Réparer pour appliquer. Les originaux sont conservés.',
+    stageSmoothing: 'Interpolation de l’animation · 30 i/s',
     staticFallback: 'Autoriser les images fixes',
     staticHint: 'Utiliser une image fixe lorsqu’aucune animation n’est disponible.',
     reducedMotion: 'Réduire les animations',
@@ -548,6 +572,9 @@ const defaultState = {
     shuffle: true,
     transition: 'crossfade',
     showLogos: true,
+    showCover: true,
+    coverPosition: 'beside-title',
+    smoothMotion: false,
     staticFallback: false,
     reducedMotion: false,
     maxStorageGB: 10,
@@ -728,7 +755,7 @@ async function run(action, payload = {}, message, options = {}) {
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">CINEMA</div><div class="brand-caption">STEAMOS SCREENSAVER</div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.1</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Cinema ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} CINEMA</div><div class="top-actions"><span class="local-badge">${icon('shield')}${esc(t('local'))}</span><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">CINEMA</div><div class="brand-caption">STEAMOS SCREENSAVER</div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.2</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Cinema ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} CINEMA</div><div class="top-actions"><span class="local-badge">${icon('shield')}${esc(t('local'))}</span><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -797,7 +824,12 @@ function preparationView() {
     active = status === 'running' || status === 'paused',
     playable = readyGames().length,
     remaining = included.length - playable,
-    partial = status === 'completed' && (remaining > 0 || job.errors?.length);
+    partial = status === 'completed' && (remaining > 0 || job.errors?.length),
+    optionalIssues = included.flatMap((g) =>
+      [state.settings.showCover && g.coverError, state.settings.smoothMotion && g.smoothingError]
+        .filter(Boolean)
+        .map((error) => `${g.name}: ${error}`)
+    );
   let controls = active
     ? button(
         t(status === 'paused' ? 'resume' : 'pause'),
@@ -817,7 +849,7 @@ function preparationView() {
     typeof job.current === 'object'
       ? job.current?.name
       : state.games.find((g) => g.id === job.current)?.name || job.current;
-  return `${heading('prepareEyebrow', 'prepareTitle', 'prepareSub')}${keyBanner()}<section class="progress-panel" aria-live="polite"><div class="progress-title"><div><h2>${esc(t(partial ? 'jobPartialTitle' : { idle: 'jobIdle', running: 'jobRunning', paused: 'jobPaused', completed: 'jobCompleted', cancelled: 'jobCancelled' }[status] || 'jobIdle'))}</h2><p>${active ? `${current ? esc(current) + ' · ' : ''}${esc(t({ downloading: 'stageDownloading', validating: 'stageValidating', optimizing: 'stageOptimizing', saving: 'stageSaving' }[job.stage] || 'unknownStage'))}` : esc(partial ? t('jobPartialBody').replace('{ready}', playable).replace('{pending}', remaining) : t(status === 'completed' ? 'jobCompletedBody' : 'jobIdleBody'))}</p></div><div class="progress-percent">${percent}<span style="font-size:15px">%</span></div></div><div class="progress-track" role="progressbar" aria-label="${esc(t('preparation'))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><div class="progress-fill" style="width:${percent}%"></div></div><div class="progress-foot"><span>${Number(job.processed) || 0} / ${Number(job.total) || 0} ${esc(t('processed'))} &nbsp;·&nbsp; ${esc(bytes(job.bytes))} ${esc(t('bytesDownloaded'))}</span><div class="button-row">${controls}</div></div></section>${playable && !active ? `<div class="banner">${icon('check')}<span>${playable} ${esc(t('readyScenes'))}</span><div class="button-row">${button(t('openPreview'), 'open-preview', 'preview')}${state.steam.detected ? button(t(state.steam.installed ? 'repair' : 'install'), state.steam.installed ? 'update-install' : 'install', 'prepare', true) : button(t('settings'), 'open-settings', 'settings')}</div></div>` : ''}${job.errors?.length ? `<div class="banner error">${icon('info')}<div>${esc(t('errors'))}<br>${job.errors.map((e) => esc(typeof e === 'string' ? e : e.message || e.error || JSON.stringify(e))).join('<br>')}</div></div>` : ''}<div class="section-heading"><h2>${esc(t('queueTitle'))}</h2><span class="text-button">${included.length} ${esc(t('scenes'))}</span></div>${
+  return `${heading('prepareEyebrow', 'prepareTitle', 'prepareSub')}${keyBanner()}<section class="progress-panel" aria-live="polite"><div class="progress-title"><div><h2>${esc(t(partial ? 'jobPartialTitle' : { idle: 'jobIdle', running: 'jobRunning', paused: 'jobPaused', completed: 'jobCompleted', cancelled: 'jobCancelled' }[status] || 'jobIdle'))}</h2><p>${active ? `${current ? esc(current) + ' · ' : ''}${esc(t({ downloading: 'stageDownloading', validating: 'stageValidating', optimizing: 'stageOptimizing', saving: 'stageSaving', smoothing: 'stageSmoothing' }[job.stage] || 'unknownStage'))}` : esc(partial ? t('jobPartialBody').replace('{ready}', playable).replace('{pending}', remaining) : t(status === 'completed' ? 'jobCompletedBody' : 'jobIdleBody'))}</p></div><div class="progress-percent">${percent}<span style="font-size:15px">%</span></div></div><div class="progress-track" role="progressbar" aria-label="${esc(t('preparation'))}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}"><div class="progress-fill" style="width:${percent}%"></div></div><div class="progress-foot"><span>${Number(job.processed) || 0} / ${Number(job.total) || 0} ${esc(t('processed'))} &nbsp;·&nbsp; ${esc(bytes(job.bytes))} ${esc(t('bytesDownloaded'))}</span><div class="button-row">${controls}</div></div></section>${playable && !active ? `<div class="banner">${icon('check')}<span>${playable} ${esc(t('readyScenes'))}</span><div class="button-row">${button(t('openPreview'), 'open-preview', 'preview')}${state.steam.detected ? button(t(state.steam.installed ? 'repair' : 'install'), state.steam.installed ? 'update-install' : 'install', 'prepare', true) : button(t('settings'), 'open-settings', 'settings')}</div></div>` : ''}${job.errors?.length ? `<div class="banner error">${icon('info')}<div>${esc(t('errors'))}<br>${job.errors.map((e) => esc(typeof e === 'string' ? e : e.message || e.error || JSON.stringify(e))).join('<br>')}</div></div>` : ''}${optionalIssues.length ? `<div class="banner" role="status">${icon('info')}<div>${optionalIssues.map(esc).join('<br>')}</div></div>` : ''}<div class="section-heading"><h2>${esc(t('queueTitle'))}</h2><span class="text-button">${included.length} ${esc(t('scenes'))}</span></div>${
     included.length
       ? `<div class="queue-list">${included
           .map((g) => {
@@ -832,7 +864,7 @@ function preparationView() {
                     : g.status === 'missing'
                       ? t('gameMissing')
                       : t('waiting');
-            return `<div class="queue-row">${im ? `<img class="queue-thumb" src="${attr(im)}" alt="">` : `<span class="queue-thumb">${icon('image')}</span>`}<div><div class="queue-title">${esc(g.name)}</div><div class="queue-sub">${esc(g.error || g.media?.format || t(g.manualSelection ? 'manualChoice' : 'automatic'))}</div></div><span class="queue-status ${g.status === 'ready' ? 'ready' : ''}">${isCurrent ? '<span class="spinner"></span>' : g.status === 'ready' ? icon('check') : ''}${esc(label)}</span></div>`;
+            return `<div class="queue-row">${im ? `<img class="queue-thumb" src="${attr(im)}" alt="">` : `<span class="queue-thumb">${icon('image')}</span>`}<div><div class="queue-title">${esc(g.name)}</div><div class="queue-sub">${esc(g.error || (state.settings.smoothMotion && g.smoothingError) || g.media?.format || t(g.manualSelection ? 'manualChoice' : 'automatic'))}</div></div><span class="queue-status ${g.status === 'ready' ? 'ready' : ''}">${isCurrent ? '<span class="spinner"></span>' : g.status === 'ready' ? icon('check') : ''}${esc(label)}</span></div>`;
           })
           .join('')}</div>`
       : empty(
@@ -843,9 +875,22 @@ function preparationView() {
         )
   }`;
 }
+function coverPositionOptions() {
+  return [
+    ['beside-title', 'besideTitle'],
+    ['bottom-right', 'bottomRight'],
+    ['top-right', 'topRight'],
+    ['top-left', 'topLeft']
+  ]
+    .map(
+      ([value, label]) =>
+        `<option value="${value}" ${state.settings.coverPosition === value ? 'selected' : ''}>${esc(t(label))}</option>`
+    )
+    .join('');
+}
 function previewView() {
   const games = readyGames();
-  return `${heading('previewEyebrow', 'previewTitle', 'previewSub')}${games.length ? `<div id="preview-shell" class="preview-shell"><iframe id="player-frame" src="../player/index.html" title="Cinema ${esc(t('preview'))}" allow="autoplay; fullscreen" tabindex="-1"></iframe><button class="button ghost fullscreen-exit" data-action="exit-fullscreen">${icon('close')}${esc(t('exitFullscreen'))}</button></div><div class="preview-controls"><div class="playback-buttons"><button class="icon-button" data-action="previous" aria-label="${esc(t('previous') || 'Previous')}">${icon('previous')}</button><button class="icon-button" data-action="toggle-play" aria-label="${esc(t(previewPlaying ? 'pause' : 'resume'))}">${icon(previewPlaying ? 'pause' : 'play')}</button><button class="icon-button" data-action="next" aria-label="${esc(t('next') || 'Next')}">${icon('next')}</button><span class="playback-note">${esc(t(previewPlaying ? 'playing' : 'paused'))} · ${games.length} ${esc(t(games.length === 1 ? 'scene' : 'scenes'))}</span></div>${button(t('fullscreen'), 'fullscreen', 'fullscreen')}</div><div class="preview-options"><label class="preview-option"><input type="checkbox" data-setting="shuffle" ${state.settings.shuffle ? 'checked' : ''}>${esc(t('shuffleShort'))}</label><label class="preview-option"><input type="checkbox" data-setting="showLogos" ${state.settings.showLogos ? 'checked' : ''}>${esc(t('titlesShort'))}</label><label class="preview-option"><span>${esc(t('transitionShort'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition !== 'fade-black' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label></div><p class="preview-caption">${esc(t('previewNote'))}</p>` : empty(t('previewEmpty'), t('previewEmptyBody'), button(t('prepareScenes'), 'open-preparation', 'prepare', true), 'preview')}`;
+  return `${heading('previewEyebrow', 'previewTitle', 'previewSub')}${games.length ? `<div id="preview-shell" class="preview-shell"><iframe id="player-frame" src="../player/index.html" title="Cinema ${esc(t('preview'))}" allow="autoplay; fullscreen" tabindex="-1"></iframe><button class="button ghost fullscreen-exit" data-action="exit-fullscreen">${icon('close')}${esc(t('exitFullscreen'))}</button></div><div class="preview-controls"><div class="playback-buttons"><button class="icon-button" data-action="previous" aria-label="${esc(t('previous') || 'Previous')}">${icon('previous')}</button><button class="icon-button" data-action="toggle-play" aria-label="${esc(t(previewPlaying ? 'pause' : 'resume'))}">${icon(previewPlaying ? 'pause' : 'play')}</button><button class="icon-button" data-action="next" aria-label="${esc(t('next') || 'Next')}">${icon('next')}</button><span class="playback-note">${esc(t(previewPlaying ? 'playing' : 'paused'))} · ${games.length} ${esc(t(games.length === 1 ? 'scene' : 'scenes'))}</span></div>${button(t('fullscreen'), 'fullscreen', 'fullscreen')}</div><div class="preview-options"><label class="preview-option"><input type="checkbox" data-setting="showCover" ${state.settings.showCover ? 'checked' : ''}>${esc(t('showCover'))}</label><label class="preview-option"><span>${esc(t('coverPosition'))}</span><select class="field" data-setting="coverPosition">${coverPositionOptions()}</select></label><label class="preview-option"><input type="checkbox" data-setting="shuffle" ${state.settings.shuffle ? 'checked' : ''}>${esc(t('shuffleShort'))}</label><label class="preview-option"><input type="checkbox" data-setting="showLogos" ${state.settings.showLogos ? 'checked' : ''}>${esc(t('titlesShort'))}</label><label class="preview-option"><span>${esc(t('transitionShort'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition !== 'fade-black' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label></div><p class="preview-caption">${esc(t('previewNote'))}</p>` : empty(t('previewEmpty'), t('previewEmptyBody'), button(t('prepareScenes'), 'open-preparation', 'prepare', true), 'preview')}`;
 }
 const toggle = (key, label, hint) =>
   `<label class="setting-row"><span><span class="setting-row-label">${esc(t(label))}</span>${hint ? `<small>${esc(t(hint))}</small>` : ''}</span><span class="switch"><input type="checkbox" data-setting="${key}" ${state.settings[key] ? 'checked' : ''}><span></span></span></label>`;
@@ -854,7 +899,7 @@ const panel = (title, ic, body) =>
 function settingsView() {
   const used = Number(state.storage.used) || 0,
     max = Number(state.settings.maxStorageGB) || 10;
-  return `${heading('settingsEyebrow', 'settingsTitle', 'settingsSub')}<div class="settings-layout"><div class="settings-stack">${panel('steamGridDb', 'key', `<p>${esc(t('keyBody'))}</p><form id="key-form"><div class="key-input"><input class="field" id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(state.hasKey ? 'replaceKey' : 'keyPlaceholder'))}" aria-label="${esc(t('keyPlaceholder'))}" required>${button(t('saveKey'), 'save-key', 'key', true, 'type="submit"')}</div></form><div class="button-row" style="align-items:center;margin:13px 0"><span style="font-size:10px;color:var(--muted)">${state.hasKey ? '✓ ' : ''}${esc(t(state.hasKey ? 'keySaved' : 'keyMissing'))}</span>${state.hasKey ? button(t('validateKey'), 'validateKey', 'check') : ''}</div><a class="key-link" href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">${esc(t('getKey'))} ↗</a>`)}${panel('playback', 'play', `<label class="setting-row"><span class="setting-row-label">${esc(t('language'))}</span><select class="field" data-setting="language"><option value="en" ${lang() === 'en' ? 'selected' : ''}>English</option><option value="fr" ${lang() === 'fr' ? 'selected' : ''}>Français</option></select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('sceneDuration'))}</span><small>${esc(t('durationHint'))}</small></span><input class="field" data-setting="sceneDuration" type="number" min="8" max="180" step="1" value="${Number(state.settings.sceneDuration)}" aria-label="${esc(t('sceneDuration'))}"></label>${toggle('shuffle', 'shuffle', 'shuffleHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('transition'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition === 'crossfade' || state.settings.transition === 'fade' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label>${toggle('showLogos', 'showLogos', 'logosHint')}${toggle('staticFallback', 'staticFallback', 'staticHint')}${toggle('reducedMotion', 'reducedMotion', 'motionHint')}${toggle('pauseOnGame', 'pauseOnGame', 'pauseHint')}`)}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
+  return `${heading('settingsEyebrow', 'settingsTitle', 'settingsSub')}<div class="settings-layout"><div class="settings-stack">${panel('steamGridDb', 'key', `<p>${esc(t('keyBody'))}</p><form id="key-form"><div class="key-input"><input class="field" id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(state.hasKey ? 'replaceKey' : 'keyPlaceholder'))}" aria-label="${esc(t('keyPlaceholder'))}" required>${button(t('saveKey'), 'save-key', 'key', true, 'type="submit"')}</div></form><div class="button-row" style="align-items:center;margin:13px 0"><span style="font-size:10px;color:var(--muted)">${state.hasKey ? '✓ ' : ''}${esc(t(state.hasKey ? 'keySaved' : 'keyMissing'))}</span>${state.hasKey ? button(t('validateKey'), 'validateKey', 'check') : ''}</div><a class="key-link" href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">${esc(t('getKey'))} ↗</a>`)}${panel('playback', 'play', `<label class="setting-row"><span class="setting-row-label">${esc(t('language'))}</span><select class="field" data-setting="language"><option value="en" ${lang() === 'en' ? 'selected' : ''}>English</option><option value="fr" ${lang() === 'fr' ? 'selected' : ''}>Français</option></select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('sceneDuration'))}</span><small>${esc(t('durationHint'))}</small></span><input class="field" data-setting="sceneDuration" type="number" min="8" max="180" step="1" value="${Number(state.settings.sceneDuration)}" aria-label="${esc(t('sceneDuration'))}"></label>${toggle('shuffle', 'shuffle', 'shuffleHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('transition'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition === 'crossfade' || state.settings.transition === 'fade' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label>${toggle('showLogos', 'showLogos', 'logosHint')}${toggle('showCover', 'showCover', 'coverHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('coverPosition'))}</span><select class="field" data-setting="coverPosition">${coverPositionOptions()}</select></label>${toggle('smoothMotion', 'smoothMotion', 'smoothHint')}${toggle('staticFallback', 'staticFallback', 'staticHint')}${toggle('reducedMotion', 'reducedMotion', 'motionHint')}${toggle('pauseOnGame', 'pauseOnGame', 'pauseHint')}`)}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
 }
 function render() {
   const active = document.activeElement;
@@ -916,14 +961,17 @@ const playerMedia = (file) =>
 function sendCatalog(force = false) {
   const catalog = {
     version: 1,
-    games: readyGames().map((g) => ({
-      ...g,
-      media: {
-        ...g.media,
-        file: playerMedia(g.media.file),
-        thumbnail: playerMedia(g.media.thumbnail)
-      }
-    })),
+    games: readyGames().map((g) => {
+      const media =
+        state.settings.smoothMotion && g.smoothed && g.smoothed.sha256 === g.media.sha256
+          ? g.smoothed
+          : g.media;
+      return {
+        ...g,
+        cover: g.cover ? { ...g.cover, file: playerMedia(g.cover.file) } : null,
+        media: { ...media, file: playerMedia(media.file), thumbnail: playerMedia(media.thumbnail) }
+      };
+    }),
     settings: state.settings
   };
   const signature = JSON.stringify(catalog);

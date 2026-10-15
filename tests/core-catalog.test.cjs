@@ -403,3 +403,129 @@ test('manual selection failure never silently substitutes another candidate', as
   assert.equal(s.games[0].status, 'error');
   assert.match(s.games[0].error, /Your selected artwork/);
 });
+test('covers enrich existing media incrementally; optional interpolation preserves original, settings and cache across restart', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  let state = await done(x.core);
+  const original = state.games[0].media;
+  x.sgdb.covers = async () => [{ ...asset, id: 800, animated: false }];
+  const prepare = x.media.prepare;
+  x.media.prepare = async (...args) => ({
+    ...(await prepare(...args)),
+    animated: args[0].animated,
+    format: args[0].animated ? 'webm' : 'png'
+  });
+  let smoothCalls = 0;
+  x.media.smooth = async (media) => {
+    smoothCalls++;
+    const file = 'interpolated.webm';
+    await fs.writeFile(path.join(x.dataDir, 'media', file), 'smoothed');
+    return { ...media, file, smoothing: 'interpolate-30-v1' };
+  };
+  await x.core.invoke('settings', { smoothMotion: true, coverPosition: 'top-right' });
+  await x.core.invoke('prepare');
+  state = await done(x.core);
+  assert.deepEqual(state.games[0].media, original);
+  assert.equal(state.games[0].cover.animated, false);
+  assert.equal(state.games[0].smoothed.file, 'interpolated.webm');
+  assert.equal(x.prepares, 2, 'only new cover downloaded, existing animation reused');
+  await x.core.invoke('prepare');
+  state = await done(x.core);
+  assert.equal(x.prepares, 2);
+  assert.equal(smoothCalls, 1);
+  await x.core.invoke('clearUnused');
+  for (const m of [state.games[0].media, state.games[0].cover, state.games[0].smoothed])
+    assert(await fs.stat(path.join(x.dataDir, 'media', m.file)));
+  await x.core.close();
+  const reopened = x.create();
+  state = await reopened.invoke('state');
+  assert.equal(state.settings.coverPosition, 'top-right');
+  assert.equal(state.settings.smoothMotion, true);
+  assert.equal(state.games[0].cover.animated, false);
+  assert.equal(state.games[0].smoothed.file, 'interpolated.webm');
+  await assert.rejects(reopened.invoke('settings', { coverPosition: 'anywhere' }), /position/);
+});
+test('optional preparation failure remains visible and preserves a ready original', async (t) => {
+  const x = await setup(t);
+  x.sgdb.covers = async () => {
+    throw new Error('Cover service unavailable');
+  };
+  x.media.smooth = async () => {
+    throw new Error('Interpolation unsupported');
+  };
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('settings', { smoothMotion: true });
+  await x.core.invoke('prepare');
+  const state = await done(x.core);
+  assert.equal(state.job.status, 'completed');
+  assert.equal(state.games[0].status, 'ready');
+  assert.match(state.games[0].coverError, /unavailable/);
+  assert.match(state.games[0].smoothingError, /unsupported/);
+  assert.equal(state.games[0].smoothed, null);
+});
+test('pausing during cover enrichment retains the completed animation and resumes without downloading it again', async (t) => {
+  const x = await setup(t);
+  let began;
+  const started = new Promise((resolve) => {
+    began = resolve;
+  });
+  let block = true;
+  x.sgdb.covers = async (_, { signal }) => {
+    began();
+    if (block)
+      await new Promise((resolve, reject) =>
+        signal.addEventListener('abort', () => reject(new Error('paused')), { once: true })
+      );
+    return [];
+  };
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  await started;
+  let state = await x.core.invoke('pause');
+  assert.equal(state.job.status, 'paused');
+  assert.equal(state.job.pending, 1);
+  assert.equal(state.games[0].status, 'ready');
+  assert.equal(x.prepares, 1);
+  block = false;
+  await x.core.invoke('resume');
+  state = await done(x.core);
+  assert.equal(state.job.status, 'completed');
+  assert.equal(x.prepares, 1);
+});
+test('unused cleanup removes only owned abandoned interpolation folders', async (t) => {
+  const x = await setup(t),
+    mediaDir = path.join(x.dataDir, 'media');
+  await x.core.invoke('state');
+  const owned = path.join(mediaDir, '11111111-1111-4111-8111-111111111111.frames');
+  const foreign = path.join(mediaDir, '22222222-2222-4222-8222-222222222222.frames');
+  await fs.mkdir(owned, { recursive: true });
+  await fs.mkdir(foreign);
+  await fs.writeFile(path.join(owned, '.cinema-smoothing-work'), 'steamos-animated-screensaver-v1');
+  await fs.writeFile(path.join(owned, 'frame-0.png'), 'unfinished');
+  await fs.writeFile(path.join(foreign, 'keep'), 'unrelated');
+  await x.core.invoke('clearUnused');
+  assert.equal(await fs.stat(owned).catch(() => null), null);
+  assert.equal(await fs.readFile(path.join(foreign, 'keep'), 'utf8'), 'unrelated');
+});
+test('a corrupt smoothing cache is cleared when regeneration fails, preserving original playback', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  x.media.smooth = async (media) => {
+    await fs.writeFile(path.join(x.dataDir, 'media', 'smoothed.webm'), 'derived');
+    return { ...media, file: 'smoothed.webm' };
+  };
+  await x.core.invoke('settings', { smoothMotion: true });
+  await x.core.invoke('prepare');
+  let state = await done(x.core);
+  assert.equal(state.games[0].smoothed.file, 'smoothed.webm');
+  await fs.rm(path.join(x.dataDir, 'media', 'smoothed.webm'));
+  x.media.smooth = async () => {
+    throw new Error('Processing failed');
+  };
+  await x.core.invoke('prepare');
+  state = await done(x.core);
+  assert.equal(state.games[0].smoothed, null);
+  assert.equal(state.games[0].status, 'ready');
+  assert.match(state.games[0].smoothingError, /Processing failed/);
+});

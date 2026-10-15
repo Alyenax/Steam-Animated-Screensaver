@@ -111,7 +111,31 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
         await fs.copyFile(path.join(__dirname, '..', 'player', file), path.join(staging, file));
       const copied = new Set(),
         catalogGames = [];
-      for (const game of included) {
+      for (const original of included) {
+        const game = {
+          ...original,
+          media:
+            settings.smoothMotion &&
+            original.smoothed &&
+            original.smoothed.sha256 === original.media.sha256
+              ? original.smoothed
+              : original.media
+        };
+        let cover = null;
+        if (original.cover?.animated === false) {
+          try {
+            if (!copied.has(original.cover.file))
+              await copyMedia(dataDir, original.cover.file, path.join(staging, 'media'));
+            copied.add(original.cover.file);
+            cover = {
+              file: `media/${original.cover.file}`,
+              animated: false,
+              author: { name: String(original.cover.author?.name || 'Unknown') }
+            };
+          } catch (error) {
+            if (!['ENOENT'].includes(error.code)) throw error;
+          }
+        }
         for (const file of [game.media.file, game.media.thumbnail])
           if (!copied.has(file)) {
             await copyMedia(dataDir, file, path.join(staging, 'media'));
@@ -123,6 +147,7 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
           name: String(game.name),
           included: true,
           status: 'ready',
+          cover,
           media: {
             file: `media/${m.file}`,
             thumbnail: `media/${m.thumbnail}`,
@@ -142,6 +167,8 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
         'shuffle',
         'transition',
         'showLogos',
+        'showCover',
+        'coverPosition',
         'staticFallback',
         'reducedMotion'
       ])

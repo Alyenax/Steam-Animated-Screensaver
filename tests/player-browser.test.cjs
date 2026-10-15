@@ -53,7 +53,8 @@ test(
           '0'
         ]
       ],
-      ['thumb.jpg', ['-f', 'lavfi', '-i', 'color=navy:size=160x90', '-frames:v', '1']]
+      ['thumb.jpg', ['-f', 'lavfi', '-i', 'color=navy:size=160x90', '-frames:v', '1']],
+      ['cover.jpg', ['-f', 'lavfi', '-i', 'testsrc=size=160x240', '-frames:v', '1']]
     ]) {
       const r = spawnSync(ffmpeg, ['-v', 'error', ...args, '-y', path.join(root, name)]);
       assert.equal(r.status, 0, r.stderr.toString());
@@ -81,6 +82,7 @@ test(
           '/player/player.css': ['player.css', 'text/css'],
           '/media/scene.webm': [path.join(root, 'scene.webm'), 'video/webm'],
           '/media/thumb.jpg': [path.join(root, 'thumb.jpg'), 'image/jpeg'],
+          '/media/cover.jpg': [path.join(root, 'cover.jpg'), 'image/jpeg'],
           '/media/scene.gif': [path.join(root, 'scene.gif'), 'image/gif'],
           '/media/scene.webp': [path.join(root, 'scene.webp'), 'image/webp']
         };
@@ -120,6 +122,7 @@ test(
       name: `Game ${id}`,
       included: true,
       status: 'ready',
+      cover: { file: '/media/cover.jpg', animated: false, author: { name: 'Cover creator' } },
       media: {
         file: media,
         thumbnail: '/media/thumb.jpg',
@@ -148,6 +151,71 @@ test(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
     assert.equal(await frame.locator('#empty').isVisible(), false);
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible .caption-cover')?.naturalWidth > 0
+    );
+    assert.equal(await frame.locator('.scene.visible .eyebrow').count(), 0);
+    assert.match(
+      await frame.locator('.scene.visible .cover-credit').textContent(),
+      /Cover creator/
+    );
+    for (const [width, height] of [
+      [1280, 720],
+      [1920, 1080],
+      [3840, 2160],
+      [800, 1280],
+      [390, 844]
+    ]) {
+      await page.setViewportSize({ width, height });
+      for (const coverPosition of ['beside-title', 'bottom-right', 'top-right', 'top-left']) {
+        await send({ action: 'settings', settings: { coverPosition } });
+        await frame.waitForFunction(
+          (position) => document.querySelector('.scene.visible').dataset.coverPosition === position,
+          coverPosition
+        );
+        const boxes = await frame.evaluate(() => {
+          const scene = document.querySelector('.scene.visible');
+          const rect = (selector) => {
+            const r = scene.querySelector(selector).getBoundingClientRect();
+            return { left: r.left, right: r.right, top: r.top, bottom: r.bottom };
+          };
+          return {
+            cover: rect('.caption-cover'),
+            caption: rect('.caption'),
+            title: rect('h1'),
+            width: innerWidth,
+            height: innerHeight
+          };
+        });
+        const { cover, caption, title } = boxes,
+          x = boxes.width * 0.056,
+          y = boxes.height * 0.07;
+        assert(Math.abs(caption.left - x) < 1);
+        assert(Math.abs(boxes.height - caption.bottom - y) < 1);
+        if (coverPosition.endsWith('right')) assert(Math.abs(boxes.width - cover.right - x) < 1);
+        else assert(Math.abs(cover.left - x) < 1);
+        if (coverPosition.startsWith('top')) assert(Math.abs(cover.top - y) < 1);
+        else assert(Math.abs(boxes.height - cover.bottom - y) < 1);
+        if (coverPosition === 'beside-title') assert(title.left > cover.right);
+        if (coverPosition === 'bottom-right') assert(title.right < cover.left);
+      }
+    }
+    await page.setViewportSize({ width: 1280, height: 720 });
+    await send({ action: 'settings', settings: { showCover: false, showLogos: true } });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible .caption-cover').hidden
+    );
+    assert.equal(await frame.locator('.scene.visible .credit').first().isVisible(), true);
+    await send({
+      action: 'settings',
+      settings: { showCover: true, showLogos: false, coverPosition: 'beside-title' }
+    });
+    await frame.waitForFunction(
+      () =>
+        !document.querySelector('.scene.visible .caption-cover').hidden &&
+        document.querySelector('.scene.visible h1').hidden
+    );
+    await send({ action: 'settings', settings: { showLogos: true } });
     await send({ action: 'pause' });
     await frame.waitForFunction(() => document.querySelector('video').paused);
     const paused = await frame.locator('video').evaluate((v) => v.currentTime);
@@ -311,9 +379,10 @@ test(
       steamRoot = path.join(root, 'steam');
     await fs.mkdir(path.join(dataDir, 'media'), { recursive: true });
     await fs.mkdir(steamRoot);
-    for (const file of ['scene.webm', 'thumb.jpg'])
+    for (const file of ['scene.webm', 'thumb.jpg', 'cover.jpg'])
       await fs.copyFile(path.join(root, file), path.join(dataDir, 'media', file));
     const game = makeGame('offline');
+    game.cover.file = 'cover.jpg';
     game.media.file = 'scene.webm';
     game.media.thumbnail = 'thumb.jpg';
     const installed = await install({
@@ -334,6 +403,9 @@ test(
       { timeout: 8000 }
     );
     assert.equal(await offlinePage.locator('#empty').isVisible(), false);
+    await offlinePage.waitForFunction(
+      () => document.querySelector('.scene.visible .caption-cover')?.naturalWidth === 160
+    );
     assert(
       offlineRequests.every((u) => u.startsWith('file://')),
       JSON.stringify(offlineRequests)

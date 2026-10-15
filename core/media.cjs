@@ -119,7 +119,11 @@ async function download(
     signal?.removeEventListener('abort', abort);
   }
 }
-function run(binary, args, { signal, input, timeoutMs = LIMITS.processMs } = {}) {
+function run(
+  binary,
+  args,
+  { signal, input, timeoutMs = LIMITS.processMs, binaryOutput = false, maxOutput = 2e6 } = {}
+) {
   return new Promise((resolve, reject) => {
     aborted(signal);
     const child = spawn(binary, args, {
@@ -127,7 +131,8 @@ function run(binary, args, { signal, input, timeoutMs = LIMITS.processMs } = {})
       windowsHide: true,
       stdio: [input ? 'pipe' : 'ignore', 'pipe', 'pipe']
     });
-    let output = '',
+    let output = binaryOutput ? [] : '',
+      outputBytes = 0,
       errors = '',
       settled = false;
     const finish = (error) => {
@@ -135,7 +140,7 @@ function run(binary, args, { signal, input, timeoutMs = LIMITS.processMs } = {})
       settled = true;
       clearTimeout(timer);
       signal?.removeEventListener('abort', abort);
-      error ? reject(error) : resolve(output);
+      error ? reject(error) : resolve(binaryOutput ? Buffer.concat(output) : output);
     };
     const abort = () => {
       child.kill('SIGKILL');
@@ -147,8 +152,10 @@ function run(binary, args, { signal, input, timeoutMs = LIMITS.processMs } = {})
     }, timeoutMs);
     signal?.addEventListener('abort', abort, { once: true });
     child.stdout.on('data', (chunk) => {
-      output += chunk;
-      if (output.length > 2e6) {
+      if (binaryOutput) output.push(chunk);
+      else output += chunk;
+      outputBytes += chunk.length;
+      if (outputBytes > maxOutput) {
         child.kill('SIGKILL');
         finish(new Error('Media probe exceeded output limit.'));
       }
@@ -191,7 +198,9 @@ function webpFrames(buffer) {
   let width = 0,
     height = 0,
     duration = 0;
-  const frames = [];
+  const frames = [],
+    metadata = [];
+  let background = [0, 0, 0, 0];
   for (let offset = 12; offset + 8 <= buffer.length;) {
     const type = buffer.toString('ascii', offset, offset + 4),
       size = buffer.readUInt32LE(offset + 4),
@@ -202,6 +211,8 @@ function webpFrames(buffer) {
       width = buffer.readUIntLE(start + 4, 3) + 1;
       height = buffer.readUIntLE(start + 7, 3) + 1;
     }
+    if (type === 'ANIM' && size >= 6)
+      background = [buffer[start + 2], buffer[start + 1], buffer[start], buffer[start + 3]];
     if (type === 'ANMF') {
       if (size < 24 || frames.length >= LIMITS.frames)
         throw new Error('Invalid or excessively long animated WebP.');
@@ -211,8 +222,28 @@ function webpFrames(buffer) {
         y = buffer.readUIntLE(start + 3, 3) * 2;
       if (!width || !height || x + fw > width || y + fh > height)
         throw new Error('WebP frame lies outside its canvas.');
-      duration += Math.max(10, buffer.readUIntLE(start + 12, 3)) / 1000;
-      const payload = buffer.subarray(start + 16, end);
+      const frameDuration = Math.max(10, buffer.readUIntLE(start + 12, 3)) / 1000;
+      duration += frameDuration;
+      metadata.push({
+        x,
+        y,
+        width: fw,
+        height: fh,
+        duration: frameDuration,
+        blend: !(buffer[start + 15] & 2),
+        dispose: !!(buffer[start + 15] & 1)
+      });
+      let payload = buffer.subarray(start + 16, end);
+      if (payload.toString('ascii', 0, 4) === 'ALPH') {
+        // ALPH needs an extended still-image header outside its ANMF container.
+        const extended = Buffer.alloc(18);
+        extended.write('VP8X');
+        extended.writeUInt32LE(10, 4);
+        extended[8] = 0x10;
+        extended.writeUIntLE(fw - 1, 12, 3);
+        extended.writeUIntLE(fh - 1, 15, 3);
+        payload = Buffer.concat([extended, payload]);
+      }
       const header = Buffer.alloc(12);
       header.write('RIFF');
       header.writeUInt32LE(payload.length + 4, 4);
@@ -221,7 +252,7 @@ function webpFrames(buffer) {
     }
     offset = end + (size % 2);
   }
-  return { width, height, duration, frames };
+  return { width, height, duration, frames, metadata, background };
 }
 function demuxer(buffer) {
   if (buffer.length >= 6 && /^GIF8[79]a$/.test(buffer.toString('ascii', 0, 6))) return 'gif';
@@ -417,7 +448,10 @@ function createMedia({
     return { ...result, demuxer: inputFormat, animated: result.frames > 1 };
   }
   return {
-    async prepare(asset, { signal, onProgress, maxBytes = LIMITS.bytes } = {}) {
+    async prepare(
+      asset,
+      { signal, onProgress, maxBytes = LIMITS.bytes, requireStatic = false } = {}
+    ) {
       if (!Number.isFinite(maxBytes) || maxBytes < 1024)
         throw new Error('Not enough storage space for media.');
       cdnURL(asset.url);
@@ -434,6 +468,16 @@ function createMedia({
         });
         onProgress?.({ stage: 'validating' });
         const info = await inspect(partial, { signal });
+        if (requireStatic && info.format === 'png') {
+          const png = await fs.readFile(partial, { signal });
+          for (let offset = 8; offset + 12 <= png.length;) {
+            const size = png.readUInt32BE(offset);
+            if (png.toString('ascii', offset + 4, offset + 8) === 'acTL')
+              throw new Error('The cover must be a still image.');
+            offset += size + 12;
+          }
+        }
+        if (requireStatic && info.animated) throw new Error('The cover must be a still image.');
         if (asset.animated === true && !info.animated)
           throw new Error('The selected artwork is static, not an animation.');
         const digest = crypto
@@ -542,6 +586,179 @@ function createMedia({
         };
       } finally {
         await Promise.allSettled([partial, ...work].map((f) => fs.rm(f, { force: true })));
+      }
+    },
+    async smooth(media, { signal, maxBytes = LIMITS.bytes } = {}) {
+      aborted(signal);
+      if (!Number.isFinite(maxBytes) || maxBytes < 1024)
+        throw new Error('Not enough storage space for interpolation.');
+      await ensureDirectory(false);
+      if (!(await this.validate(media, { signal })))
+        throw new Error('Repair the original media before interpolation.');
+      const source = await safeFile(media.sourceFile || media.file);
+      const info = await inspect(source, { signal });
+      if (!info.animated || !info.duration)
+        throw new Error('Interpolation requires an animation with a known duration.');
+      // Preserve already fluid media rather than reducing its original frame rate.
+      if (
+        info.frames / info.duration >= 29.5 &&
+        (info.format !== 'webm' || ['vp8', 'vp9'].includes(info.codec))
+      )
+        return { ...media, smoothing: 'native-30-plus' };
+      const token = crypto.randomUUID(),
+        temp = path.join(directory, `${token}.smooth.webm`),
+        framesDir = path.join(directory, `${token}.frames`),
+        deadline = Date.now() + LIMITS.processMs;
+      try {
+        let inputArgs = ['-f', info.demuxer, '-i', source];
+        if (info.format === 'webp') {
+          const buffer = await fs.readFile(source, { signal }),
+            decoded = webpFrames(buffer);
+          const { compose, clear, png } = require('./webp-compose.cjs');
+          const canvas = Buffer.alloc(decoded.width * decoded.height * 4);
+          clear(
+            canvas,
+            decoded.width,
+            { x: 0, y: 0, width: decoded.width, height: decoded.height },
+            decoded.background
+          );
+          await fs.mkdir(framesDir);
+          await fs.writeFile(
+            path.join(framesDir, '.cinema-smoothing-work'),
+            'steamos-animated-screensaver-v1'
+          );
+          const list = ['ffconcat version 1.0'];
+          let transientBytes = 0;
+          for (let i = 0; i < decoded.frames.length; i++) {
+            aborted(signal);
+            if (i && decoded.metadata[i - 1].dispose)
+              clear(canvas, decoded.width, decoded.metadata[i - 1], decoded.background);
+            const rect = decoded.metadata[i];
+            const rgba = await run(
+              ffmpegPath,
+              [
+                '-v',
+                'error',
+                '-threads',
+                '2',
+                '-f',
+                'image2pipe',
+                '-c:v',
+                'webp',
+                '-i',
+                'pipe:0',
+                '-frames:v',
+                '1',
+                '-f',
+                'rawvideo',
+                '-pix_fmt',
+                'rgba',
+                'pipe:1'
+              ],
+              {
+                signal,
+                input: decoded.frames[i],
+                binaryOutput: true,
+                maxOutput: rect.width * rect.height * 4,
+                timeoutMs: Math.max(1, deadline - Date.now())
+              }
+            );
+            compose(canvas, decoded.width, rgba, rect);
+            const image = png(canvas, decoded.width, decoded.height);
+            transientBytes += image.length;
+            if (transientBytes > LIMITS.bytes)
+              throw new Error(
+                'Interpolation temporary frames exceed the 160 MB limit. The original is kept.'
+              );
+            const disk = await fs.statfs(dataDir);
+            if (Number(disk.bavail) * Number(disk.bsize) - image.length < 64 * 1024 * 1024)
+              throw new Error('Not enough disk space for interpolation frames.');
+            const name = `frame-${i}.png`;
+            await fs.writeFile(path.join(framesDir, name), image);
+            list.push(`file ${name}`, 'option framerate 1000', `duration ${rect.duration}`);
+            if (Date.now() >= deadline)
+              throw new Error('Interpolation timed out. The original is kept.');
+          }
+          list.push(`file frame-${decoded.frames.length - 1}.png`, 'option framerate 1000');
+          const manifest = path.join(framesDir, 'frames.txt');
+          await fs.writeFile(manifest, list.join('\n') + '\n');
+          inputArgs = ['-f', 'concat', '-safe', '0', '-i', manifest];
+        }
+        const disk = await fs.statfs(dataDir);
+        const budget = Math.min(
+          LIMITS.bytes,
+          maxBytes,
+          Number(disk.bavail) * Number(disk.bsize) - 64 * 1024 * 1024
+        );
+        if (budget < 1024) throw new Error('Not enough storage space for interpolation.');
+        await run(
+          ffmpegPath,
+          [
+            '-v',
+            'error',
+            '-xerror',
+            '-protocol_whitelist',
+            'file,pipe',
+            '-threads',
+            '2',
+            ...inputArgs,
+            '-an',
+            '-filter_threads',
+            '2',
+            '-vf',
+            "scale=w='min(1920,iw)':h='min(1080,ih)':force_original_aspect_ratio=decrease:force_divisible_by=2,tpad=stop_mode=clone:stop_duration=1,minterpolate=fps=30:mi_mode=mci:mc_mode=aobmc:me_mode=bidir:vsbmc=1,format=yuv420p",
+            '-t',
+            String(info.duration),
+            '-c:v',
+            'libvpx-vp9',
+            '-threads',
+            '2',
+            '-crf',
+            '28',
+            '-b:v',
+            '0',
+            '-deadline',
+            'good',
+            '-cpu-used',
+            '4',
+            '-fs',
+            String(Math.floor(budget)),
+            '-y',
+            temp
+          ],
+          { signal, timeoutMs: Math.max(1, deadline - Date.now()) }
+        );
+        const result = await inspect(temp, { signal });
+        if (
+          !result.animated ||
+          Math.abs(result.duration - info.duration) > 0.1 ||
+          Math.abs(result.frames / result.duration - 30) > 1 ||
+          (await fs.stat(temp)).size > budget
+        )
+          throw new Error(
+            'Interpolation was incomplete or exceeded its storage budget. The original is kept.'
+          );
+        const digest = crypto
+          .createHash('sha256')
+          .update(await fs.readFile(source, { signal }))
+          .digest('hex');
+        const file = `${digest.slice(0, 24)}.smooth30-v1.webm`;
+        aborted(signal);
+        await fs.rename(temp, path.join(directory, file));
+        return {
+          ...media,
+          file,
+          width: result.width,
+          height: result.height,
+          duration: result.duration,
+          format: 'webm',
+          animated: true,
+          sha256: digest,
+          smoothing: 'interpolate-30-v1'
+        };
+      } finally {
+        await fs.rm(temp, { force: true });
+        await fs.rm(framesDir, { recursive: true, force: true });
       }
     },
     async validate(media, { signal } = {}) {

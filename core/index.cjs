@@ -11,6 +11,9 @@ const defaults = {
   shuffle: true,
   transition: 'crossfade',
   showLogos: true,
+  showCover: true,
+  coverPosition: 'beside-title',
+  smoothMotion: false,
   staticFallback: false,
   reducedMotion: false,
   maxStorageGB: 10,
@@ -37,12 +40,25 @@ function validateSettings(p, initial = false) {
       if (initial) continue;
       throw new Error('Unknown setting.');
     }
-    if (['shuffle', 'showLogos', 'staticFallback', 'reducedMotion', 'pauseOnGame'].includes(k)) {
+    if (
+      [
+        'shuffle',
+        'showLogos',
+        'showCover',
+        'smoothMotion',
+        'staticFallback',
+        'reducedMotion',
+        'pauseOnGame'
+      ].includes(k)
+    ) {
       if (typeof v !== 'boolean') throw new Error(`Invalid ${k}.`);
     } else if (k === 'language') {
       if (!['en', 'fr'].includes(v)) throw new Error('Choose English or Français.');
     } else if (k === 'transition') {
       if (!['crossfade', 'fade', 'fade-black'].includes(v)) throw new Error('Invalid transition.');
+    } else if (k === 'coverPosition') {
+      if (!['beside-title', 'bottom-right', 'top-right', 'top-left'].includes(v))
+        throw new Error('Invalid artwork position.');
     } else if (k === 'sceneDuration') {
       if (!Number.isFinite(v) || v < 8 || v > 180)
         throw new Error('Scene duration must be 8–180 seconds.');
@@ -68,12 +84,21 @@ function cleanGame(g) {
     selectedAsset: g.selectedAsset || null,
     manualSelection: !!g.manualSelection,
     media: g.media || null,
+    cover: g.cover || null,
+    smoothed: g.smoothed || null,
     classification: g.classification || 'game'
   };
   if (result.media && (!safeFilename(result.media.file) || !safeFilename(result.media.thumbnail))) {
     result.media = null;
     result.status = 'new';
   }
+  for (const kind of ['cover', 'smoothed']) {
+    if (result[kind] && (!safeFilename(result[kind].file) || !safeFilename(result[kind].thumbnail)))
+      result[kind] = null;
+  }
+  if (result.cover?.animated !== false) result.cover = null;
+  for (const key of ['coverError', 'smoothingError'])
+    if (g[key]) result[key] = String(g[key]).slice(0, 500);
   if (g.error) result.error = String(g.error).slice(0, 500);
   return result;
 }
@@ -200,6 +225,8 @@ function createCore(options = {}) {
         g.selectedAsset = preferred.selectedAsset;
         g.manualSelection = preferred.manualSelection;
         g.media = preferred.media;
+        g.cover = preferred.cover || duplicates.find((old) => old.cover)?.cover || null;
+        g.smoothed = preferred.smoothed || null;
         g.status = preferred.status;
         g.included = preferred.included;
       }
@@ -224,6 +251,77 @@ function createCore(options = {}) {
     });
     assetCache.set(g.id, assets);
     return assets;
+  }
+  async function optionalBudget(limit) {
+    await refreshStorage();
+    const disk = await fs.statfs(dataDir);
+    const free = Number(disk.bavail) * Number(disk.bsize);
+    const remaining = Math.floor(state.settings.maxStorageGB * 1024 ** 3 - state.storage.used);
+    const budget = Math.min(limit, remaining, free - 64 * 1024 * 1024);
+    if (budget < 1024 * 1024) throw new Error('Not enough storage space for optional media.');
+    return budget;
+  }
+  async function enrichMedia(g, signal) {
+    if (state.settings.showCover && sgdb.covers) {
+      try {
+        if (
+          !g.cover ||
+          g.cover.animated !== false ||
+          !(await media.validate(g.cover, { signal }))
+        ) {
+          g.cover = null;
+          state.job.stage = 'Finding static cover';
+          await save();
+          const candidates = await sgdb.covers(await resolveGame(g, signal), { signal });
+          let lastError;
+          for (const asset of candidates.slice(0, 3)) {
+            try {
+              const cover = await media.prepare(asset, {
+                signal,
+                requireStatic: true,
+                maxBytes: await optionalBudget(12 * 1024 * 1024)
+              });
+              if (cover.animated !== false || !(await media.validate(cover, { signal })))
+                throw new Error('The cover must be a valid still image.');
+              g.cover = cover;
+              break;
+            } catch (error) {
+              if (signal.aborted) throw error;
+              lastError = error;
+            }
+          }
+          if (!g.cover && lastError) throw lastError;
+        }
+        delete g.coverError;
+      } catch (error) {
+        if (signal.aborted) throw error;
+        g.coverError = safeError(error);
+      }
+    }
+    if (state.settings.smoothMotion && g.media.animated && media.smooth) {
+      try {
+        if (
+          !g.smoothed ||
+          g.smoothed.sha256 !== g.media.sha256 ||
+          !(await media.validate(g.smoothed, { signal }))
+        ) {
+          g.smoothed = null;
+          state.job.stage = 'smoothing';
+          await save();
+          const smoothed = await media.smooth(g.media, {
+            signal,
+            maxBytes: await optionalBudget(160 * 1024 * 1024)
+          });
+          if (!(await media.validate(smoothed, { signal })))
+            throw new Error('Smoothed media failed final validation.');
+          g.smoothed = smoothed;
+        }
+        delete g.smoothingError;
+      } catch (error) {
+        if (signal.aborted) throw error;
+        g.smoothingError = safeError(error);
+      }
+    }
   }
   async function runQueue() {
     try {
@@ -328,6 +426,8 @@ function createCore(options = {}) {
                   )
                     throw new Error('Prepared media failed final validation.');
                   g.media = prepared;
+                  g.smoothed = null;
+                  delete g.smoothingError;
                   g.selectedAsset = asset;
                   g.status = 'ready';
                   delete g.error;
@@ -352,6 +452,11 @@ function createCore(options = {}) {
                   `${g.manualSelection ? 'Your selected artwork' : `All ${candidates.length} ranked artwork candidates`} failed preparation. ${rejected.at(-1)?.message || 'Choose another artwork and retry.'}`
                 );
             }
+          }
+          if (signal.aborted) throw signal.reason || new Error('Preparation paused.');
+          if (g.status === 'ready') {
+            await enrichMedia(g, signal);
+            await refreshStorage();
           }
           if (signal.aborted) throw signal.reason || new Error('Preparation paused.');
           pending.shift();
@@ -511,6 +616,7 @@ function createCore(options = {}) {
         g.steamAppId = steamId || g.steamAppId;
         g.sources = [...new Set([...matches.flatMap((m) => m.sources), 'manual'])];
         g.installed = matches.some((m) => m.installed);
+        g.cover = g.cover || matches.find((m) => m.cover)?.cover || null;
         state.games = state.games.filter((old) => !matches.includes(old) || old === g);
       } else {
         g = {
@@ -556,6 +662,8 @@ function createCore(options = {}) {
         g.manualSelection = p.selectedAsset !== null;
         g.selectedAsset = chosen || null;
         g.media = null;
+        g.smoothed = null;
+        delete g.smoothingError;
         g.status = 'new';
         delete g.error;
       }
@@ -631,6 +739,9 @@ function createCore(options = {}) {
           g.error = 'Cached media was missing or invalid. Prepare this game again.';
         }
       }
+      for (const g of state.games)
+        for (const kind of ['cover', 'smoothed'])
+          if (g[kind] && !(await media.validate(g[kind]))) g[kind] = null;
       await refreshStorage();
       await save();
       return publicState();
@@ -639,9 +750,9 @@ function createCore(options = {}) {
       if (runner) throw new Error('Pause preparation before clearing unused media.');
       const used = new Set();
       for (const g of state.games)
-        if (g.media)
+        for (const m of [g.media, g.cover, g.smoothed].filter(Boolean))
           for (const key of ['file', 'thumbnail', 'sourceFile'])
-            if (safeFilename(g.media[key])) used.add(g.media[key]);
+            if (safeFilename(m[key])) used.add(m[key]);
       for (const dir of ['media', 'sources', 'processed', 'thumbnails']) {
         const folder = path.join(dataDir, dir);
         const stat = await fs.lstat(folder).catch(() => null);
@@ -649,6 +760,20 @@ function createCore(options = {}) {
         if (!stat.isDirectory() || stat.isSymbolicLink())
           throw new Error('Unsafe media directory. No files were removed from it.');
         for (const e of await fs.readdir(folder, { withFileTypes: true })) {
+          if (dir === 'media' && e.isDirectory() && /^[0-9a-f-]{36}\.frames$/.test(e.name)) {
+            const work = path.join(folder, e.name);
+            const marker = await fs
+              .lstat(path.join(work, '.cinema-smoothing-work'))
+              .catch(() => null);
+            if (
+              marker?.isFile() &&
+              !marker.isSymbolicLink() &&
+              marker.size === 31 &&
+              (await fs.readFile(path.join(work, '.cinema-smoothing-work'), 'utf8')) ===
+                'steamos-animated-screensaver-v1'
+            )
+              await fs.rm(work, { recursive: true });
+          }
           if (e.isFile() && !used.has(e.name) && safeFilename(e.name))
             await fs.rm(path.join(folder, e.name));
         }

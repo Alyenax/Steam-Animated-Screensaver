@@ -4,7 +4,7 @@
 
 Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
 
-**0.1.1 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.2 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
@@ -17,6 +17,8 @@ The application is called SteamOS Animated Screensaver; **Cinema** is its short 
 - Prefer actual animated Heroes, then animated Grids. Still artwork is clearly labelled and disabled by default.
 - Prepare incrementally with a persistent queue, pause, resume, cancellation and retry. Keep manual artwork choices and creator credits.
 - Browse a responsive English/French gallery, preview the same offline player, then install a local snapshot into Steam.
+- Add a fixed game cover beside the title or in three screen corners, using matching margins and local creator credits.
+- Optionally prepare a smoother 30 fps video offline, keeping original animations for an immediate return to their original rendering.
 - Preserve media proportions with a subdued blurred surround, crossfade or fade to black, shuffle and game-title controls.
 
 ![Actual manager with original validation animations](screenshots/02-home-prepared-qa.png)
@@ -33,7 +35,7 @@ Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Ste
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.1-linux-x64.tar.gz
+tar -xzf SteamOS-Animated-Screensaver-0.1.2-linux-x64.tar.gz
 cd steamos-animated-screensaver-linux-x64
 ./install.sh
 ```
@@ -41,6 +43,14 @@ cd steamos-animated-screensaver-linux-x64
 Open **SteamOS Animated Screensaver** from the application launcher. Add your personal API key in Settings, rescan or add games, then choose **Prepare My Screensaver**. Preview the result and use **Install screensaver**. In Steam, select **steamos-animated-screensaver** in **Settings → Customization → Screensavers**. Restart Steam if its selector has not refreshed.
 
 The application installs to `~/.local/opt/steamos-animated-screensaver`; it does not disable SteamOS read-only mode, use `sudo`, install global dependencies, or change Steam manifests. The package contains Electron and separate FFmpeg/FFprobe tools. It expects a Linux x64 graphical desktop with the system libraries Electron needs; see [installation](docs/INSTALLATION.md).
+
+## Covers and optional smoothing
+
+In **Settings → Playback**, enable **Show a still cover** and choose **Cover position**: beside the title, bottom right, top right or top left. The same controls are also in Preview. Each corner uses the title's horizontal/vertical margins. Prepare the library once to cache static portrait Grids from SteamGridDB; an existing local thumbnail is used when none is available. Cover and animation credits remain separate.
+
+**Smooth animations · 30 fps** is off by default. Enable it, prepare again, preview the result, then **Update / repair** to publish it to Steam. It interpolates low-frame-rate animations into a separate silent VP9 video, up to 1080p. Processing can take minutes and interpolation can cause visual artifacts; it does not repair a broken loop. Original bytes remain available. Disable the option and update the Steam snapshot to return to original playback without downloading again. Already fluid media at approximately 30 fps or above is preserved. Optional processing failures are visible in Preparation and fall back to the original animation.
+
+The promotional sentence above each scene title has been removed. The small `remove-screensaver-tagline.sh` also hides it in existing owned installations without preparing media again.
 
 ## Update and remove
 

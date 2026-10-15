@@ -145,7 +145,13 @@ test(
       }
     );
     await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
-    t.after(() => new Promise((resolve) => server.close(resolve)));
+    t.after(
+      () =>
+        new Promise((resolve) => {
+          server.closeAllConnections();
+          server.close(resolve);
+        })
+    );
     const browser = await chromium.launch({
       executablePath: browserPath,
       headless: true,

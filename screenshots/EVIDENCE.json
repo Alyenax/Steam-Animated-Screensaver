@@ -5,15 +5,18 @@
     "Manual search disambiguates two mocked homonyms; explicit Add updates unified catalog",
     "Live preparation, real progress, pause persisted",
     "Resume completes media preparation with real FFmpeg",
+    "Four cover positions selected through Manager, persisted and rendered with genuine local static media",
     "Manager preview uses real offline media and pauses",
     "Fullscreen entry and immediate Escape exit",
+    "Optional interpolation from Settings prepares a separate real VP9 file while preserving its original",
     "Screensaver install from actual Settings into isolated Steam fixture",
     "Update/Repair publishes changed settings and catalog",
-    "Export plays directly over file:// with zero HTTP requests and no manager dependency",
+    "Export plays actual interpolated VP9 directly over file:// with zero HTTP requests and no manager dependency",
+    "Disabling smoothing and updating restores original playback without downloading again",
     "All five spaces at 1280, 800, 390 px in English and French without horizontal overflow",
     "No uncaught browser errors",
     "Screensaver removal leaves catalog/media intact"
   ],
   "consoleErrors": [],
-  "preparedFiles": 4
+  "preparedFiles": 8
 }

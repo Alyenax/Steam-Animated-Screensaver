@@ -111,10 +111,33 @@ async function runUI({ capture = false } = {}) {
     await frame.waitForFunction(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
+    await frame.waitForFunction(() => {
+      const scene = document.querySelector('.scene.visible');
+      return scene && getComputedStyle(scene).opacity === '1';
+    });
     await frame.waitForFunction(
-      () => getComputedStyle(document.querySelector('.scene.visible')).opacity === '1'
+      () => document.querySelector('.scene.visible .caption-cover')?.naturalWidth > 0
     );
     await shot('06-preview-qa');
+    for (const position of ['beside-title', 'bottom-right', 'top-right', 'top-left']) {
+      await page.locator('[data-setting="coverPosition"]').selectOption(position);
+      await frame.waitForFunction(
+        (position) => document.querySelector('.scene.visible')?.dataset.coverPosition === position,
+        position
+      );
+      await frame.waitForFunction(() => {
+        const scene = document.querySelector('.scene.visible');
+        return scene && getComputedStyle(scene).opacity === '1';
+      });
+      if (capture)
+        await frame
+          .locator('#stage')
+          .screenshot({ path: path.join(screenshots, `10-cover-${position}-qa.png`) });
+      assert.equal((await fixture.core.invoke('state')).settings.coverPosition, position);
+    }
+    check(
+      'Four cover positions selected through Manager, persisted and rendered with genuine local static media'
+    );
     await page.locator('[data-action="toggle-play"]').click();
     await frame.waitForFunction(() => document.querySelector('.scene.visible video')?.paused);
     check('Manager preview uses real offline media and pauses');
@@ -124,6 +147,25 @@ async function runUI({ capture = false } = {}) {
     await page.waitForFunction(() => !document.fullscreenElement);
     check('Fullscreen entry and immediate Escape exit');
     await go('settings');
+    await page.locator('[data-setting="smoothMotion"]').check();
+    assert.equal((await fixture.core.invoke('state')).settings.smoothMotion, true);
+    await page.locator('[data-setting="shuffle"]').uncheck();
+    await fixture.core.invoke('prepare', { ids: ['steam:7000901'] });
+    for (let i = 0; i < 1200; i++) {
+      if ((await fixture.core.invoke('state')).job.status === 'completed') break;
+      await new Promise((r) => setTimeout(r, 50));
+    }
+    const smoothedGame = (await fixture.core.invoke('state')).games.find(
+      (g) => g.id === 'steam:7000901'
+    );
+    assert.equal(
+      smoothedGame.smoothed?.smoothing,
+      'interpolate-30-v1',
+      smoothedGame.smoothingError
+    );
+    check(
+      'Optional interpolation from Settings prepares a separate real VP9 file while preserving its original'
+    );
     await shot('07-settings');
     await page.locator('[data-setting="sceneDuration"]').fill('12');
     await page.locator('[data-setting="sceneDuration"]').dispatchEvent('change');
@@ -180,10 +222,30 @@ async function runUI({ capture = false } = {}) {
     await offline.waitForFunction(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
+    await offline.waitForFunction(() =>
+      document.querySelector('.scene.visible video')?.src.includes('.smooth30-v1.webm')
+    );
     assert.deepEqual(remote, []);
     await offline.close();
     await page.bringToFront();
-    check('Export plays directly over file:// with zero HTTP requests and no manager dependency');
+    check(
+      'Export plays actual interpolated VP9 directly over file:// with zero HTTP requests and no manager dependency'
+    );
+    await page.locator('[data-setting="smoothMotion"]').uncheck();
+    await page.locator('[data-action="update-install"]').click();
+    for (let i = 0; i < 100; i++) {
+      if (
+        !(await fs.readFile(path.join(installed, 'catalog.js'), 'utf8')).includes(
+          '.smooth30-v1.webm'
+        )
+      )
+        break;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    assert(
+      !(await fs.readFile(path.join(installed, 'catalog.js'), 'utf8')).includes('.smooth30-v1.webm')
+    );
+    check('Disabling smoothing and updating restores original playback without downloading again');
     for (const width of [1280, 800, 390])
       for (const language of ['en', 'fr']) {
         await fixture.core.invoke('settings', { language });
