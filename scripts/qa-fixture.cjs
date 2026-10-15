@@ -158,40 +158,39 @@ async function createFixture({ root, browser }) {
     sgdbId: id,
     steamAppId: 7000000 + id,
     name: names[(id - 901) % 4],
-    thumb: null
+    thumb: `https://cdn2.steamgriddb.com/hero_thumb/${id % 3}.webm`
   });
-  const assets = (id) => [
-    {
-      id,
-      url: `https://cdn2.steamgriddb.com/hero/${id % 3}.webm`,
-      thumb: null,
+  const assets = (id) =>
+    [0, 1].map((index) => ({
+      id: id + index * 1000000,
+      url: `https://cdn2.steamgriddb.com/hero/${(id + index) % 3}.webm`,
+      thumb: index
+        ? 'https://cdn2.steamgriddb.com/hero_thumb/missing.webm'
+        : `https://cdn2.steamgriddb.com/hero_thumb/${id % 3}.webm`,
       width: 960,
       height: 540,
       score: 0,
       kind: 'hero',
       animated: true,
       author: { name: 'Original validation media' }
-    }
-  ];
+    }));
   const sgdb = {
     game: async (id) => metadata(id),
     bySteam: async (id) => metadata(id - 7000000),
-    search: async () => [
-      metadata(904),
-      { sgdbId: 905, steamAppId: 7000905, name: 'Orbit II · QA homonym result', thumb: null }
-    ],
+    search: async () => [metadata(904), { ...metadata(905), name: 'Orbit II · QA homonym result' }],
     artworks: async (id) => assets(id),
-    covers: async (id) => [
-      {
+    covers: async (id) =>
+      [0, 1].map((index) => ({
         ...assets(id)[0],
-        url: `https://cdn2.steamgriddb.com/grid/${id % 3}.png`,
+        id: id * 10 + index,
+        url: `https://cdn2.steamgriddb.com/grid/${(id + index) % 3}.png`,
+        thumb: `https://cdn2.steamgriddb.com/grid/${(id + index) % 3}.png`,
         width: 240,
         height: 360,
         animated: false,
         kind: 'grid',
-        author: { name: 'Original validation cover' }
-      }
-    ],
+        author: { name: `Original validation cover ${index + 1}` }
+      })),
     validateKey: async () => ({ valid: true })
   };
   const core = require('../core/index.cjs').createCore({

@@ -529,3 +529,83 @@ test('a corrupt smoothing cache is cleared when regeneration fails, preserving o
   assert.equal(state.games[0].status, 'ready');
   assert.match(state.games[0].smoothingError, /Processing failed/);
 });
+test('manual fixed artwork is validated, applied independently and retained across restart and preparation', async (t) => {
+  const x = await setup(t);
+  x.sgdb.covers = async () => [
+    { ...asset, id: 800, animated: false, kind: 'grid' },
+    { ...asset, id: 801, animated: false, kind: 'grid' }
+  ];
+  const prepare = x.media.prepare;
+  x.media.prepare = async (...args) => ({
+    ...(await prepare(...args)),
+    animated: args[0].animated
+  });
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  let state = await done(x.core);
+  const original = state.games[0].media;
+  const choices = await x.core.invoke('covers', { id: 'steam:620' });
+  state = await x.core.invoke('setCover', { id: 'steam:620', selectedCover: choices[1] });
+  assert.equal(state.games[0].selectedCover.id, 801);
+  assert.equal(state.games[0].coverManualSelection, true);
+  assert.deepEqual(state.games[0].media, original);
+  const successfulPrepare = x.media.prepare;
+  x.media.prepare = async () => {
+    throw new Error('Selected cover download failed');
+  };
+  await assert.rejects(
+    x.core.invoke('setCover', { id: 'steam:620', selectedCover: choices[0] }),
+    /download failed/
+  );
+  assert.equal((await x.core.invoke('state')).games[0].selectedCover.id, 801);
+  x.media.prepare = successfulPrepare;
+  await assert.rejects(
+    x.core.invoke('setCover', { id: 'steam:620', selectedCover: { id: 999 } }),
+    /Choose a still/
+  );
+  assert.equal((await x.core.invoke('state')).games[0].selectedCover.id, 801);
+  await x.core.close();
+  const reopened = x.create();
+  await reopened.invoke('prepare');
+  state = await done(reopened);
+  assert.equal(state.games[0].selectedCover.id, 801);
+  assert.equal(state.games[0].cover.file, 'asset-801.webm');
+  state = await reopened.invoke('setCover', { id: 'steam:620', selectedCover: null });
+  assert.equal(state.games[0].coverManualSelection, false);
+  assert.equal(state.games[0].cover.file, 'asset-800.webm');
+});
+test('the video-size limit is validated, persisted and passed in bytes without a 160 MB ceiling', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  const budgets = [];
+  x.media.smooth = async (media, { maxBytes }) => {
+    budgets.push(maxBytes);
+    return media;
+  };
+  await x.core.invoke('settings', { smoothMotion: true, maxSmoothingMB: 512 });
+  await x.core.invoke('prepare');
+  await done(x.core);
+  assert.equal(budgets[0], 512 * 1024 * 1024);
+  await x.core.invoke('settings', { maxSmoothingMB: 0 });
+  assert.equal((await x.core.invoke('state')).settings.maxSmoothingMB, 0);
+  await assert.rejects(x.core.invoke('settings', { maxSmoothingMB: -1 }), /size limit/);
+  await assert.rejects(x.core.invoke('settings', { maxSmoothingMB: '512' }), /size limit/);
+  await x.core.close();
+  assert.equal((await x.create().invoke('state')).settings.maxSmoothingMB, 0);
+});
+test('late search and installed-game previews resolve missing metadata lazily, with static grid fallback', async (t) => {
+  const x = await setup(t),
+    requested = [];
+  x.sgdb.enrichThumbnails = async (games) => {
+    requested.push(games[0].sgdbId);
+    return games;
+  };
+  x.sgdb.covers = async () => [{ ...asset, thumb: 'https://cdn2.steamgriddb.com/thumb/still.jpg' }];
+  x.media.preview = async ({ url }) => {
+    assert.equal(url, 'https://cdn2.steamgriddb.com/thumb/still.jpg');
+    return { file: 'resolved.jpg' };
+  };
+  assert.equal((await x.core.invoke('previewImage', { sgdbId: 99 })).file, 'resolved.jpg');
+  assert.equal((await x.core.invoke('previewImage', { steamAppId: 620 })).file, 'resolved.jpg');
+  assert.deepEqual(requested, [99, 99]);
+});

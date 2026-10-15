@@ -6,7 +6,7 @@ const crypto = require('node:crypto');
 const { spawn } = require('node:child_process');
 const { pipeline } = require('node:stream/promises');
 const { Transform } = require('node:stream');
-const { createWriteStream, existsSync } = require('node:fs');
+const { createReadStream, createWriteStream, existsSync } = require('node:fs');
 const LIMITS = {
   bytes: 160 * 1024 * 1024,
   downloadMs: 120000,
@@ -146,10 +146,13 @@ function run(
       child.kill('SIGKILL');
       finish(Object.assign(new Error('Preparation cancelled.'), { name: 'AbortError' }));
     };
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      finish(new Error('Media processing timed out.'));
-    }, timeoutMs);
+    const timer =
+      timeoutMs > 0
+        ? setTimeout(() => {
+            child.kill('SIGKILL');
+            finish(new Error('Media processing timed out.'));
+          }, timeoutMs)
+        : null;
     signal?.addEventListener('abort', abort, { once: true });
     child.stdout.on('data', (chunk) => {
       if (binaryOutput) output.push(chunk);
@@ -279,6 +282,11 @@ function binaryDefault(name) {
     return name;
   }
 }
+async function hashFile(file, signal) {
+  const hash = crypto.createHash('sha256');
+  for await (const chunk of createReadStream(file, { signal })) hash.update(chunk);
+  return hash.digest('hex');
+}
 function createMedia({
   dataDir,
   ffmpegPath = binaryDefault('ffmpeg'),
@@ -297,21 +305,29 @@ function createMedia({
     const stat = await fs.lstat(directory);
     if (!stat.isDirectory() || stat.isSymbolicLink()) throw new Error('Media directory is unsafe.');
   }
-  async function safeFile(name) {
+  async function safeFile(name, maxBytes = LIMITS.bytes) {
     if (!basename(name)) throw new Error('Unsafe media filename.');
     const target = path.join(directory, name),
       stat = await fs.lstat(target);
-    if (!stat.isFile() || stat.isSymbolicLink() || stat.size <= 0 || stat.size > LIMITS.bytes)
+    if (!stat.isFile() || stat.isSymbolicLink() || stat.size <= 0 || stat.size > maxBytes)
       throw new Error('Invalid local media file.');
     return target;
   }
-  async function inspect(file, { signal } = {}) {
+  async function inspect(file, { signal, timeoutMs = LIMITS.processMs } = {}) {
     aborted(signal);
-    const head = await fs.readFile(file, { signal }),
-      inputFormat = demuxer(head);
+    const handle = await fs.open(file, 'r');
+    let head;
+    try {
+      const header = Buffer.alloc(12);
+      const { bytesRead } = await handle.read(header, 0, 12, 0);
+      head = header.subarray(0, bytesRead);
+    } finally {
+      await handle.close();
+    }
+    const inputFormat = demuxer(head);
     let result;
     if (head.toString('ascii', 0, 4) === 'RIFF' && head.toString('ascii', 8, 12) === 'WEBP') {
-      const webp = webpFrames(head);
+      const webp = webpFrames(await fs.readFile(file, { signal }));
       if (webp.frames.length) {
         if (webp.width * webp.height > LIMITS.pixels || webp.duration > LIMITS.duration)
           throw new Error('Media exceeds supported resolution or duration.');
@@ -360,7 +376,7 @@ function createMedia({
               'json',
               file
             ],
-            { signal }
+            { signal, timeoutMs }
           )
         );
       } catch (e) {
@@ -411,7 +427,7 @@ function createMedia({
             'json',
             file
           ],
-          { signal }
+          { signal, timeoutMs }
         )
       );
       result.frames = Number(frameProbe.streams?.[0]?.nb_read_frames) || 1;
@@ -435,7 +451,7 @@ function createMedia({
           'null',
           '-'
         ],
-        { signal }
+        { signal, timeoutMs }
       );
     }
     if (
@@ -447,7 +463,159 @@ function createMedia({
       throw new Error('Media exceeds supported resolution or duration.');
     return { ...result, demuxer: inputFormat, animated: result.frames > 1 };
   }
+  const previewWork = new Map(),
+    previewLanes = [Promise.resolve(), Promise.resolve()];
+  let nextPreviewLane = 0;
+  async function preview(input, { signal, force = false } = {}) {
+    const reference = input.file ? `local:${input.file}` : cdnURL(input.url).href;
+    const token = crypto.createHash('sha256').update(reference).digest('hex').slice(0, 24);
+    const filename = `preview-${token}.jpg`;
+    if (previewWork.has(token)) return previewWork.get(token);
+    const lane = nextPreviewLane++ % previewLanes.length;
+    const operation = previewLanes[lane].then(async () => {
+      aborted(signal);
+      await ensureDirectory();
+      const target = path.join(directory, filename);
+      if (!force) {
+        const cached = await fs.lstat(target).catch(() => null);
+        if (cached?.isFile() && !cached.isSymbolicLink() && cached.size > 0)
+          return { file: filename };
+      }
+      const id = crypto.randomUUID(),
+        partial = path.join(directory, `${id}.partial`),
+        temp = path.join(directory, `${id}.jpg`);
+      try {
+        const source = input.file ? await safeFile(input.file, Infinity) : partial;
+        if (!input.file) await downloadImpl(input.url, partial, { signal, maxBytes: LIMITS.bytes });
+        const handle = await fs.open(source, 'r');
+        let signature;
+        try {
+          const buffer = Buffer.alloc(12);
+          const read = await handle.read(buffer, 0, 12, 0);
+          signature = buffer.subarray(0, read.bytesRead);
+        } finally {
+          await handle.close();
+        }
+        const format = demuxer(signature);
+        const probe = JSON.parse(
+          await run(
+            ffprobePath,
+            [
+              '-v',
+              'error',
+              '-protocol_whitelist',
+              'file,pipe',
+              '-f',
+              format,
+              '-select_streams',
+              'v:0',
+              '-show_entries',
+              'stream=width,height',
+              '-of',
+              'json',
+              source
+            ],
+            { signal, timeoutMs: 30000 }
+          )
+        );
+        const size = probe.streams?.[0];
+        if (
+          format !== 'webp_pipe' &&
+          (!size?.width || !size?.height || size.width * size.height > LIMITS.pixels)
+        )
+          throw new Error('Preview resolution exceeds supported limits.');
+        const args = [
+          '-v',
+          'error',
+          '-xerror',
+          '-threads',
+          '2',
+          '-protocol_whitelist',
+          'file,pipe'
+        ];
+        let frameInput;
+        if (format === 'webp_pipe') {
+          const decoded = webpFrames(await fs.readFile(source, { signal }));
+          if (decoded.frames.length) {
+            const rect = decoded.metadata[0],
+              { compose, clear, png } = require('./webp-compose.cjs');
+            if (decoded.width * decoded.height > LIMITS.pixels)
+              throw new Error('Preview resolution exceeds supported limits.');
+            const rgba = await run(
+              ffmpegPath,
+              [
+                '-v',
+                'error',
+                '-threads',
+                '2',
+                '-f',
+                'image2pipe',
+                '-c:v',
+                'webp',
+                '-i',
+                'pipe:0',
+                '-frames:v',
+                '1',
+                '-pix_fmt',
+                'rgba',
+                '-f',
+                'rawvideo',
+                'pipe:1'
+              ],
+              {
+                signal,
+                input: decoded.frames[0],
+                binaryOutput: true,
+                maxOutput: rect.width * rect.height * 4
+              }
+            );
+            const canvas = Buffer.alloc(decoded.width * decoded.height * 4);
+            clear(
+              canvas,
+              decoded.width,
+              { x: 0, y: 0, width: decoded.width, height: decoded.height },
+              decoded.background
+            );
+            compose(canvas, decoded.width, rgba, rect);
+            frameInput = png(canvas, decoded.width, decoded.height);
+            args.push('-f', 'image2pipe', '-c:v', 'png', '-i', 'pipe:0');
+          } else args.push('-f', format, '-i', source);
+        } else args.push('-f', format, '-i', source);
+        args.push(
+          '-frames:v',
+          '1',
+          '-vf',
+          'scale=640:480:force_original_aspect_ratio=decrease',
+          '-q:v',
+          '3',
+          '-y',
+          temp
+        );
+        await run(ffmpegPath, args, { signal, input: frameInput, timeoutMs: 30000 });
+        const info = await inspect(temp, { signal });
+        if (info.animated || info.width > 640 || info.height > 480)
+          throw new Error('Invalid preview image.');
+        aborted(signal);
+        await fs.rename(temp, target);
+        return { file: filename };
+      } finally {
+        await fs.rm(partial, { force: true });
+        await fs.rm(temp, { force: true });
+      }
+    });
+    previewWork.set(token, operation);
+    previewLanes[lane] = operation.catch(() => {});
+    try {
+      return await operation;
+    } finally {
+      previewWork.delete(token);
+    }
+  }
   return {
+    preview,
+    async waitForPreviews() {
+      await Promise.allSettled(previewLanes);
+    },
     async prepare(
       asset,
       { signal, onProgress, maxBytes = LIMITS.bytes, requireStatic = false } = {}
@@ -588,9 +756,9 @@ function createMedia({
         await Promise.allSettled([partial, ...work].map((f) => fs.rm(f, { force: true })));
       }
     },
-    async smooth(media, { signal, maxBytes = LIMITS.bytes } = {}) {
+    async smooth(media, { signal, maxBytes = Infinity, processMs = 0 } = {}) {
       aborted(signal);
-      if (!Number.isFinite(maxBytes) || maxBytes < 1024)
+      if (!(maxBytes === Infinity || Number.isFinite(maxBytes)) || maxBytes < 1024)
         throw new Error('Not enough storage space for interpolation.');
       await ensureDirectory(false);
       if (!(await this.validate(media, { signal })))
@@ -608,7 +776,7 @@ function createMedia({
       const token = crypto.randomUUID(),
         temp = path.join(directory, `${token}.smooth.webm`),
         framesDir = path.join(directory, `${token}.frames`),
-        deadline = Date.now() + LIMITS.processMs;
+        deadline = processMs > 0 ? Date.now() + processMs : Infinity;
       try {
         let inputArgs = ['-f', info.demuxer, '-i', source];
         if (info.format === 'webp') {
@@ -628,7 +796,6 @@ function createMedia({
             'steamos-animated-screensaver-v1'
           );
           const list = ['ffconcat version 1.0'];
-          let transientBytes = 0;
           for (let i = 0; i < decoded.frames.length; i++) {
             aborted(signal);
             if (i && decoded.metadata[i - 1].dispose)
@@ -660,16 +827,12 @@ function createMedia({
                 input: decoded.frames[i],
                 binaryOutput: true,
                 maxOutput: rect.width * rect.height * 4,
-                timeoutMs: Math.max(1, deadline - Date.now())
+                timeoutMs: Number.isFinite(deadline) ? Math.max(1, deadline - Date.now()) : 0
               }
             );
             compose(canvas, decoded.width, rgba, rect);
             const image = png(canvas, decoded.width, decoded.height);
-            transientBytes += image.length;
-            if (transientBytes > LIMITS.bytes)
-              throw new Error(
-                'Interpolation temporary frames exceed the 160 MB limit. The original is kept.'
-              );
+
             const disk = await fs.statfs(dataDir);
             if (Number(disk.bavail) * Number(disk.bsize) - image.length < 64 * 1024 * 1024)
               throw new Error('Not enough disk space for interpolation frames.');
@@ -686,7 +849,6 @@ function createMedia({
         }
         const disk = await fs.statfs(dataDir);
         const budget = Math.min(
-          LIMITS.bytes,
           maxBytes,
           Number(disk.bavail) * Number(disk.bsize) - 64 * 1024 * 1024
         );
@@ -726,9 +888,9 @@ function createMedia({
             '-y',
             temp
           ],
-          { signal, timeoutMs: Math.max(1, deadline - Date.now()) }
+          { signal, timeoutMs: Number.isFinite(deadline) ? Math.max(1, deadline - Date.now()) : 0 }
         );
-        const result = await inspect(temp, { signal });
+        const result = await inspect(temp, { signal, timeoutMs: processMs });
         if (
           !result.animated ||
           Math.abs(result.duration - info.duration) > 0.1 ||
@@ -738,10 +900,7 @@ function createMedia({
           throw new Error(
             'Interpolation was incomplete or exceeded its storage budget. The original is kept.'
           );
-        const digest = crypto
-          .createHash('sha256')
-          .update(await fs.readFile(source, { signal }))
-          .digest('hex');
+        const digest = await hashFile(source, signal);
         const file = `${digest.slice(0, 24)}.smooth30-v1.webm`;
         aborted(signal);
         await fs.rename(temp, path.join(directory, file));
@@ -765,21 +924,17 @@ function createMedia({
       try {
         aborted(signal);
         await ensureDirectory(false);
-        const file = await safeFile(media.file);
+        const file = await safeFile(media.file, media.smoothing ? Infinity : LIMITS.bytes);
         const thumb = await safeFile(media.thumbnail);
         if (media.sourceFile) {
           const source = await safeFile(media.sourceFile);
-          if (
-            media.sha256 &&
-            crypto
-              .createHash('sha256')
-              .update(await fs.readFile(source, { signal }))
-              .digest('hex') !== media.sha256
-          )
-            return false;
+          if (media.sha256 && (await hashFile(source, signal)) !== media.sha256) return false;
         }
         await inspect(thumb, { signal });
-        const info = await inspect(file, { signal });
+        const info = await inspect(file, {
+          signal,
+          timeoutMs: media.smoothing ? 0 : LIMITS.processMs
+        });
         return (
           info.width === media.width &&
           info.height === media.height &&

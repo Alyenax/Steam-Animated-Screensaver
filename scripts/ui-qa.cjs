@@ -48,6 +48,9 @@ async function runUI({ capture = false } = {}) {
     await page.goto(instance.url + '/manager/index.html');
     await page.locator('[data-action="prepare-home"]').waitFor();
     await page.waitForFunction(() => !document.querySelector('[data-action="scan"]')?.disabled);
+    assert.equal(await page.title(), 'SteamOS Animated Screensaver');
+    assert(!(await page.locator('body').innerText()).includes('CINEMA'));
+    assert.equal(await page.locator('.local-badge').count(), 0);
     await shot('01-home-onboarding');
     check('First-run onboarding and automatic Steam scan, no fake library');
     await go('settings');
@@ -72,12 +75,103 @@ async function runUI({ capture = false } = {}) {
     await go('library');
     await page.locator('.game-card').first().waitFor();
     assert.equal(await page.locator('.game-card').count(), 3);
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('.game-card .managed-image img')].every(
+        (img) => img.naturalWidth > 0
+      )
+    );
     await shot('03-my-library-qa');
+    const cachedGame = (await fixture.core.invoke('state')).games.find(
+      (g) => g.id === 'steam:7000901'
+    );
+    const thumbPath = path.join(fixture.dataDir, 'media', cachedGame.media.thumbnail),
+      savedThumb = await fs.readFile(thumbPath);
+    await fs.writeFile(thumbPath, 'broken cached thumbnail');
+    await page.reload();
+    await page.locator('[data-route="library"]').first().click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector(
+          '.game-visual[data-detail="steam:7000901"] .managed-image.loaded img'
+        )?.naturalWidth > 0
+    );
+    assert(
+      (
+        await page.locator('.game-visual[data-detail="steam:7000901"] img').getAttribute('src')
+      ).includes('preview-')
+    );
+    await fs.writeFile(thumbPath, savedThumb);
+    check(
+      'A corrupted library thumbnail falls back to a freshly decoded frame from the local animation'
+    );
+    await go('home');
+    await page.locator('video.hero-media').evaluate((video) => {
+      video.src = '/media/missing.webm';
+      video.load();
+    });
+    await page.waitForFunction(
+      () => document.querySelector('.image-hero.loaded img')?.naturalWidth > 0
+    );
+    check('A failed Home moving preview falls back to a valid local image');
+    await go('library');
+    await page.locator('.game-visual[data-detail="steam:7000901"]').click();
+    await page.locator('video.detail-cover').evaluate((video) => {
+      video.src = '/media/missing.webm';
+      video.load();
+    });
+    await page.waitForFunction(
+      () => document.querySelector('.image-detail.loaded img')?.naturalWidth > 0
+    );
+    check('A failed detail moving preview falls back to a valid local image');
+    await page.locator('[data-action="load-artworks"]').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('[data-select-asset]').length === 2 &&
+        [...document.querySelectorAll('[data-select-asset] img')].every(
+          (img) => img.naturalWidth > 0
+        )
+    );
+    check(
+      'Alternative previews normalize WebM thumbnails and recover from a broken thumbnail using its original artwork'
+    );
+    if (capture) await shot('11-alternative-previews-qa');
+    const originalAnimation = JSON.stringify(
+      (await fixture.core.invoke('state')).games.find((g) => g.id === 'steam:7000901').media
+    );
+    await page.locator('[data-action="load-covers"]').click();
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('[data-select-cover]').length === 2 &&
+        [...document.querySelectorAll('[data-select-cover] img')].every(
+          (img) => img.naturalWidth > 0
+        )
+    );
+    await page.locator('[data-select-cover="1"]').click();
+    await page.waitForFunction(
+      () =>
+        !!document.querySelector('[data-action="automatic-cover"]') &&
+        !document.querySelector('[data-action="load-covers"]')?.disabled
+    );
+    const chosenCover = (await fixture.core.invoke('state')).games.find(
+      (g) => g.id === 'steam:7000901'
+    );
+    assert.equal(chosenCover.coverManualSelection, true);
+    assert.equal(chosenCover.selectedCover.id, 9011);
+    assert.equal(JSON.stringify(chosenCover.media), originalAnimation);
+    if (capture) await shot('12-fixed-artwork-picker-qa');
+    check('A different fixed artwork is prepared and saved without altering the animation');
+    await page.locator('[data-action="close-detail"]').click();
     await page.locator('[data-action="add-game"]').first().click();
     await page.locator('#game-search').fill('Orbit');
     await page.locator('#search-form').evaluate((form) => form.requestSubmit());
     await page.locator('[data-add-result]').first().waitFor();
     assert.equal(await page.locator('[data-add-result]').count(), 2);
+    await page.waitForFunction(() =>
+      [...document.querySelectorAll('.search-results .result img')].every(
+        (img) => img.naturalWidth > 0
+      )
+    );
+    check('Manual search previews decode actual WebM thumbnails as local images');
     await shot('04-add-game-qa');
     await page.locator('[data-add-result]').first().click();
     await page.waitForFunction(
@@ -147,6 +241,21 @@ async function runUI({ capture = false } = {}) {
     await page.waitForFunction(() => !document.fullscreenElement);
     check('Fullscreen entry and immediate Escape exit');
     await go('settings');
+    await page.locator('[data-setting="maxSmoothingMB"]').fill('512');
+    await page.locator('[data-setting="maxSmoothingMB"]').dispatchEvent('change');
+    for (let i = 0; i < 100; i++) {
+      if ((await fixture.core.invoke('state')).settings.maxSmoothingMB === 512) break;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    assert.equal((await fixture.core.invoke('state')).settings.maxSmoothingMB, 512);
+    await page.locator('[data-setting="maxSmoothingMB"]').fill('0');
+    await page.locator('[data-setting="maxSmoothingMB"]').dispatchEvent('change');
+    for (let i = 0; i < 100; i++) {
+      if ((await fixture.core.invoke('state')).settings.maxSmoothingMB === 0) break;
+      await new Promise((r) => setTimeout(r, 20));
+    }
+    assert.equal((await fixture.core.invoke('state')).settings.maxSmoothingMB, 0);
+    check('Manual video-size limit saves and accepts zero for no per-video size limit');
     await page.locator('[data-setting="smoothMotion"]').check();
     assert.equal((await fixture.core.invoke('state')).settings.smoothMotion, true);
     await page.locator('[data-setting="shuffle"]').uncheck();
@@ -225,6 +334,15 @@ async function runUI({ capture = false } = {}) {
     await offline.waitForFunction(() =>
       document.querySelector('.scene.visible video')?.src.includes('.smooth30-v1.webm')
     );
+    await offline.waitForFunction(
+      () => document.querySelector('.scene.visible .caption-cover')?.naturalWidth > 0
+    );
+    assert(
+      (await offline.locator('.scene.visible .cover-credit').textContent()).includes(
+        'Original validation cover 2'
+      )
+    );
+    check('Chosen fixed artwork and its own creator credit are exported and displayed offline');
     assert.deepEqual(remote, []);
     await offline.close();
     await page.bringToFront();

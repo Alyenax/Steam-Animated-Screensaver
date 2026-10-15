@@ -31,6 +31,30 @@ async function run() {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.locator('[data-route="preview"]').first().waitFor();
+    assert.equal(await page.title(), 'SteamOS Animated Screensaver');
+    assert.equal(await page.locator('.local-badge').count(), 0);
+    const normalizedImage = await page.evaluate(async () => {
+      const state = await window.cinema.invoke('state');
+      return window.cinema.invoke('previewImage', { file: state.games[0].media.file });
+    });
+    const decoded = await page.evaluate(
+      (file) =>
+        new Promise((resolve, reject) => {
+          const image = new Image();
+          image.onload = () => resolve(image.naturalWidth);
+          image.onerror = () => reject(new Error('Native preview image failed'));
+          image.src = new URL(`/media/${file}`, location.href).href;
+        }),
+      normalizedImage.file
+    );
+    assert(decoded > 0);
+    await page.locator('[data-route="library"]').first().click();
+    await page.waitForFunction(
+      () =>
+        document.querySelector('.game-visual[data-detail="steam:7000901"] .managed-image img')
+          ?.naturalWidth > 0
+    );
+
     const isolation = await page.evaluate(() => ({
       node: typeof require,
       bridge: typeof window.cinema?.invoke
@@ -105,6 +129,8 @@ async function run() {
           preferences,
           checks: [
             'Actual app:// protocol media playback',
+            'Native image-preview IPC and JPEG decoding',
+            'Full product name and no Local-first badge',
             'Real Electron preview pause',
             'Sender/action restrictions',
             'No Node in renderer',

@@ -2122,3 +2122,154 @@ body.reduced-motion *:after {
     margin-left: 0;
   }
 }
+
+/* The product name is the brand at every viewport size. */
+.brand-name {
+  font-size: 16px;
+  line-height: 1.25;
+  letter-spacing: 0;
+}
+.brand-name span {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  margin-top: 3px;
+}
+.mobile-brand {
+  max-width: 235px;
+  white-space: normal;
+  font-size: 12px;
+  letter-spacing: 0;
+  line-height: 1.3;
+}
+.breadcrumbs {
+  font-size: 12px;
+}
+.managed-image {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: #172336;
+  object-fit: cover;
+}
+.managed-image > img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: inherit;
+  aspect-ratio: auto;
+  opacity: 0;
+}
+.managed-image.loaded > img {
+  opacity: 1;
+}
+.preview-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 8px;
+  color: #7890a8;
+  padding: 8px;
+  text-align: center;
+}
+.managed-image.loaded > .preview-placeholder {
+  display: none;
+}
+.preview-unavailable-label {
+  display: none;
+  font-size: 10px;
+}
+.managed-image.failed .preview-unavailable-label {
+  display: block;
+}
+.image-result {
+  width: 70px;
+  height: 40px;
+  border-radius: 4px;
+}
+.image-queue {
+  width: 66px;
+  height: 37px;
+  border-radius: 5px;
+}
+.image-game {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.image-asset {
+  width: 100%;
+  aspect-ratio: 2;
+}
+.image-cover {
+  width: 86px;
+  height: 129px;
+  object-fit: contain;
+  border-radius: 5px;
+}
+.image-cover-choice {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: contain;
+}
+.fixed-artwork {
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  padding: 22px 0;
+  margin: 20px 0;
+}
+.fixed-artwork-current {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+}
+.fixed-artwork-current > div {
+  min-width: 0;
+}
+.fixed-artwork-current .button-row {
+  flex-wrap: wrap;
+}
+.fixed-artwork .cover-grid {
+  margin-top: 20px;
+}
+@media (max-width: 620px) {
+  .mobile-brand {
+    font-size: 11px;
+    max-width: 215px;
+  }
+  .fixed-artwork-current {
+    align-items: flex-start;
+  }
+}
+
+.image-detail {
+  width: 100%;
+  aspect-ratio: 16/9;
+  max-height: 230px;
+  border-radius: 9px;
+  margin-bottom: 18px;
+}
+
+.cover-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+@media (max-width: 620px) {
+  .cover-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.image-hero {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.7;
+}

@@ -1,15 +1,17 @@
-# 0.1.2-rc.1 — Fixed covers, placement and optional smoothing
+# 0.1.3-rc.1 — Preview repairs, chosen fixed artwork and configurable 30 fps sizes
 
-A static game cover can now appear beside the title, bottom right, top right or top left, using the same margins as the title. Change its position or visibility from Preview or Settings. Preparation caches a static portrait SteamGridDB Grid with artist credit; existing local thumbnails provide an offline fallback.
+SteamGridDB sometimes supplies WebM videos as thumbnails. Search results, alternative galleries, library cards and preparation rows now display real locally generated JPEG previews. Missing thumbnails fall back to available source artwork; search results beyond the first eight resolve thumbnails on demand. Failed Home and detail media previews fall back to still images. These paths are verified in the actual UI, including live SteamGridDB results.
 
-Optional **Smooth animations · 30 fps** prepares low-frame-rate GIF, WebP and WebM animations as separate silent VP9 videos, up to 1080p. Original bytes are retained; disabling the option restores original playback without downloading again. Already fluid media keeps its frame rate. Interpolation may distort movement, takes additional preparation/storage and cannot fix a broken loop. Bounded failures remain visible and retain the original animation.
+Choose a separate fixed artwork in **Library → Game details → Fixed artwork → Choose / change fixed artwork**. The choice is prepared immediately, credited separately, preserved through restart/preparation and exported without replacing the animation. **Use automatic artwork** restores automatic selection.
 
-## Apply the update
+**Settings → Playback → Maximum size per 30 fps video (MB)** sets your own output ceiling. **0 means no per-video limit**, and is the default. The total library storage setting and available disk space still apply. Hidden 160 MiB output/temporary-frame limits and the interpolation timeout are removed. Originals remain available, and processing can still be paused/cancelled. A valid processed WebM above the former size ceiling is covered by regression testing.
 
-1. In SteamOS Desktop Mode, close the Manager, extract the Linux x64 package and run `./install.sh`. Existing catalog, key and media are preserved.
-2. In Settings, choose the cover position and optionally enable smoothing. Prepare the library to fetch covers/process selected animations.
-3. Inspect Preview, then choose **Update / repair** to copy the new player, settings and selected media into Steam. Restart Steam if it retains the previous page.
+The visible product name is now **SteamOS Animated Screensaver** everywhere. The unapproved Cinema brand and Local-first badge are removed.
 
-The “Your library. Beautifully alive.” promotional sentence and its French equivalent are removed from every scene. The standalone `remove-screensaver-tagline.sh` is also supplied for users who only want to hide that sentence in existing owned installations, with a CSS backup and no media preparation. That script alone does not add covers or smoothing.
+## Update on the Steam Machine
 
-The DNS-safe installation identifier and owned legacy migration from 0.1.1 are preserved. The repository/release stays private, GitHub Actions remains disabled, and no downloaded game artworks or secrets are distributed. Local software/browser/FFmpeg checks are recorded in VALIDATION.md. The reported Steam Machine error -105 still requires physical re-test; this package is an installation candidate.
+1. In Desktop Mode, close the Manager, extract the Linux x64 package and run `./install.sh`. Existing catalog, key and media are preserved.
+2. Choose your fixed artwork and desired size limit. Prepare again if you change the 30 fps processing settings, then inspect Preview.
+3. Use **Update / repair** to republish the chosen artwork, player and settings to Steam. Restart Steam if it retains the old page.
+
+This is a private installation candidate. Local browser/native Electron/decoder checks and live provider checks are recorded in VALIDATION.md and LIVE_PREVIEWS_VALIDATION.json. Physical Steam Machine/Gamescope behavior, including the previously reported error -105, still requires target-device confirmation. GitHub Actions remains disabled. No personal key or downloaded game artwork is included.

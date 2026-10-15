@@ -4,11 +4,11 @@
 
 Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
 
-**0.1.2 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.3 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
-The application is called SteamOS Animated Screensaver; **Cinema** is its short interface label. No GabeCubeAura, Decky Loader, account password, or permanent background service is required.
+The application uses its full name, **SteamOS Animated Screensaver**, throughout the interface. No GabeCubeAura, Decky Loader, account password, or permanent background service is required.
 
 ## Your library, your intermission
 
@@ -35,7 +35,7 @@ Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Ste
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.2-linux-x64.tar.gz
+tar -xzf SteamOS-Animated-Screensaver-0.1.3-linux-x64.tar.gz
 cd steamos-animated-screensaver-linux-x64
 ./install.sh
 ```
@@ -46,9 +46,11 @@ The application installs to `~/.local/opt/steamos-animated-screensaver`; it does
 
 ## Covers and optional smoothing
 
-In **Settings → Playback**, enable **Show a still cover** and choose **Cover position**: beside the title, bottom right, top right or top left. The same controls are also in Preview. Each corner uses the title's horizontal/vertical margins. Prepare the library once to cache static portrait Grids from SteamGridDB; an existing local thumbnail is used when none is available. Cover and animation credits remain separate.
+In **Settings → Playback**, enable **Show a still cover** and choose **Cover position**: beside the title, bottom right, top right or top left. The same controls are also in Preview. Each corner uses the title's horizontal/vertical margins. Prepare the library once to cache static portrait Grids from SteamGridDB; an existing local thumbnail is used when none is available. Cover and animation credits remain separate. In **Library → Game details → Fixed artwork → Choose / change fixed artwork**, select another still image; it is prepared immediately without replacing the animation. **Use automatic artwork** restores automatic selection.
 
-**Smooth animations · 30 fps** is off by default. Enable it, prepare again, preview the result, then **Update / repair** to publish it to Steam. It interpolates low-frame-rate animations into a separate silent VP9 video, up to 1080p. Processing can take minutes and interpolation can cause visual artifacts; it does not repair a broken loop. Original bytes remain available. Disable the option and update the Steam snapshot to return to original playback without downloading again. Already fluid media at approximately 30 fps or above is preserved. Optional processing failures are visible in Preparation and fall back to the original animation.
+**Smooth animations · 30 fps** is off by default. Enable it, prepare again, preview the result, then **Update / repair** to publish it to Steam. It interpolates low-frame-rate animations into a separate silent VP9 video, up to 1080p. Processing can take minutes and interpolation can cause visual artifacts; it does not repair a broken loop. Original bytes remain available. **Maximum size per 30 fps video (MB)** defaults to **0**, meaning no per-video size limit; set a positive value for your own ceiling. The total library storage setting and free disk space remain applicable. The former fixed 160 MiB output/temporary-frame limits and three-minute interpolation deadline are removed. Disable the option and update the Steam snapshot to return to original playback without downloading again. Already fluid media at approximately 30 fps or above is preserved. Optional processing failures are visible in Preparation and fall back to the original animation.
+
+Search, library, preparation and alternative galleries normalize provider thumbnails into locally cached JPEGs, including thumbnails supplied as WebM videos. Missing/corrupt thumbnails fall back to available source media; unavailable assets show an explicit placeholder. Search results beyond the first eight load artwork on demand.
 
 The promotional sentence above each scene title has been removed. The small `remove-screensaver-tagline.sh` also hides it in existing owned installations without preparing media again.
 

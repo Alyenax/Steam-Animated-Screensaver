@@ -14,6 +14,7 @@ const defaults = {
   showCover: true,
   coverPosition: 'beside-title',
   smoothMotion: false,
+  maxSmoothingMB: 0,
   staticFallback: false,
   reducedMotion: false,
   maxStorageGB: 10,
@@ -62,6 +63,9 @@ function validateSettings(p, initial = false) {
     } else if (k === 'sceneDuration') {
       if (!Number.isFinite(v) || v < 8 || v > 180)
         throw new Error('Scene duration must be 8–180 seconds.');
+    } else if (k === 'maxSmoothingMB') {
+      if (!Number.isFinite(v) || v < 0 || v > 1000000)
+        throw new Error('Video size limit must be 0 (no limit) or a value up to 1000000 MB.');
     } else if (k === 'maxStorageGB') {
       if (!Number.isFinite(v) || v < 0.1 || v > 1000)
         throw new Error('Storage limit must be 0.1–1000 GB.');
@@ -85,6 +89,9 @@ function cleanGame(g) {
     manualSelection: !!g.manualSelection,
     media: g.media || null,
     cover: g.cover || null,
+    selectedCover: g.selectedCover || null,
+    coverManualSelection: !!g.coverManualSelection,
+    thumb: g.thumb || null,
     smoothed: g.smoothed || null,
     classification: g.classification || 'game'
   };
@@ -127,7 +134,8 @@ function createCore(options = {}) {
     monitorBusy = false;
   let writes = Promise.resolve(),
     actions = Promise.resolve();
-  const assetCache = new Map();
+  const assetCache = new Map(),
+    coverCache = new Map();
   const lifetime = new AbortController();
   const media = options.media || require('./media.cjs').createMedia({ dataDir });
   const sgdb = options.sgdb || createSGDB({ getKey: () => key, signal: lifetime.signal });
@@ -227,6 +235,8 @@ function createCore(options = {}) {
         g.media = preferred.media;
         g.cover = preferred.cover || duplicates.find((old) => old.cover)?.cover || null;
         g.smoothed = preferred.smoothed || null;
+        g.selectedCover = preferred.selectedCover || null;
+        g.coverManualSelection = !!preferred.coverManualSelection;
         g.status = preferred.status;
         g.included = preferred.included;
       }
@@ -272,7 +282,10 @@ function createCore(options = {}) {
           g.cover = null;
           state.job.stage = 'Finding static cover';
           await save();
-          const candidates = await sgdb.covers(await resolveGame(g, signal), { signal });
+          const candidates =
+            g.coverManualSelection && g.selectedCover
+              ? [g.selectedCover]
+              : await sgdb.covers(await resolveGame(g, signal), { signal });
           let lastError;
           for (const asset of candidates.slice(0, 3)) {
             try {
@@ -303,14 +316,21 @@ function createCore(options = {}) {
         if (
           !g.smoothed ||
           g.smoothed.sha256 !== g.media.sha256 ||
-          !(await media.validate(g.smoothed, { signal }))
+          !(await media.validate(g.smoothed, { signal })) ||
+          (state.settings.maxSmoothingMB > 0 &&
+            (await fs.stat(path.join(dataDir, 'media', g.smoothed.file))).size >
+              state.settings.maxSmoothingMB * 1024 * 1024)
         ) {
           g.smoothed = null;
           state.job.stage = 'smoothing';
           await save();
           const smoothed = await media.smooth(g.media, {
             signal,
-            maxBytes: await optionalBudget(160 * 1024 * 1024)
+            maxBytes: await optionalBudget(
+              state.settings.maxSmoothingMB > 0
+                ? state.settings.maxSmoothingMB * 1024 * 1024
+                : Infinity
+            )
           });
           if (!(await media.validate(smoothed, { signal })))
             throw new Error('Smoothed media failed final validation.');
@@ -556,6 +576,29 @@ function createCore(options = {}) {
       await save();
       return publicState();
     }
+    if (action === 'previewImage') {
+      if (!media.preview) throw new Error('Image previews are unavailable.');
+      let url = p.url;
+      if (p.sgdbId || p.steamAppId) {
+        const id = p.sgdbId
+          ? positiveId(p.sgdbId)
+          : (await sgdb.bySteam(positiveId(p.steamAppId), { signal: lifetime.signal }))?.sgdbId;
+        if (!id) throw new Error('No SteamGridDB preview is available for this game.');
+        const rows = sgdb.enrichThumbnails
+          ? await sgdb.enrichThumbnails([{ sgdbId: id, thumb: null }], { signal: lifetime.signal })
+          : [];
+        url = rows[0]?.thumb;
+        if (!url && sgdb.covers) {
+          const covers = await sgdb.covers(id, { signal: lifetime.signal });
+          url = covers[0]?.thumb || covers[0]?.url;
+        }
+        if (!url) throw new Error('No SteamGridDB preview is available for this game.');
+      }
+      return media.preview(
+        { file: p.file, url },
+        { signal: lifetime.signal, force: p.force === true }
+      );
+    }
     if (action === 'validateKey') return sgdb.validateKey();
     if (action === 'scan') {
       const scan = await scanSteam(options.steamRoots);
@@ -596,8 +639,10 @@ function createCore(options = {}) {
       }));
     }
     if (action === 'add') {
-      const metadata = await sgdb.game(positiveId(p.sgdbId));
+      let metadata = await sgdb.game(positiveId(p.sgdbId));
       if (!metadata) throw new Error('SteamGridDB game not found.');
+      if (!metadata.thumb && sgdb.enrichThumbnails)
+        metadata = (await sgdb.enrichThumbnails([metadata]))[0];
       let steamId = metadata.steamAppId;
       if (p.steamAppId) {
         const verified = await sgdb.bySteam(positiveId(p.steamAppId));
@@ -612,6 +657,7 @@ function createCore(options = {}) {
         throw new Error('Pause preparation before merging the current game.');
       let g = matches.find((g) => g.manualSelection || g.media) || matches[0];
       if (g) {
+        g.thumb = g.thumb || metadata.thumb || null;
         g.sgdbId = metadata.sgdbId;
         g.steamAppId = steamId || g.steamAppId;
         g.sources = [...new Set([...matches.flatMap((m) => m.sources), 'manual'])];
@@ -631,7 +677,8 @@ function createCore(options = {}) {
           selectedAsset: null,
           manualSelection: false,
           media: null,
-          classification: 'game'
+          classification: 'game',
+          thumb: metadata.thumb || null
         };
         state.games.push(g);
       }
@@ -639,6 +686,48 @@ function createCore(options = {}) {
       return publicState();
     }
     if (action === 'artworks') return getArtworks(find(p.id));
+    if (action === 'covers') {
+      const g = find(p.id),
+        rows = await sgdb.covers(await resolveGame(g));
+      coverCache.set(g.id, rows);
+      return rows;
+    }
+    if (action === 'setCover') {
+      const g = find(p.id);
+      if (runner || state.job.current === g.id)
+        throw new Error('Pause preparation before changing the current game.');
+      const rows = coverCache.get(g.id) || (await sgdb.covers(await resolveGame(g)));
+      const automatic = p.selectedCover === null;
+      const asset = automatic
+        ? rows[0]
+        : rows.find(
+            (a) =>
+              a.id === Number(p.selectedCover?.id) &&
+              (!p.selectedCover.kind || p.selectedCover.kind === a.kind)
+          );
+      if (!asset && !automatic)
+        throw new Error('Choose a still artwork from this game’s SteamGridDB gallery.');
+      let prepared = null;
+      if (asset) {
+        prepared = await media.prepare(asset, {
+          requireStatic: true,
+          signal: lifetime.signal,
+          maxBytes: await optionalBudget(160 * 1024 * 1024)
+        });
+        if (
+          prepared.animated !== false ||
+          !(await media.validate(prepared, { signal: lifetime.signal }))
+        )
+          throw new Error('The fixed artwork must be a valid still image.');
+      }
+      g.cover = prepared;
+      g.selectedCover = automatic ? null : asset;
+      g.coverManualSelection = !automatic;
+      delete g.coverError;
+      await refreshStorage();
+      await save();
+      return publicState();
+    }
     if (action === 'updateGame') {
       const g = find(p.id);
       if (state.job.current === g.id)
@@ -814,7 +903,7 @@ function createCore(options = {}) {
   }
   return {
     invoke(action, payload = {}) {
-      if (action === 'state') return dispatch(action, payload);
+      if (action === 'state' || action === 'previewImage') return dispatch(action, payload);
       const result = actions.then(() => dispatch(action, payload));
       actions = result.catch(() => {});
       return result;
@@ -827,6 +916,7 @@ function createCore(options = {}) {
       lifetime.abort(new Error('Manager closed.'));
       controller?.abort(new Error('Manager closed.'));
       await actions;
+      await media.waitForPreviews?.();
       if (runner) await runner;
       if (state.job.status === 'running') state.job.status = 'paused';
       state.job.current = null;

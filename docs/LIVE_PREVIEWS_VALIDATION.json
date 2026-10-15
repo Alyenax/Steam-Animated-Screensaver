@@ -1,0 +1,25 @@
+{
+  "date": "2026-10-15T21:04:56.915Z",
+  "provider": "Live official SteamGridDB with temporary personal key",
+  "checks": [
+    "Live manual search thumbnails render as real local images, including source WebM thumbnails",
+    "Every returned live animation alternative thumbnail decodes in the Manager",
+    "Every returned live static artwork preview decodes and an explicit alternate cover is saved",
+    "Actual downloaded animation and independently selected fixed artwork display together",
+    "Export displays both live assets with Manager closed and zero HTTP requests"
+  ],
+  "counts": {
+    "search": 10,
+    "alternatives": 15,
+    "fixedArtworks": 50
+  },
+  "physicalSteamOS": false,
+  "game": {
+    "name": "Portal 2",
+    "sgdbId": 17830,
+    "animationId": 29084,
+    "fixedArtworkId": 63538,
+    "animationAuthor": "Moofy",
+    "fixedArtworkAuthor": "Asuka Gaming"
+  }
+}

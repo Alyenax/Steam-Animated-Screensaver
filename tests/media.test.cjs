@@ -423,3 +423,93 @@ test(
     assert(Math.abs(result.duration - 1) < 0.1);
   }
 );
+test(
+  'previews decode WebM, GIF, WebP, PNG and JPEG into cached still JPEGs, coalesce and repair stale cached images',
+  { skip: !ffmpeg },
+  async (t) => {
+    const root = await temporary(t);
+    for (const format of ['webm', 'gif', 'webp', 'png', 'jpg']) {
+      const source = path.join(root, `preview.${format}`),
+        args = ['-v', 'error', '-f', 'lavfi', '-i', 'testsrc=size=96x54:rate=6:duration=1'];
+      if (['png', 'jpg'].includes(format)) args.push('-frames:v', '1');
+      if (format === 'webm') args.push('-c:v', 'libvpx-vp9', '-pix_fmt', 'yuv420p');
+      if (format === 'webp') args.push('-c:v', 'libwebp_anim', '-loop', '0');
+      const r = spawnSync(ffmpeg, [...args, '-y', source]);
+      assert.equal(r.status, 0, r.stderr.toString());
+      const dataDir = path.join(root, `preview-${format}`);
+      let downloads = 0;
+      const media = createMedia({
+        dataDir,
+        downloadImpl: async (_, dest) => {
+          downloads++;
+          await fs.copyFile(source, dest);
+        }
+      });
+      const [a, b] = await Promise.all([media.preview({ url }), media.preview({ url })]);
+      assert.equal(a.file, b.file);
+      assert.equal(downloads, 1);
+      assert(
+        (await fs.readFile(path.join(dataDir, 'media', a.file)))
+          .subarray(0, 3)
+          .equals(Buffer.from([255, 216, 255]))
+      );
+      assert.deepEqual(await fs.readdir(path.join(dataDir, 'media')), [a.file]);
+      await media.preview({ url });
+      assert.equal(downloads, 1);
+      await fs.writeFile(path.join(dataDir, 'media', a.file), 'corrupt cache');
+      await media.preview({ url }, { force: true });
+      assert.equal(downloads, 2);
+      await assert.rejects(media.preview({ url: 'https://evil.example/a.png' }), /SteamGridDB/);
+      await assert.rejects(media.preview({ file: '../outside.png' }), /Unsafe/);
+    }
+  }
+);
+test(
+  'processed video validation accepts valid files above the previous 160 MiB ceiling without reading them into memory',
+  { skip: !ffmpeg },
+  async (t) => {
+    const root = await temporary(t),
+      source = path.join(root, 'original.webm');
+    const r = spawnSync(ffmpeg, [
+      '-v',
+      'error',
+      '-f',
+      'lavfi',
+      '-i',
+      'testsrc=size=96x54:rate=30:duration=1',
+      '-c:v',
+      'libvpx-vp9',
+      '-pix_fmt',
+      'yuv420p',
+      '-y',
+      source
+    ]);
+    assert.equal(r.status, 0, r.stderr.toString());
+    const dataDir = path.join(root, 'data'),
+      media = fixtureMedia({ source, dataDir });
+    const original = await media.prepare({ url, animated: true });
+    const input = await fs.readFile(source),
+      segment = input.indexOf(Buffer.from([0x18, 0x53, 0x80, 0x67]));
+    assert(segment > 0);
+    assert.equal(input[segment + 4], 1);
+    const padding = 161 * 1024 * 1024,
+      voidHeader = Buffer.alloc(9);
+    voidHeader[0] = 0xec;
+    voidHeader.writeBigUInt64BE(0x0100000000000000n + BigInt(padding), 1);
+    const segmentSize = input.readBigUInt64BE(segment + 4) & 0x00ffffffffffffffn;
+    input.writeBigUInt64BE(0x0100000000000000n + segmentSize + BigInt(padding + 9), segment + 4);
+    const large = path.join(dataDir, 'media', 'large-processed.webm'),
+      handle = await fs.open(large, 'w');
+    try {
+      await handle.write(input);
+      await handle.write(voidHeader);
+      await handle.truncate(input.length + voidHeader.length + padding);
+    } finally {
+      await handle.close();
+    }
+    const processed = { ...original, file: 'large-processed.webm', smoothing: 'interpolate-30-v1' };
+    assert((await fs.stat(large)).size > 160 * 1024 * 1024);
+    assert.equal(await media.validate(processed), true);
+    assert.equal(await media.validate({ ...processed, smoothing: undefined }), false);
+  }
+);

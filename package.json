@@ -1,7 +1,7 @@
 {
   "name": "steamos-animated-screensaver",
   "productName": "SteamOS Animated Screensaver",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Bring Your Steam Library to Life. A standalone animated screensaver powered by SteamGridDB.",
   "main": "main.cjs",
   "license": "MIT",
