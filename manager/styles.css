@@ -2235,6 +2235,11 @@ body.reduced-motion *:after {
 .fixed-artwork-current .button-row {
   flex-wrap: wrap;
 }
+.fixed-artwork-current .button {
+  max-width: 100%;
+  white-space: normal;
+  text-align: left;
+}
 .fixed-artwork .cover-grid {
   margin-top: 20px;
 }
@@ -2381,4 +2386,86 @@ body.reduced-motion *:after {
 }
 .purge-result {
   font-variant-numeric: tabular-nums;
+}
+
+.detail-framing {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  aspect-ratio: var(--frame-ratio, 16/9);
+  margin: 0 auto 18px;
+  overflow: hidden;
+  background: #07101b;
+  border-radius: 9px;
+}
+.detail-framing > .detail-cover,
+.detail-framing > .managed-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  margin: 0;
+  border-radius: 0;
+}
+.detail-framing .detail-cover,
+.detail-framing .managed-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: var(--crop-x, 50%) var(--crop-y, 50%);
+}
+.detail-framing[data-framing='16:9'] .detail-cover,
+.detail-framing[data-framing='16:9'] .managed-image img,
+.detail-framing[data-framing='16:10'] .detail-cover,
+.detail-framing[data-framing='16:10'] .managed-image img {
+  object-fit: cover;
+}
+.crop-controls {
+  margin: 16px 0 24px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+}
+.crop-controls h3 {
+  font-size: 15px;
+  margin: 0 0 8px;
+}
+.crop-controls p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+.crop-axis {
+  display: grid;
+  grid-template-columns: 150px minmax(70px, 1fr) 42px;
+  gap: 12px;
+  align-items: center;
+  font-size: 12px;
+  margin: 14px 0;
+}
+.crop-axis input {
+  width: 100%;
+  accent-color: var(--cyan);
+}
+.crop-axis:has(input:disabled) {
+  opacity: 0.5;
+}
+.crop-axis output {
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+@media (max-width: 680px) {
+  .setting-row:has([data-setting='framing']) {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .crop-axis {
+    grid-template-columns: 1fr 42px;
+  }
+  .crop-axis input {
+    grid-row: 2;
+    grid-column: 1 / -1;
+  }
 }

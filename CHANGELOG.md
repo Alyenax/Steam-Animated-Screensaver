@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.6 — Steam components and adjustable framing
+
+- Filter Proton versions/runtimes, Steam Linux Runtime and Steamworks Common Redistributables from scans, owned-library import, search, manual addition and offline exports. Remove old catalog entries at startup while preserving installed Steam files and cached media.
+- Preserve genuine similarly named games with bounded component-name patterns and known Steam runtime AppIDs.
+- Keep Original framing as default; add true 16:9 / 16:10 frames globally and per game, with horizontal/vertical focal positions and Center controls. Disable axes that cannot change the selected crop.
+- Apply framing immediately in Preview and persist it through restart, catalog merges, media purge and offline Steam export. No media re-encoding or additional preparation is required; Update / repair applies the saved snapshot.
+- Verify exact frame ratios, focal-position rendering, responsive French controls, original-media preservation and native Electron playback.
+
 ## 0.1.5 — Complete media purge
 
 - Add Settings → Local storage → Purge all media, with an explicit confirmation describing removal of the Steam snapshot and preservation of games, artwork choices, settings and keys.

@@ -48,3 +48,10 @@ During playback the manager is unnecessary. The player has one active media scen
 The catalog's media/cover/smoothed references, errors and preparation queue are reset and saved before file deletion, so interrupted unlinking cannot leave missing media advertised as ready. Failed removal reports an error and can be retried. Games, inclusion, selected animation/fixed artwork, settings and key files remain. The last successful purge records date/file count and local-cache bytes; exported copies are removed separately and excluded from that byte count.
 
 `previewsPaused` persists after purge. The renderer invalidates pending image promises/generations, and core rejects automatic preview requests until explicit discovery (`search`, `artworks`, `covers`) or preparation. Navigation and automatic Steam scans do not resume downloads. The Steam export must be prepared and installed again.
+
+
+## Components and display framing (0.1.6)
+
+Compatibility-component filtering removes matching catalog entries and queue references, including previously persisted entries. It never changes Steam manifests or installed files. Their old cached media becomes unreferenced and can be cleared with unused-media cleanup. Other manual games and similarly named real games are preserved.
+
+The optional per-game `crop` stores a mode and two focal coordinates, separately from media metadata; general `settings.framing` defaults to original. These choices survive merge, restart and complete media purge. Changing them never regenerates or invalidates downloaded/processed media. The offline export includes display settings, so Update / repair is sufficient after editing.

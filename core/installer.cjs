@@ -2,6 +2,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const { isSteamComponent } = require('./steam-components.cjs');
 const { smoothingMatches } = require('./smoothing.cjs');
 // Steam maps installed screensaver directories to virtual HTTPS host names.
 // Keep this filesystem identifier a valid lower-case DNS label; the UI title is separate.
@@ -99,6 +100,7 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
         );
       const included = games.filter(
         (g) =>
+          !isSteamComponent(g) &&
           g.included &&
           g.status === 'ready' &&
           g.media &&
@@ -148,6 +150,7 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
           id: String(game.id),
           name: String(game.name),
           included: true,
+          crop: game.crop || null,
           status: 'ready',
           cover,
           media: {
@@ -171,6 +174,7 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
         'showLogos',
         'showCover',
         'coverPosition',
+        'framing',
         'staticFallback',
         'reducedMotion'
       ])

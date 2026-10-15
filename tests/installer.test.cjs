@@ -199,3 +199,23 @@ test('export retains cover credits and position, chooses smoothing only when ena
   catalog = await read();
   assert.equal(catalog.games[0].cover, null);
 });
+
+test('export carries global framing and per-game crop while excluding included ready Steam components', async (t) => {
+  const f = await fixture(t);
+  f.settings.framing = '16:10';
+  f.games[0].crop = { mode: '16:9', x: 15, y: 70 };
+  f.games.push({
+    ...f.games[0],
+    id: 'steam:228980',
+    steamAppId: 228980,
+    name: 'Steamworks Common Redistributables'
+  });
+  f.games.push({ ...f.games[0], id: 'steam:999999', name: 'Proton Experimental' });
+  const out = await install(f),
+    vmContext = { window: {} };
+  vm.runInNewContext(await fs.readFile(path.join(out.path, 'catalog.js'), 'utf8'), vmContext);
+  const catalog = JSON.parse(JSON.stringify(vmContext.window.CINEMA_CATALOG));
+  assert.equal(catalog.games.length, 1);
+  assert.deepEqual(catalog.games[0].crop, { mode: '16:9', x: 15, y: 70 });
+  assert.equal(catalog.settings.framing, '16:10');
+});

@@ -49,7 +49,7 @@ test('multilibrary scanning deduplicates manifests; skips corrupt and unfinished
   );
   assert.equal(s.warnings.length, 1);
 });
-test('utilities and demos are distinguished and excluded by default', async (t) => {
+test('Steam components are omitted while demos stay excluded by default', async (t) => {
   const root = await fixture(t);
   for (const [i, name] of [
     [1, 'Proton Experimental'],
@@ -58,7 +58,10 @@ test('utilities and demos are distinguished and excluded by default', async (t) 
   ])
     await fs.writeFile(path.join(root, `steamapps/appmanifest_${i}.acf`), manifest(i, name));
   const s = await scanSteam([root]);
-  assert.equal(s.games.find((g) => g.steamAppId === 1).classification, 'utility');
+  assert.equal(
+    s.games.some((g) => g.steamAppId === 1),
+    false
+  );
   assert.equal(s.games.find((g) => g.steamAppId === 2).included, false);
   assert.equal(classify('Half-Life 2'), 'game');
 });
@@ -96,4 +99,60 @@ test('game-running detection ignores the Manager and its decoder/browser childre
   await fs.writeFile(path.join(root, '100/status'), 'Name:\tshortcut\nPPid:\t1\n');
   await fs.writeFile(path.join(root, '100/environ'), 'SteamGameId=12001593341032529920\0');
   assert.equal(await isSteamGameRunning(root), false);
+});
+
+test('filters Steam infrastructure by exact runtime IDs and bounded component names, preserving genuine game titles', async (t) => {
+  const { isSteamComponent } = require('../core/steam-components.cjs');
+  for (const invalid of [null, undefined, '', 42]) assert.equal(isSteamComponent(invalid), false);
+  const root = await fixture(t);
+  const tools = [
+    'Proton 9.0',
+    'Proton Experimental',
+    'Proton - Hotfix',
+    'Proton 10.0 (Beta)',
+    'GE-Proton9-27',
+    'Proton-GE 9-27',
+    'Proton EasyAntiCheat Runtime',
+    'Proton BattlEye Runtime',
+    'Steam Linux Runtime',
+    'Steam Linux Runtime 2.0 (soldier)',
+    'SteamLinuxRuntime_sniper',
+    'Steamworks Common Redistributables',
+    'Steamworks Common Redstributables'
+  ];
+  for (let i = 0; i < tools.length; i++) {
+    assert(isSteamComponent({ name: tools[i] }), tools[i]);
+    await fs.writeFile(
+      path.join(root, `steamapps/appmanifest_${5000 + i}.acf`),
+      manifest(5000 + i, tools[i])
+    );
+  }
+  await fs.writeFile(
+    path.join(root, 'steamapps/appmanifest_228980.acf'),
+    manifest(228980, 'Localized infrastructure name')
+  );
+  await fs.writeFile(
+    path.join(root, 'steamapps/appmanifest_4183110.acf'),
+    manifest(4183110, 'Localized runtime name')
+  );
+  const actual = [
+    'Proton Pulse',
+    'Protonwar',
+    'Proton 2: Adventures',
+    'SteamWorld Dig',
+    'Portal 2'
+  ];
+  for (let i = 0; i < actual.length; i++) {
+    assert.equal(isSteamComponent({ name: actual[i] }), false, actual[i]);
+    assert.equal(classify(actual[i]), 'game');
+    await fs.writeFile(
+      path.join(root, `steamapps/appmanifest_${6000 + i}.acf`),
+      manifest(6000 + i, actual[i])
+    );
+  }
+  assert.deepEqual((await scanSteam([root])).games.map((g) => g.name).sort(), actual.sort());
+  assert(
+    await fs.stat(path.join(root, 'steamapps/appmanifest_228980.acf')),
+    'scanner never changes Steam manifests'
+  );
 });

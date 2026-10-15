@@ -1,4 +1,5 @@
 'use strict';
+const { isSteamComponent } = require('./steam-components.cjs');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
@@ -82,9 +83,9 @@ function defaultRoots(home = os.homedir()) {
   ];
 }
 const utility =
-  /\b(proton(?:\s|$)|steamworks|steam linux runtime|steamworks shared|redistributables?|dedicated server|sdk|soundtrack|benchmark|wallpaper engine)\b/i;
+  /\b(redistributables?|dedicated server|sdk|soundtrack|benchmark|wallpaper engine)\b/i;
 function classify(name) {
-  return utility.test(name)
+  return isSteamComponent({ name }) || utility.test(name)
     ? 'utility'
     : /\b(demo|playtest|beta test)\b/i.test(name)
       ? 'demo'
@@ -140,6 +141,7 @@ async function scanSteam(roots = defaultRoots()) {
         // FullyInstalled is bit 4. Download-only and uninstalled manifests are not installed games.
         const installed = (Number(app.stateflags) & 4) !== 0;
         if (!installed) continue;
+        if (isSteamComponent({ steamAppId: id, name: gameName })) continue;
         const classification = classify(gameName);
         if (!games.has(id))
           games.set(id, {

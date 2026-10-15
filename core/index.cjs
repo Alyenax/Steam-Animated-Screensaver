@@ -3,6 +3,7 @@ const fs = require('node:fs/promises');
 const constants = require('node:fs').constants;
 const path = require('node:path');
 const { smoothingMatches, smoothingConfig } = require('./smoothing.cjs');
+const { isSteamComponent } = require('./steam-components.cjs');
 const { planPurge, applyPurge } = require('./purge.cjs');
 const { createSteamAccount, parseProfile } = require('./steam-account.cjs');
 const { scanSteam, isSteamGameRunning } = require('./scanner.cjs');
@@ -16,6 +17,7 @@ const defaults = {
   showLogos: true,
   showCover: true,
   coverPosition: 'beside-title',
+  framing: 'original',
   smoothMotion: false,
   smoothingFps: 30,
   smoothingMode: 'fast',
@@ -68,6 +70,9 @@ function validateSettings(p, initial = false) {
     } else if (k === 'coverPosition') {
       if (!['beside-title', 'bottom-right', 'top-right', 'top-left'].includes(v))
         throw new Error('Invalid artwork position.');
+    } else if (k === 'framing') {
+      if (!['original', '16:9', '16:10'].includes(v))
+        throw new Error('Choose Original, 16:9 or 16:10 framing.');
     } else if (k === 'sceneDuration') {
       if (!Number.isFinite(v) || v < 8 || v > 180)
         throw new Error('Scene duration must be 8–180 seconds.');
@@ -86,8 +91,30 @@ function validateSettings(p, initial = false) {
   }
   return out;
 }
+function validateCrop(value) {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    !['inherit', 'original', '16:9', '16:10'].includes(value.mode) ||
+    !Number.isFinite(value.x) ||
+    value.x < 0 ||
+    value.x > 100 ||
+    !Number.isFinite(value.y) ||
+    value.y < 0 ||
+    value.y > 100
+  )
+    throw new Error('Invalid crop. Choose a framing mode and positions from 0 to 100.');
+  return { mode: value.mode, x: value.x, y: value.y };
+}
 function cleanGame(g) {
-  if (!g || !/^((steam|sgdb):[1-9]\d*)$/.test(g.id) || typeof g.name !== 'string') return null;
+  if (
+    !g ||
+    !/^((steam|sgdb):[1-9]\d*)$/.test(g.id) ||
+    typeof g.name !== 'string' ||
+    isSteamComponent(g)
+  )
+    return null;
   const result = {
     id: g.id,
     steamAppId: Number.isSafeInteger(g.steamAppId) && g.steamAppId > 0 ? g.steamAppId : null,
@@ -116,6 +143,11 @@ function cleanGame(g) {
   for (const kind of ['cover', 'smoothed']) {
     if (result[kind] && (!safeFilename(result[kind].file) || !safeFilename(result[kind].thumbnail)))
       result[kind] = null;
+  }
+  if (g.crop) {
+    try {
+      result.crop = validateCrop(g.crop);
+    } catch {}
   }
   if (result.cover?.animated !== false) result.cover = null;
   for (const key of ['coverError', 'smoothingError'])
@@ -259,6 +291,10 @@ function createCore(options = {}) {
           state.job.stage = 'Interrupted preparation — ready to resume.';
         }
         state.job.current = null;
+        if (Array.isArray(saved.games) && saved.games.some(isSteamComponent)) {
+          state.job.total = state.job.processed + pending.length;
+          if (!pending.length && state.job.status === 'paused') state.job = newJob();
+        }
       }
       try {
         const h = await fs.open(keyFile, constants.O_RDONLY | constants.O_NOFOLLOW);
@@ -322,6 +358,7 @@ function createCore(options = {}) {
         g.status = preferred.status;
         g.included = preferred.included;
       }
+      g.crop = g.crop || preferred?.crop || duplicates.find((old) => old.crop)?.crop;
       g.sources = [...new Set([...g.sources, ...duplicates.flatMap((old) => old.sources)])];
       const removed = new Set(duplicates.map((old) => old.id));
       state.games = state.games.filter((old) => !removed.has(old.id));
@@ -685,7 +722,7 @@ function createCore(options = {}) {
       const byAppId = new Map(
         state.games.filter((g) => g.steamAppId).map((g) => [g.steamAppId, g])
       );
-      for (const game of result.games) {
+      for (const game of result.games.filter((g) => !isSteamComponent(g))) {
         const existing = byAppId.get(game.steamAppId);
         if (existing) existing.sources = [...new Set([...existing.sources, 'account'])];
         else {
@@ -706,7 +743,7 @@ function createCore(options = {}) {
         ...state.steamAccount,
         steamId: result.steamId,
         lastImport: new Date().toISOString(),
-        count: result.games.length,
+        count: result.games.filter((g) => !isSteamComponent(g)).length,
         added
       };
       await save();
@@ -783,7 +820,7 @@ function createCore(options = {}) {
       return publicState();
     }
     if (action === 'search') {
-      let results = await sgdb.search(p.query);
+      let results = (await sgdb.search(p.query)).filter((g) => !isSteamComponent(g));
       if (sgdb.enrichThumbnails) results = await sgdb.enrichThumbnails(results);
       if (state.previewsPaused) {
         state.previewsPaused = false;
@@ -799,6 +836,8 @@ function createCore(options = {}) {
     if (action === 'add') {
       let metadata = await sgdb.game(positiveId(p.sgdbId));
       if (!metadata) throw new Error('SteamGridDB game not found.');
+      if (isSteamComponent(metadata))
+        throw new Error('Steam compatibility components are not games and cannot be added.');
       if (!metadata.thumb && sgdb.enrichThumbnails)
         metadata = (await sgdb.enrichThumbnails([metadata]))[0];
       let steamId = metadata.steamAppId;
@@ -808,6 +847,8 @@ function createCore(options = {}) {
           throw new Error('Steam AppID does not match this SteamGridDB game.');
         steamId = verified.steamAppId;
       }
+      if (isSteamComponent({ ...metadata, steamAppId: steamId }))
+        throw new Error('Steam compatibility components are not games and cannot be added.');
       const matches = state.games.filter(
         (g) => g.sgdbId === metadata.sgdbId || (steamId && g.steamAppId === steamId)
       );
@@ -821,6 +862,7 @@ function createCore(options = {}) {
         g.sources = [...new Set([...matches.flatMap((m) => m.sources), 'manual'])];
         g.installed = matches.some((m) => m.installed);
         g.cover = g.cover || matches.find((m) => m.cover)?.cover || null;
+        g.crop = g.crop || matches.find((m) => m.crop)?.crop;
         state.games = state.games.filter((old) => !matches.includes(old) || old === g);
       } else {
         g = {
@@ -915,6 +957,8 @@ function createCore(options = {}) {
         );
         if (!chosen) throw new Error('Choose an artwork from this game’s SteamGridDB gallery.');
       }
+      const crop = 'crop' in p ? validateCrop(p.crop) : undefined;
+      if (crop) g.crop = crop;
       if ('included' in p) g.included = p.included;
       if ('selectedAsset' in p) {
         g.manualSelection = p.selectedAsset !== null;
@@ -1163,4 +1207,4 @@ function createCore(options = {}) {
     }
   };
 }
-module.exports = { createCore, validateSettings, cleanGame };
+module.exports = { createCore, validateSettings, cleanGame, validateCrop };

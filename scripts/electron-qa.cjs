@@ -42,6 +42,11 @@ async function run() {
       await window.cinema.invoke('setSteamAccount', { key: '' });
       const removed = await window.cinema.invoke('state');
       await window.cinema.invoke('settings', { smoothingFps: 24, smoothingMode: 'blend' });
+      await window.cinema.invoke('settings', { framing: '16:9' });
+      await window.cinema.invoke('updateGame', {
+        id: 'steam:7000901',
+        crop: { mode: '16:10', x: 20, y: 80 }
+      });
       const configured = await window.cinema.invoke('state');
       return {
         saved: saved.steamAccount.hasKey,
@@ -126,6 +131,15 @@ async function run() {
     await frame.waitForFunction(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible')?.dataset.framing === '16:10'
+    );
+    assert.equal(
+      await frame
+        .locator('.scene.visible .artwork')
+        .evaluate((el) => getComputedStyle(el).objectPosition),
+      '20% 80%'
+    );
     await frame.waitForFunction(() => {
       const scene = document.querySelector('.scene.visible');
       return !!scene && getComputedStyle(scene).opacity === '1';
@@ -162,6 +176,7 @@ async function run() {
             'Native Steam key save/removal and 24 fps profile settings IPC',
             'Full product name and no Local-first badge',
             'Real Electron preview pause',
+            'Native per-game crop overrides general framing without reprocessing media',
             'Sender/action restrictions',
             'Native purge action requires confirmation before any filesystem change',
             'No Node in renderer',

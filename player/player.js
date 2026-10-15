@@ -8,6 +8,7 @@
     showLogos: true,
     showCover: true,
     coverPosition: 'beside-title',
+    framing: 'original',
     staticFallback: false,
     reducedMotion: false,
     language: 'en'
@@ -35,6 +36,7 @@
       )
         ? input.coverPosition
         : 'beside-title',
+      framing: ['original', '16:9', '16:10'].includes(input.framing) ? input.framing : 'original',
       staticFallback: input.staticFallback === true,
       reducedMotion: input.reducedMotion === true,
       language: input.language === 'fr' ? 'fr' : 'en'
@@ -62,7 +64,20 @@
     }
     return result;
   }
-  const helpers = { localMedia, settings, catalogGames, shuffle };
+  function framing(game, options) {
+    const mode = ['original', '16:9', '16:10'].includes(game.crop?.mode)
+      ? game.crop.mode
+      : options.framing;
+    const coordinate = (v) => (Number.isFinite(v) ? Math.max(0, Math.min(100, v)) : 50);
+    return { mode, x: coordinate(game.crop?.x), y: coordinate(game.crop?.y) };
+  }
+  function frameBox(width, height, mode) {
+    if (mode === 'original') return { width, height };
+    const ratio = mode === '16:10' ? 16 / 10 : 16 / 9;
+    const fittedWidth = Math.min(width, height * ratio);
+    return { width: fittedWidth, height: fittedWidth / ratio };
+  }
+  const helpers = { localMedia, settings, catalogGames, shuffle, framing, frameBox };
   if (typeof module !== 'undefined' && module.exports) module.exports = helpers;
   if (!global.document) return;
   const doc = global.document,
@@ -230,6 +245,23 @@
     const credit = scene.querySelector('.cover-credit');
     if (credit) credit.hidden = cover.hidden || cover.dataset.fallback === 'true';
   }
+  function placeFrame(scene) {
+    const crop = framing(scene.game, options),
+      frame = scene.querySelector('.art-frame');
+    scene.dataset.framing = crop.mode;
+    scene.style.setProperty('--crop-x', `${crop.mode === 'original' ? 50 : crop.x}%`);
+    scene.style.setProperty('--crop-y', `${crop.mode === 'original' ? 50 : crop.y}%`);
+    const box = frameBox(
+      stage.clientWidth || global.innerWidth,
+      stage.clientHeight || global.innerHeight,
+      crop.mode
+    );
+    frame.style.width = `${box.width}px`;
+    frame.style.height = `${box.height}px`;
+  }
+  function resizeFrames() {
+    for (const scene of stage.children) placeFrame(scene);
+  }
   function sceneFor(game) {
     const scene = doc.createElement('section');
     scene.className = `scene ${!game.media.animated ? 'static ' : ''}${options.reducedMotion ? 'reduced instant' : ''}`;
@@ -251,7 +283,10 @@
       art.poster = game.media.thumbnail;
       art.setAttribute('disablepictureinpicture', '');
     } else art.alt = '';
-    scene.append(art);
+    const frame = doc.createElement('div');
+    frame.className = 'art-frame';
+    frame.append(art);
+    scene.append(frame);
     const shade = doc.createElement('div');
     shade.className = 'shade';
     scene.append(shade);
@@ -297,6 +332,7 @@
     }
     scene.append(caption);
     placeCover(scene);
+    placeFrame(scene);
     return { scene, art, isVideo };
   }
   function display(game, remember = true) {
@@ -464,6 +500,7 @@
       scene.classList.toggle('instant', options.reducedMotion);
       scene.querySelector('h1').hidden = !options.showLogos;
       placeCover(scene);
+      placeFrame(scene);
     }
     schedule();
   }
@@ -501,6 +538,7 @@
     clearTimeout(transitionTimer);
     for (const scene of [...stage.children]) release(scene);
     global.removeEventListener('message', message);
+    global.removeEventListener('resize', resizeFrames);
     global.removeEventListener('pagehide', destroy);
     doc.removeEventListener('visibilitychange', visibility);
     games = [];
@@ -517,6 +555,7 @@
     destroy
   };
   global.addEventListener('message', message);
+  global.addEventListener('resize', resizeFrames);
   global.addEventListener('pagehide', destroy, { once: true });
   doc.addEventListener('visibilitychange', visibility);
   loadCatalog(global.CINEMA_CATALOG);

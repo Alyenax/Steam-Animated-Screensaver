@@ -871,3 +871,114 @@ test('a failed unlink leaves a recoverable unprepared catalog and allows a compl
   const state = await x.core.invoke('purgeMedia', { confirm: true });
   assert.equal(state.storage.used, 0);
 });
+
+test('startup removes legacy Steam component entries and repairs a pending component queue without touching files', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.close();
+  const file = path.join(x.dataDir, 'catalog.json'),
+    saved = JSON.parse(await fs.readFile(file, 'utf8'));
+  saved.games.push({
+    id: 'steam:228980',
+    steamAppId: 228980,
+    name: 'Steamworks Common Redistributables',
+    included: true,
+    installed: true,
+    status: 'ready',
+    media: { file: 'component.webm', thumbnail: 'component.jpg' },
+    sources: ['installed']
+  });
+  saved.games.push({
+    id: 'steam:99999',
+    steamAppId: 99999,
+    name: 'Proton 9.0',
+    included: true,
+    status: 'new',
+    sources: ['manual']
+  });
+  saved._queue = ['steam:228980', 'steam:99999'];
+  saved.job = { status: 'running', processed: 0, total: 2, current: 'steam:228980' };
+  await fs.mkdir(path.join(x.dataDir, 'media'));
+  await fs.writeFile(path.join(x.dataDir, 'media', 'component.webm'), 'retained unused cache');
+  await fs.writeFile(file, JSON.stringify(saved));
+  const core = x.create(),
+    state = await core.invoke('state');
+  assert.deepEqual(
+    state.games.map((g) => g.steamAppId),
+    [620]
+  );
+  assert.equal(state.job.status, 'idle');
+  assert.equal(state.job.pending, 0);
+  assert.equal(
+    await fs.readFile(path.join(x.dataDir, 'media', 'component.webm'), 'utf8'),
+    'retained unused cache'
+  );
+});
+test('Steam account import, SGDB search and manual addition cannot reintroduce infrastructure', async (t) => {
+  const x = await setup(t);
+  x.sgdb.search = async () => [
+    { sgdbId: 1, name: 'Proton 10.0' },
+    { sgdbId: 2, name: 'Steam Linux Runtime 4.0' },
+    { sgdbId: 3, name: 'Proton Pulse' }
+  ];
+  assert.deepEqual(
+    (await x.core.invoke('search', { query: 'Proton' })).map((g) => g.name),
+    ['Proton Pulse']
+  );
+  x.sgdb.game = async () => ({
+    sgdbId: 99,
+    steamAppId: 228980,
+    name: 'Steamworks Common Redistributables'
+  });
+  await assert.rejects(x.core.invoke('add', { sgdbId: 99 }), /not games/);
+  const { createCore } = require('../core/index.cjs');
+  await x.core.close();
+  const core = createCore({
+    dataDir: x.dataDir,
+    steamRoots: [x.steam],
+    steamAccount: {
+      owned: async () => ({
+        steamId: '76561198000000000',
+        games: [
+          { steamAppId: 228980, name: 'Localized component' },
+          { steamAppId: 200, name: 'Proton Experimental' },
+          { steamAppId: 201, name: 'Proton Pulse' }
+        ]
+      })
+    }
+  });
+  try {
+    const state = await core.invoke('importSteamLibrary');
+    assert.deepEqual(
+      state.games.map((g) => g.name),
+      ['Proton Pulse']
+    );
+    assert.equal(state.steamAccount.count, 1);
+  } finally {
+    await core.close();
+  }
+});
+test('framing and per-game focal crop persist without preparing or changing any media, including after purge', async (t) => {
+  const x = await setup(t);
+  await x.core.invoke('add', { sgdbId: 99 });
+  await x.core.invoke('prepare');
+  const before = await done(x.core);
+  const crop = { mode: '16:10', x: 17, y: 83 };
+  await x.core.invoke('settings', { framing: '16:9' });
+  let state = await x.core.invoke('updateGame', { id: 'steam:620', crop });
+  assert.deepEqual(state.games[0].media, before.games[0].media);
+  assert.equal(x.prepares, 1);
+  await assert.rejects(
+    x.core.invoke('updateGame', { id: 'steam:620', crop: { mode: '16:9', x: -1, y: 50 } }),
+    /Invalid crop/
+  );
+  await assert.rejects(x.core.invoke('settings', { framing: 'stretch' }), /framing/);
+  await x.core.close();
+  const core = x.create();
+  state = await core.invoke('state');
+  assert.deepEqual(state.games[0].crop, crop);
+  assert.equal(state.settings.framing, '16:9');
+  state = await core.invoke('purgeMedia', { confirm: true });
+  assert.deepEqual(state.games[0].crop, crop);
+  assert.equal(state.settings.framing, '16:9');
+});

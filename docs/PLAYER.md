@@ -26,11 +26,17 @@ The Manager iframe and installed screensaver use the same `player/index.html`, `
 
 The preview accepts catalog and control messages only from its parent window, with a matching origin. Steam's standalone host needs no message bridge. The global `CinemaPlayer` API exposes play, pause, previous, next, settings and destroy. Preview fullscreen is owned by the Manager; this iframe does not acquire input or fullscreen itself.
 
-There is one moving artwork decoder in steady state, and at most two while crossfading or preparing a transition. The blurred ambient layer uses the thumbnail, so it never duplicates a video decoder. Rapid navigation cancels and unloads pending scenes as well as retired scenes. Artwork uses `object-fit: contain`; the separate blurred background fills the display without stretching the artwork. Crossfade and fade-to-black are supported. Reduced motion removes scene fades and the optional static-image camera drift; genuine artwork animation continues.
+There is one moving artwork decoder in steady state, and at most two while crossfading or preparing a transition. The blurred ambient layer uses the thumbnail, so it never duplicates a video decoder. Rapid navigation cancels and unloads pending scenes as well as retired scenes. Original framing uses `object-fit: contain`; the separate blurred background fills the display without stretching the artwork. Crossfade and fade-to-black are supported. Reduced motion removes scene fades and the optional static-image camera drift; genuine artwork animation continues.
 
 `showLogos` is the version-1 settings key for the rendered game title. It cannot remove logos already embedded in an artwork. Credits remain visible. From 0.1.2, the promotional sentence above scene titles is removed in both languages. Static fallback is excluded unless explicitly enabled and has a visible static-artwork label.
 
 Scene failures skip to the next eligible game. When all eligible files fail, the player stops retrying and displays a repair message. Pause stops videos, playlist timers and static camera drift. Native GIF/WebP animations are frozen onto a canvas and their image source is unloaded, so the native animation also stops. Browser canvas semantics expose the animation's default frame, so pausing a GIF/WebP resets it to that still frame rather than retaining its precise displayed frame. Resuming reloads the original animation from its beginning, then removes the canvas after the image is ready. At most one canvas per paused native-image scene exists (two during a transition), and all canvases are released on scene cleanup. Page hiding applies the same pause behavior; page teardown unloads sources and removes timers and message listeners.
+
+## Display cropping (0.1.6)
+
+`framing: original|16:9|16:10` defaults to Original. Each game can override it with `crop: {mode: inherit|original|16:9|16:10, x:0..100, y:0..100}`. Cropped modes fit the largest exact-ratio frame within the viewport and use `object-fit: cover` with the selected focal position. The blurred surround fills any remaining screen area. Resize recalculates frame dimensions; titles, credits and fixed covers keep their screen margins.
+
+The crop is a display operation and preserves source bytes, duration, cadence and existing smoothing derivatives. Preview updates immediately; the installer exports both general and per-game settings. Update / repair applies changes to Steam. No re-encoding or preparation is required. The Manager disables focal axes without clipping and keeps Original as the migration default.
 
 ## Manager image previews
 

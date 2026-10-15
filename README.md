@@ -4,7 +4,7 @@
 
 Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, optionally import owned games from Steam, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
 
-**0.1.5 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.6 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
@@ -12,7 +12,7 @@ The application uses its full name, **SteamOS Animated Screensaver**, throughout
 
 ## Your library, your intermission
 
-- Automatically scan Steam manifests, including secondary libraries, entirely offline.
+- Automatically scan Steam manifests, including secondary libraries, entirely offline. Hide Proton, Steam Linux Runtime and Steamworks redistributables from the catalog, including previously saved entries.
 - Add games by name, Steam AppID or Steam Store URL using one personal SteamGridDB key. Select the exact result when names overlap.
 - Prefer actual animated Heroes, then animated Grids. Still artwork is clearly labelled and disabled by default.
 - Prepare incrementally with a persistent queue, pause, resume, cancellation and retry. Keep manual artwork choices and creator credits.
@@ -35,7 +35,7 @@ Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Ste
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.5-linux-x64.tar.gz
+tar -xzf SteamOS-Animated-Screensaver-0.1.6-linux-x64.tar.gz
 cd steamos-animated-screensaver-linux-x64
 ./install.sh
 ```
@@ -43,6 +43,14 @@ cd steamos-animated-screensaver-linux-x64
 Open **SteamOS Animated Screensaver** from the application launcher. Add your personal API key in Settings, rescan or add games, then choose **Prepare My Screensaver**. Preview the result and use **Install screensaver**. In Steam, select **steamos-animated-screensaver** in **Settings → Customization → Screensavers**. Restart Steam if its selector has not refreshed.
 
 The application installs to `~/.local/opt/steamos-animated-screensaver`; it does not disable SteamOS read-only mode, use `sudo`, install global dependencies, or change Steam manifests. The package contains Electron and separate FFmpeg/FFprobe tools. It expects a Linux x64 graphical desktop with the system libraries Electron needs; see [installation](docs/INSTALLATION.md).
+
+## Original framing or a true 16:9 / 16:10 crop
+
+Choose **Settings → Playback → Framing** (also available in Preview): **Original** keeps the existing complete-image display; **16:9** or **16:10** fills an exact-ratio frame without stretching. On a differently shaped screen, the ambient surround remains outside that frame.
+
+In **Library → Game details → Framing**, override the general setting for one game and move the visible area horizontally or vertically, or center it. An axis is disabled when that source needs no cropping on it. Changes save automatically and affect Preview immediately. Originals and processed videos remain intact: no download, interpolation or preparation is needed. Choose **Update / repair** to apply saved framing to Steam's installed snapshot.
+
+Steam compatibility components are removed automatically from scans, account imports, manual discovery and previously saved catalogs. Their actual Steam installations are untouched. Already cached files remain available for explicit unused-media cleanup. Names are matched conservatively so games such as Proton Pulse and Protonwar remain visible.
 
 ## Covers and optional smoothing
 

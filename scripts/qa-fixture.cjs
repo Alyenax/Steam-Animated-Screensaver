@@ -13,6 +13,15 @@ async function createFixture({ root, browser }) {
   const dataDir = path.join(root, 'data'),
     steamRoot = path.join(root, 'steam');
   await fs.mkdir(path.join(steamRoot, 'steamapps'), { recursive: true });
+  for (const [id, name] of [
+    [1493710, 'Proton Experimental'],
+    [1628350, 'Steam Linux Runtime 3.0 (sniper)'],
+    [228980, 'Steamworks Common Redistributables']
+  ])
+    await fs.writeFile(
+      path.join(steamRoot, 'steamapps', `appmanifest_${id}.acf`),
+      `"AppState" { "appid" "${id}" "name" "${name}" "StateFlags" "4" }`
+    );
   const sourceDir = path.join(root, 'originals');
   await fs.mkdir(sourceDir, { recursive: true });
   const art = await browser.newPage({ viewport: { width: 1280, height: 720 } });

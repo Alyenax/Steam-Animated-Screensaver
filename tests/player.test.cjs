@@ -64,3 +64,30 @@ test('installed player has no network dependency, module import or input interce
   assert(html.includes("connect-src 'none'"));
   assert(!html.includes('https://'));
 });
+
+test('crop modes retain true window ratios within every viewport and safely resolve per-game focal points', () => {
+  const { framing, frameBox } = require('../player/player.js');
+  assert.equal(settings({ framing: 'stretch' }).framing, 'original');
+  assert.deepEqual(framing({ crop: { mode: 'inherit', x: 12, y: 80 } }, { framing: '16:10' }), {
+    mode: '16:10',
+    x: 12,
+    y: 80
+  });
+  assert.deepEqual(framing({ crop: { mode: 'original', x: -1, y: 999 } }, { framing: '16:9' }), {
+    mode: 'original',
+    x: 0,
+    y: 100
+  });
+  for (const [width, height] of [
+    [1280, 800],
+    [1920, 1080],
+    [3840, 2160],
+    [390, 844]
+  ])
+    for (const mode of ['16:9', '16:10']) {
+      const box = frameBox(width, height, mode);
+      assert(box.width <= width && box.height <= height + 0.001);
+      assert(Math.abs(box.width / box.height - (mode === '16:9' ? 16 / 9 : 16 / 10)) < 1e-8);
+    }
+  assert.deepEqual(frameBox(1280, 800, 'original'), { width: 1280, height: 800 });
+});

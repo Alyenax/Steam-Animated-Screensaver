@@ -161,6 +161,43 @@ async function runUI({ capture = false } = {}) {
     assert.equal(JSON.stringify(chosenCover.media), originalAnimation);
     if (capture) await shot('12-fixed-artwork-picker-qa');
     check('A different fixed artwork is prepared and saved without altering the animation');
+    await page.locator('[data-crop-setting="mode"]').selectOption('16:10');
+    await settled();
+    await page.locator('[data-crop-setting="x"]').evaluate((el) => {
+      el.value = '20';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settled();
+    let cropped = (await fixture.core.invoke('state')).games.find((g) => g.id === 'steam:7000901');
+    assert.deepEqual(cropped.crop, { mode: '16:10', x: 20, y: 50 });
+    assert.equal(JSON.stringify(cropped.media), originalAnimation);
+    assert.equal(await page.locator('[data-crop-setting="y"]').isDisabled(), true);
+    const cropBox = await page.locator('.detail-framing').boundingBox();
+    assert(Math.abs(cropBox.width / cropBox.height - 1.6) < 0.003);
+    await page.locator('[data-action="center-crop"]').click();
+    await settled();
+    assert.equal(
+      (await fixture.core.invoke('state')).games.find((g) => g.id === 'steam:7000901').crop.x,
+      50
+    );
+    await page.locator('[data-crop-setting="x"]').evaluate((el) => {
+      el.value = '20';
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+      el.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    await settled();
+    await page.locator('.detail-framing').scrollIntoViewIfNeeded();
+    await shot('16-game-crop-editor-qa');
+    await page.locator('[data-crop-setting="mode"]').selectOption('original');
+    await settled();
+    assert(await page.locator('[data-crop-setting="x"]').isDisabled());
+    await page.locator('[data-crop-setting="mode"]').selectOption('inherit');
+    await settled();
+    check(
+      'Per-game crop editor saves focal position without changing prepared media; ineffective axes are disabled'
+    );
+
     await page.locator('[data-action="close-detail"]').click();
     await page.locator('[data-action="add-game"]').first().click();
     await page.locator('#game-search').fill('Orbit');
@@ -198,11 +235,10 @@ async function runUI({ capture = false } = {}) {
     assert.equal((await fixture.core.invoke('state')).job.status, 'completed');
     check('Resume completes media preparation with real FFmpeg');
     await go('preview');
-    let frame = page.frames().find((f) => f.url().includes('/player/index.html'));
-    if (!frame) {
-      await page.locator('#player-frame').waitFor();
-      frame = page.frames().find((f) => f.url().includes('/player/index.html'));
-    }
+    await page.waitForFunction(() =>
+      document.querySelector('#player-frame')?.contentDocument?.querySelector('#stage')
+    );
+    const frame = page.frames().find((f) => f.url().includes('/player/index.html'));
     await frame.waitForFunction(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
@@ -214,6 +250,20 @@ async function runUI({ capture = false } = {}) {
       () => document.querySelector('.scene.visible .caption-cover')?.naturalWidth > 0
     );
     await shot('06-preview-qa');
+    const preparesBeforeFraming = fixture.prepares;
+    for (const mode of ['16:9', '16:10', 'original']) {
+      await page.locator('[data-setting="framing"]').selectOption(mode);
+      await settled();
+      await frame.waitForFunction(
+        (mode) => document.querySelector('.scene.visible')?.dataset.framing === mode,
+        mode
+      );
+    }
+    assert.equal(fixture.prepares, preparesBeforeFraming);
+    check(
+      'General Original/16:9/16:10 framing changes the actual player immediately without preparing media'
+    );
+
     for (const position of ['beside-title', 'bottom-right', 'top-right', 'top-left']) {
       await page.locator('[data-setting="coverPosition"]').selectOption(position);
       await frame.waitForFunction(
@@ -431,6 +481,25 @@ async function runUI({ capture = false } = {}) {
     check(
       'Optional owned-library import with local key, deduplication, uninstalled filter, and key removal'
     );
+    await go('library');
+    await page.locator('[data-filter="all"]').click();
+    await page.locator('.game-visual[data-detail="steam:7000901"]').click();
+    await page.locator('[data-crop-setting="mode"]').selectOption('16:9');
+    await settled();
+    assert(await page.locator('[data-crop-setting="x"]').isDisabled());
+    const mobileFrame = await page.locator('.detail-framing').boundingBox();
+    assert(Math.abs(mobileFrame.width / mobileFrame.height - 16 / 9) < 0.003);
+    assert(
+      await page.locator('#detail-dialog').evaluate((el) => el.scrollWidth <= el.clientWidth + 1)
+    );
+    await page.locator('.detail-framing').scrollIntoViewIfNeeded();
+    await shot('17-crop-editor-390-fr-qa');
+    await page.locator('[data-crop-setting="mode"]').selectOption('inherit');
+    await settled();
+    await page.locator('[data-action="close-detail"]').click();
+    check(
+      'French handheld crop editor fits 390 px, preserves a true 16:9 frame and disables axes with no clipping'
+    );
     check('All five spaces at 1280, 800, 390 px in English and French without horizontal overflow');
     await fixture.core.invoke('install');
     await go('settings');
@@ -439,7 +508,8 @@ async function runUI({ capture = false } = {}) {
       id: g.id,
       included: g.included,
       selectedAsset: g.selectedAsset,
-      selectedCover: g.selectedCover
+      selectedCover: g.selectedCover,
+      crop: g.crop
     }));
     let confirmation = '';
     page.once('dialog', async (dialog) => {
@@ -473,7 +543,8 @@ async function runUI({ capture = false } = {}) {
         id: g.id,
         included: g.included,
         selectedAsset: g.selectedAsset,
-        selectedCover: g.selectedCover
+        selectedCover: g.selectedCover,
+        crop: g.crop
       })),
       oldChoices
     );

@@ -21,7 +21,7 @@ const browserPath =
     : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome');
 test(
   'real browser plays offline, skips bad media, bounds decoders, pauses, resizes and destroys',
-  { skip: !chromium || !ffmpeg || !existsSync(browserPath), timeout: 30000 },
+  { skip: !chromium || !ffmpeg || !existsSync(browserPath), timeout: 90000 },
   async (t) => {
     const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-player-browser-'));
     t.after(() => fs.rm(root, { recursive: true, force: true }));
@@ -131,6 +131,7 @@ test(
         author: { name: 'Test artist' }
       }
     });
+    page.setDefaultTimeout(8000);
     const send = async (data) =>
       page.evaluate(
         (data) =>
@@ -159,6 +160,7 @@ test(
       await frame.locator('.scene.visible .cover-credit').textContent(),
       /Cover creator/
     );
+    await send({ action: 'pause' });
     for (const [width, height] of [
       [1280, 720],
       [1920, 1080],
@@ -167,6 +169,35 @@ test(
       [390, 844]
     ]) {
       await page.setViewportSize({ width, height });
+      for (const framing of ['16:9', '16:10', 'original']) {
+        await send({ action: 'settings', settings: { framing } });
+        await frame.waitForFunction(
+          (mode) => document.querySelector('.scene.visible')?.dataset.framing === mode,
+          framing
+        );
+        const actual = await frame.evaluate(() => {
+          const scene = document.querySelector('.scene.visible'),
+            r = scene.querySelector('.art-frame').getBoundingClientRect();
+          return {
+            width: r.width,
+            height: r.height,
+            left: r.left,
+            top: r.top,
+            fit: getComputedStyle(scene.querySelector('.artwork')).objectFit,
+            screenWidth: innerWidth,
+            screenHeight: innerHeight
+          };
+        });
+        assert(actual.left >= -0.1 && actual.top >= -0.1);
+        assert(
+          actual.width <= actual.screenWidth + 0.1 && actual.height <= actual.screenHeight + 0.1
+        );
+        assert.equal(actual.fit, framing === 'original' ? 'contain' : 'cover');
+        if (framing !== 'original')
+          assert(
+            Math.abs(actual.width / actual.height - (framing === '16:9' ? 16 / 9 : 16 / 10)) < 0.003
+          );
+      }
       for (const coverPosition of ['beside-title', 'bottom-right', 'top-right', 'top-left']) {
         await send({ action: 'settings', settings: { coverPosition } });
         await frame.waitForFunction(
@@ -265,7 +296,7 @@ test(
       catalog: {
         version: 1,
         games: [makeGame('broken', '/media/missing.webm'), makeGame('working')],
-        settings: { shuffle: false, reducedMotion: true }
+        settings: { shuffle: false, reducedMotion: true, framing: '16:9' }
       }
     });
     await frame.waitForFunction(
@@ -370,6 +401,67 @@ test(
       requests.every((u) => u.startsWith(origin)),
       JSON.stringify(requests)
     );
+    const portrait = {
+      ...makeGame('portrait'),
+      crop: { mode: '16:9', x: 50, y: 0 },
+      media: {
+        ...makeGame('portrait').media,
+        file: '/media/cover.jpg',
+        format: 'jpg',
+        width: 160,
+        height: 240,
+        animated: false
+      }
+    };
+    await send({
+      action: 'catalog',
+      catalog: {
+        version: 1,
+        games: [portrait],
+        settings: {
+          staticFallback: true,
+          reducedMotion: true,
+          framing: '16:10',
+          showCover: false,
+          showLogos: false
+        }
+      }
+    });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible img.artwork')?.naturalWidth === 160
+    );
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible')?.dataset.framing === '16:9'
+    );
+    const topCrop = await frame.locator('.art-frame').screenshot();
+    portrait.crop.y = 100;
+    await send({
+      action: 'catalog',
+      catalog: {
+        version: 1,
+        games: [portrait],
+        settings: {
+          staticFallback: true,
+          reducedMotion: true,
+          framing: '16:10',
+          showCover: false,
+          showLogos: false
+        }
+      }
+    });
+    await frame.waitForFunction(
+      () => document.querySelector('.scene.visible img.artwork')?.naturalWidth === 160
+    );
+    await frame.waitForFunction(
+      () =>
+        getComputedStyle(document.querySelector('.scene.visible .artwork')).objectPosition ===
+        '50% 100%'
+    );
+    const bottomCrop = await frame.locator('.art-frame').screenshot();
+    assert(
+      !topCrop.equals(bottomCrop),
+      'changing focal position must change the actual visible pixels of a static portrait source'
+    );
     await frame.evaluate(() => window.CinemaPlayer.destroy());
     assert.equal(await frame.locator('video').count(), 0);
     assert.equal(await frame.locator('.scene').count(), 0);
@@ -385,6 +477,7 @@ test(
     game.cover.file = 'cover.jpg';
     game.media.file = 'scene.webm';
     game.media.thumbnail = 'thumb.jpg';
+    game.crop = { mode: '16:10', x: 12, y: 82 };
     const installed = await install({
       dataDir,
       steamRoot,
@@ -403,6 +496,15 @@ test(
       { timeout: 8000 }
     );
     assert.equal(await offlinePage.locator('#empty').isVisible(), false);
+    await offlinePage.waitForFunction(
+      () => document.querySelector('.scene.visible')?.dataset.framing === '16:10'
+    );
+    assert.equal(
+      await offlinePage
+        .locator('.scene.visible .artwork')
+        .evaluate((el) => getComputedStyle(el).objectPosition),
+      '12% 82%'
+    );
     await offlinePage.waitForFunction(
       () => document.querySelector('.scene.visible .caption-cover')?.naturalWidth === 160
     );
