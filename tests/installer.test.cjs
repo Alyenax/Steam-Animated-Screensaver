@@ -5,7 +5,14 @@ const fs = require('node:fs/promises');
 const os = require('node:os');
 const path = require('node:path');
 const vm = require('node:vm');
-const { install, uninstall, isInstalled, NAME } = require('../core/installer.cjs');
+const {
+  install,
+  uninstall,
+  isInstalled,
+  NAME,
+  LEGACY_NAME,
+  MARKER
+} = require('../core/installer.cjs');
 async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-install-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
@@ -104,4 +111,64 @@ test('refuses empty or excluded catalogs and allows explicit static fallback', a
   f.settings.staticFallback = true;
   await install(f);
   assert(await isInstalled(f.steamRoot));
+});
+test('installed identifier is a DNS label, separate from the product display name', () => {
+  assert.match(NAME, /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/);
+  const hostname = `uioverride-${NAME}.steamscreensavers.host`;
+  assert.equal(new URL(`https://${hostname}/index.html`).hostname, hostname);
+  assert.throws(
+    () => new URL(`https://uioverride-${LEGACY_NAME}.steamscreensavers.host/index.html`)
+  );
+});
+test('update migrates owned legacy export only after corrected installation commits', async (t) => {
+  const f = await fixture(t),
+    first = await install(f);
+  const legacy = path.join(path.dirname(first.path), LEGACY_NAME);
+  await fs.rename(first.path, legacy);
+  assert(await isInstalled(f.steamRoot));
+  f.games[0].name = 'Updated scene';
+  const updated = await install(f);
+  assert.equal(path.basename(updated.path), NAME);
+  assert.equal(await fs.stat(legacy).catch(() => null), null);
+  assert.match(await fs.readFile(path.join(updated.path, 'catalog.js'), 'utf8'), /Updated scene/);
+});
+test('failed migration preserves old catalog and artwork; legacy uninstall is supported', async (t) => {
+  const f = await fixture(t),
+    first = await install(f);
+  const legacy = path.join(path.dirname(first.path), LEGACY_NAME);
+  await fs.rename(first.path, legacy);
+  const before = await fs.readFile(path.join(legacy, 'catalog.js'));
+  f.games[0].media.file = 'missing.gif';
+  await assert.rejects(install(f));
+  assert.deepEqual(await fs.readFile(path.join(legacy, 'catalog.js')), before);
+  assert.equal(await fs.stat(first.path).catch(() => null), null);
+  await uninstall(f);
+  assert.equal(await isInstalled(f.steamRoot), false);
+});
+test('migration and uninstall leave an unowned legacy-named directory intact', async (t) => {
+  const f = await fixture(t),
+    canonical = await install(f);
+  const legacy = path.join(path.dirname(canonical.path), LEGACY_NAME);
+  await fs.mkdir(legacy);
+  await fs.writeFile(path.join(legacy, 'unrelated'), 'keep');
+  await install(f);
+  await uninstall(f);
+  assert.equal(await fs.readFile(path.join(legacy, 'unrelated'), 'utf8'), 'keep');
+});
+test('standalone repair script renames only owned legacy files and is repeatable', async (t) => {
+  const { execFileSync, spawnSync } = require('node:child_process');
+  const f = await fixture(t),
+    canonical = await install(f);
+  const legacy = path.join(path.dirname(canonical.path), LEGACY_NAME);
+  await fs.rename(canonical.path, legacy);
+  const before = await fs.readFile(path.join(legacy, 'catalog.js'));
+  const script = path.join(__dirname, '..', 'scripts', 'repair-steam-screensaver.sh');
+  execFileSync('sh', [script, f.steamRoot]);
+  assert.deepEqual(await fs.readFile(path.join(canonical.path, 'catalog.js')), before);
+  execFileSync('sh', [script, f.steamRoot]);
+  await fs.rm(canonical.path, { recursive: true });
+  await fs.mkdir(legacy);
+  await fs.writeFile(path.join(legacy, 'keep'), 'unrelated');
+  assert.notEqual(spawnSync('sh', [script, f.steamRoot]).status, 0);
+  assert.equal(await fs.readFile(path.join(legacy, 'keep'), 'utf8'), 'unrelated');
 });

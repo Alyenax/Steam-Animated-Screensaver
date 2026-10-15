@@ -153,7 +153,7 @@ async function runUI({ capture = false } = {}) {
       'config',
       'uioverrides',
       'screensavers',
-      'SteamOS Animated Screensaver'
+      'steamos-animated-screensaver'
     );
     for (let i = 0; i < 100; i++) {
       if (

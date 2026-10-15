@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1 — Steam virtual-host identifier correction
+
+- Replace the display-name installation directory with a lowercase DNS-safe identifier for Steam's HTTPS screensaver host mapping.
+- Migrate only owned 0.1.0 exports after successful replacement; preserve files if staging fails.
+- Supply a small repair script to rename an existing export without preparing or downloading media again.
+- Add migration/repair regression coverage and actual playback under a mapped HTTPS test origin.
+- Track the user's failed 0.1.0 Steam Machine Preview/idle acceptance separately from passing local tests; physical confirmation of this correction is pending.
+
 ## 0.1.0 — private installation candidate
 
 - Independent Steam library scanner, unified installed/manual catalog and personal-key SteamGridDB integration.

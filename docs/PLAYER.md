@@ -9,7 +9,7 @@ The public [Acerocks22/tabs-screensavers tree](https://github.com/Acerocks22/tab
 The installer creates:
 
 ```
-<Steam root>/config/uioverrides/screensavers/SteamOS Animated Screensaver/
+<Steam root>/config/uioverrides/screensavers/steamos-animated-screensaver/
   index.html
   player.js
   player.css
@@ -18,7 +18,7 @@ The installer creates:
   media/<prepared playback and thumbnail files>
 ```
 
-This is a supported installation *layout*, not proof that a particular Steam client successfully launches this candidate. The physical SteamOS checks below remain necessary.
+Steam opens installed players through a mapped HTTPS hostname. The directory identifier is a lowercase DNS label, separate from the display title. Version 0.1.1 migrates owned 0.1.0 directories after successful replacement; see STEAM_ERROR_105.md. This layout and host-origin test do not prove that a particular Steam client successfully launches the candidate. The physical SteamOS checks below remain necessary.
 
 ## One engine, two hosts
 
@@ -50,7 +50,7 @@ The installer copies only included, ready playback files and their thumbnails. I
 
 Installation stages all files beside the destination, validates ownership, renames the previous owned folder aside, and commits the new directory. Failed staging leaves the old installation untouched. A failed commit restores it. Uninstall refuses to touch a folder without the application ownership marker and leaves neighboring screensavers intact. Installation and uninstall share a per-Steam-root lock.
 
-Normal cancellation removes temporary downloads, encodes and thumbnails. A forced process kill can leave unreferenced UUID `.partial`, `.webm` or `.jpg` files; the Manager's unused-media cleanup can remove these. If a process is killed while holding the install lock, the next attempt reports the exact `.steamos-animated-screensaver.lock` folder to remove after confirming that no Manager is installing. A crash precisely between the backup rename and new-folder rename can leave `.cinema-backup-<UUID>` beside the destination; rename that owned backup to `SteamOS Animated Screensaver` to recover it. Never remove unrelated override folders.
+Normal cancellation removes temporary downloads, encodes and thumbnails. A forced process kill can leave unreferenced UUID `.partial`, `.webm` or `.jpg` files; the Manager's unused-media cleanup can remove these. If a process is killed while holding the install lock, the next attempt reports the exact `.steamos-animated-screensaver.lock` folder to remove after confirming that no Manager is installing. A crash precisely between the backup rename and new-folder rename can leave `.cinema-backup-<UUID>` beside the destination; rename that owned backup to `steamos-animated-screensaver` to recover it. Never remove unrelated override folders.
 
 ## Verified locally
 

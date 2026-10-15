@@ -124,7 +124,7 @@ async function build(platform = 'linux', arch = 'x64') {
       quiet: false
     });
     const output = outputs[0];
-    for (const item of ['install.sh', 'uninstall.sh']) {
+    for (const item of ['install.sh', 'uninstall.sh', 'repair-steam-screensaver.sh']) {
       await fs.copyFile(path.join(root, 'scripts', item), path.join(output, item));
       await fs.chmod(path.join(output, item), 0o755);
     }

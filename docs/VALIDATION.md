@@ -1,6 +1,6 @@
-# Validation report — 0.1.0 private candidate
+# Validation report — 0.1.1 private candidate
 
-This report distinguishes executed software checks from intended SteamOS behavior. The initial implementation/validation host is macOS arm64 on 2026-10-15. The target package is Linux x64. No physical Steam Deck, Steam Machine, Linux desktop, controller, Steam CEF or Gaming Mode session was available.
+This report distinguishes executed software checks from intended SteamOS behavior. The initial implementation/validation host is macOS arm64 on 2026-10-15. The target package is Linux x64. There is no direct remote access to a physical Steam Deck/Steam Machine or Linux desktop. The user subsequently reported a failed Steam Machine/Gamescope screensaver launch on 0.1.0, with error -105 in both Preview and idle activation; this is recorded as a physical failure, not a successful acceptance. Version 0.1.1 corrects the installation identifier; physical re-test is pending. See STEAM_ERROR_105.md.
 
 Test totals, archive sizes and checksum verification are recorded below; the distributed SHA256SUMS identifies the final archive. Do not infer physical compatibility from passing unit tests or a successfully created archive.
 
@@ -33,13 +33,13 @@ Owned-account import and Windows compatibility are deferred. Automatic aesthetic
 
 ## Final executed results
 
-- `npm test`: **56 passed, 0 failed, 0 skipped**. Includes 30 Core tests, actual FFmpeg fixtures/conversion and real Chromium tests for animation, stable GIF/WebP pause, transitions and direct-file export.
+- `npm test` on 0.1.0: **56 passed, 0 failed, 0 skipped**. Version 0.1.1: **62 passed, 0 failed, 0 skipped**, including owned migration/repair and actual playback under a mapped HTTPS test origin. Includes 30 Core tests, actual FFmpeg fixtures/conversion and real Chromium tests for animation, stable GIF/WebP pause, transitions and direct-file export.
 - `npm run check`: source syntax and no-workflow checks passed. Shell installation/removal scripts pass `sh -n`.
 - `node scripts/ui-qa.cjs --capture`: passed 12 integration checks with 0 uncaught browser errors; all five spaces at 1280, 800 and 390 pixels in English/French without horizontal overflow. Evidence: `screenshots/EVIDENCE.json`.
 - `node scripts/electron-qa.cjs`: native macOS Electron app passed actual `app://` media playback and pause, forbidden path/action rejection, sandbox/context-isolation/Node-off checks and lock release. The native preview screenshot is `screenshots/09-electron-preview-qa.png`.
 - Live personal-key integration: Portal 2, SGDB 17830, animated Hero 29084 by Moofy, WebP 1920×620, approximately 6.297 seconds; Cyberpunk 2077, SGDB 5209422, animated Hero 130287 by fewwan, WebP 3840×1240, approximately 15.033 seconds. Both prepared and played locally with zero HTTP requests after manager close. Exact metadata: LIVE_VALIDATION.json. Temporary key, downloaded media and live screenshots removed; only public metadata/evidence retained.
 - `npm audit` (full and production scope): **0 reported vulnerabilities** at validation time. This is registry advisory evidence, not a full executable security audit.
 - Local Linux x64 cross-package created. The manager executable is ELF x86-64; included Linux FFmpeg and FFprobe are static ELF x86-64, rather than the macOS development binaries. Archive approximately **174 MiB compressed / 443 MiB installed**. Exact current bytes and digest are in release metadata/SHA256SUMS. Archive contents exclude node_modules, credentials, local catalog, QA source media and Git data.
-- GitHub Actions disabled before the first push; no workflows provided. Repository `Alyenax/SteamOS-Animated-Screensaver`, branch `codex/initial-candidate`, private prerelease `v0.1.0-rc.1`.
+- GitHub Actions disabled before the first push; no workflows provided. Repository `Alyenax/SteamOS-Animated-Screensaver`, branch `codex/initial-candidate`, private prereleases `v0.1.0-rc.1` and `v0.1.1-rc.1`.
 
 No Linux process, physical SteamOS screensaver or controller wake result is inferred from these checks.

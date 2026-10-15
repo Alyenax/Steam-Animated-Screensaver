@@ -4,7 +4,7 @@
 
 Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
 
-**0.1.0 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.1 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
@@ -23,18 +23,22 @@ The application is called SteamOS Animated Screensaver; **Cinema** is its short 
 
 **Screenshot provenance:** the prepared gallery above runs the actual application with original test animations and a mocked SteamGridDB provider. Its titles explicitly identify QA animations. These screenshots are illustrative QA media, separate from the successful live personal-key API tests on Portal 2 and Cyberpunk 2077 recorded in docs/LIVE_VALIDATION.json. Downloaded game artwork was deleted after those tests. All six requested views and responsive captures are in [screenshots](screenshots/); the procedure is reproducible with `node scripts/ui-qa.cjs --capture`.
 
+## Steam Machine error -105 on 0.1.0
+
+The initial space-containing export identifier has been replaced with `steamos-animated-screensaver`. [Repair instructions](docs/STEAM_ERROR_105.md) include a small script that preserves existing media. Restart Steam and select the new identifier afterward. The affected device still needs to confirm the correction.
+
 ## Install the Linux x64 candidate
 
 Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Steam Machine are the intended hardware; the binary has not yet been executed on those devices. In Desktop Mode:
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.0-linux-x64.tar.gz
+tar -xzf SteamOS-Animated-Screensaver-0.1.1-linux-x64.tar.gz
 cd steamos-animated-screensaver-linux-x64
 ./install.sh
 ```
 
-Open **SteamOS Animated Screensaver** from the application launcher. Add your personal API key in Settings, rescan or add games, then choose **Prepare My Screensaver**. Preview the result and use **Install screensaver**. In Steam, select **SteamOS Animated Screensaver** in **Settings → Customization → Screensavers**. Restart Steam if its selector has not refreshed.
+Open **SteamOS Animated Screensaver** from the application launcher. Add your personal API key in Settings, rescan or add games, then choose **Prepare My Screensaver**. Preview the result and use **Install screensaver**. In Steam, select **steamos-animated-screensaver** in **Settings → Customization → Screensavers**. Restart Steam if its selector has not refreshed.
 
 The application installs to `~/.local/opt/steamos-animated-screensaver`; it does not disable SteamOS read-only mode, use `sudo`, install global dependencies, or change Steam manifests. The package contains Electron and separate FFmpeg/FFprobe tools. It expects a Linux x64 graphical desktop with the system libraries Electron needs; see [installation](docs/INSTALLATION.md).
 

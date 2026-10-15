@@ -1,17 +1,13 @@
-# 0.1.0-rc.1 — private installation candidate
+# 0.1.1-rc.1 — Steam screensaver identifier correction
 
-SteamOS Animated Screensaver is a standalone manager and offline Steam screensaver player. It scans installed games, supports manual SteamGridDB discovery with a personal key, prepares animated artwork incrementally, and installs an owned local player snapshot. Electron/Node powers the manager; the exported HTML player needs neither the manager nor a service.
+The user reported error -105 when previewing the 0.1.0 screensaver and when its one-minute idle timeout elapsed on a Steam Machine in Gamescope. Inspection of the extracted Steam frontend confirmed that custom players load through a virtual HTTPS hostname, whereas our first tests had primarily exercised file:// playback.
 
-The candidate includes EN/FR interfaces, a responsive animated gallery, alternate-artwork selection, real preparation progress, pause/resume/cancel/retry, source-preserving GIF/WebP/WebM processing, same-engine preview and user-space Linux x64 installation/update/removal scripts.
+The installer now uses the lowercase DNS-safe directory `steamos-animated-screensaver`, separately from the product title. It stages and commits a complete replacement before removing an owned legacy export. Migration failure preserves prior files; unowned folders remain untouched. A small `repair-steam-screensaver.sh` can rename an existing owned export without downloading artwork again.
 
-Executed validation includes Node tests, real FFmpeg decoding/conversion, actual Chromium and native macOS Electron playback, responsive interaction checks and an independent UX review. Live SteamGridDB tests successfully searched and added Portal 2 and Cyberpunk 2077, prepared real animated Heroes, then played both from exported local files with the manager closed and zero network requests. The temporary key, downloaded artwork and live screenshots were removed. See docs/VALIDATION.md and docs/LIVE_VALIDATION.json for exact scope.
+After repair, fully restart Steam and reselect **steamos-animated-screensaver** under Settings → Customization. Verify Preview and automatic activation after the configured idle timeout. Update the Manager to 0.1.1 before its next install/update action, because 0.1.0 would recreate the old name.
 
-This is a **Linux x64 installation candidate**, built locally on macOS arm64. It has not been executed on Linux, Steam Deck, Steam Machine or Steam's Gaming Mode/CEF. Controller dismissal, GPU/CPU/memory/energy use and long-duration target-device playback remain pending. No Windows or macOS release compatibility is advertised.
+The new software checks cover DNS-safe identifiers, owned migration/uninstall, failed migration preservation, repeatable repair, and playback from the actual export under a locally mapped HTTPS steamscreensavers.host test origin. This emulates the origin boundary, not Steam's C++ domain mapper or Gamescope. Physical confirmation of the fix is still required; the exact failed URL from the affected client has not been collected.
 
-Original source is MIT licensed and independent of the private GabeCubeAura Lab. No downloaded artworks, secrets, or private code are distributed. The archive includes separate GPL FFmpeg executables and their upstream notices/provenance. Complete corresponding-source redistribution review remains a public-binary-release gate; the repository and release stay private.
+The prior live SteamGridDB preparation and offline playback checks on Portal 2 and Cyberpunk 2077 remain documented. No temporary key or downloaded game artwork is distributed. The repository/release remain private pending target-device acceptance and corresponding-source redistribution review for the separate GPL media executables. No GitHub Actions workflow is present or triggered.
 
-Download the tar archive and SHA256SUMS together, verify the checksum, extract, then run install.sh in Desktop Mode. No compilation, root installation, SteamOS read-only-mode change or global dependency installation is performed. See docs/INSTALLATION.md for prerequisites, setup, updates, removal and recovery.
-
-GitHub Actions is disabled and no workflows were added or triggered.
-
-Not affiliated with or endorsed by Valve or SteamGridDB.
+The Linux x64 package includes the updated Manager, player installer, repair script, documentation and FFmpeg/FFprobe. The source archive and checksum files are supplied separately. Not affiliated with or endorsed by Valve or SteamGridDB.

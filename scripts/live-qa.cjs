@@ -109,7 +109,7 @@ async function run() {
       'config',
       'uioverrides',
       'screensavers',
-      'SteamOS Animated Screensaver'
+      'steamos-animated-screensaver'
     );
     await core.close();
     core = null;

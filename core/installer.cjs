@@ -2,7 +2,10 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
-const NAME = 'SteamOS Animated Screensaver';
+// Steam maps installed screensaver directories to virtual HTTPS host names.
+// Keep this filesystem identifier a valid lower-case DNS label; the UI title is separate.
+const NAME = 'steamos-animated-screensaver';
+const LEGACY_NAME = 'SteamOS Animated Screensaver';
 const MARKER = '.steamos-animated-screensaver.json';
 const OWNER = 'steamos-animated-screensaver';
 async function directory(steamRoot, create = false) {
@@ -166,6 +169,14 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
         throw e;
       }
       if (moved) await fs.rm(backup, { recursive: true, force: true });
+      // Retire the old, space-containing identifier only after the new installation commits.
+      // A failed preparation/staging step therefore preserves the previous playable files.
+      const legacy = path.join(parent, LEGACY_NAME);
+      if (await owned(legacy)) {
+        const retired = path.join(parent, `.cinema-retired-${token}`);
+        await fs.rename(legacy, retired);
+        await fs.rm(retired, { recursive: true, force: true });
+      }
       return { installed: true, path: target, games: catalogGames.length };
     } finally {
       await fs.rm(staging, { recursive: true, force: true });
@@ -177,28 +188,35 @@ async function uninstall({ steamRoot }) {
   if (!parent) return { installed: false };
   return lock(parent, async () => {
     const target = path.join(parent, NAME);
-    try {
-      await fs.lstat(target);
-    } catch (e) {
-      if (e.code === 'ENOENT') return { installed: false };
-      throw e;
-    }
-    if (!(await owned(target)))
+    const exists = await fs.lstat(target).then(
+      () => true,
+      (e) => {
+        if (e.code === 'ENOENT') return false;
+        throw e;
+      }
+    );
+    if (exists && !(await owned(target)))
       throw new Error(
         'The screensaver destination is not owned by this app. It was left untouched.'
       );
-    const tomb = path.join(parent, `.cinema-remove-${crypto.randomUUID()}`);
-    await fs.rename(target, tomb);
-    await fs.rm(tomb, { recursive: true, force: true });
+    for (const folder of [target, path.join(parent, LEGACY_NAME)]) {
+      if (!(await owned(folder))) continue;
+      const tomb = path.join(parent, `.cinema-remove-${crypto.randomUUID()}`);
+      await fs.rename(folder, tomb);
+      await fs.rm(tomb, { recursive: true, force: true });
+    }
     return { installed: false };
   });
 }
 async function isInstalled(steamRoot) {
   try {
     const parent = await directory(steamRoot);
-    return !!parent && (await owned(path.join(parent, NAME)));
+    return (
+      !!parent &&
+      ((await owned(path.join(parent, NAME))) || (await owned(path.join(parent, LEGACY_NAME))))
+    );
   } catch {
     return false;
   }
 }
-module.exports = { install, uninstall, isInstalled, NAME, MARKER };
+module.exports = { install, uninstall, isInstalled, NAME, LEGACY_NAME, MARKER };

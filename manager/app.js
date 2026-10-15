@@ -197,7 +197,7 @@ const translations = {
     clearUnused: 'Remove unused media',
     steamIntegration: 'Steam integration',
     steamInstallBody:
-      'Copy the standalone player and prepared scenes into the Steam screensavers folder. Select SteamOS Animated Screensaver in Steam settings afterward.',
+      'Copy the standalone player and prepared scenes into the Steam screensavers folder. Select steamos-animated-screensaver in Steam settings afterward.',
     install: 'Install screensaver',
     repair: 'Update / repair',
     uninstall: 'Uninstall',
@@ -222,7 +222,7 @@ const translations = {
     assetSuccess: 'Artwork selected. Prepare the game to use it in your rotation.',
     clearSuccess: 'Unused media removed.',
     installSuccess:
-      'Screensaver installed. Select SteamOS Animated Screensaver in Steam, then verify playback on your device.',
+      'Screensaver installed. Select steamos-animated-screensaver in Steam, then verify playback on your device.',
     repairSuccess: 'Screensaver files updated.',
     uninstallSuccess: 'Screensaver uninstalled.',
     operationError: 'Something went wrong.',
@@ -448,7 +448,7 @@ const translations = {
     clearUnused: 'Supprimer les médias inutilisés',
     steamIntegration: 'Intégration Steam',
     steamInstallBody:
-      'Copiez le lecteur autonome et ses scènes dans le dossier des écrans de veille Steam. Sélectionnez ensuite SteamOS Animated Screensaver dans les réglages Steam.',
+      'Copiez le lecteur autonome et ses scènes dans le dossier des écrans de veille Steam. Sélectionnez ensuite steamos-animated-screensaver dans les réglages Steam.',
     install: 'Installer l’écran de veille',
     repair: 'Mettre à jour / réparer',
     uninstall: 'Désinstaller',
@@ -474,7 +474,7 @@ const translations = {
     assetSuccess: 'Illustration choisie. Préparez le jeu pour l’utiliser dans votre rotation.',
     clearSuccess: 'Médias inutilisés supprimés.',
     installSuccess:
-      'Écran de veille installé. Sélectionnez SteamOS Animated Screensaver dans Steam, puis vérifiez la lecture sur votre appareil.',
+      'Écran de veille installé. Sélectionnez steamos-animated-screensaver dans Steam, puis vérifiez la lecture sur votre appareil.',
     repairSuccess: 'Fichiers de l’écran de veille mis à jour.',
     uninstallSuccess: 'Écran de veille désinstallé.',
     operationError: 'Une erreur est survenue.',
@@ -728,7 +728,7 @@ async function run(action, payload = {}, message, options = {}) {
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">CINEMA</div><div class="brand-caption">STEAMOS SCREENSAVER</div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.0</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Cinema ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} CINEMA</div><div class="top-actions"><span class="local-badge">${icon('shield')}${esc(t('local'))}</span><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">CINEMA</div><div class="brand-caption">STEAMOS SCREENSAVER</div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">${esc(t('sidebarFoot')).replace('\n', '<br>')}<br>VERSION 0.1.1</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Cinema ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} CINEMA</div><div class="top-actions"><span class="local-badge">${icon('shield')}${esc(t('local'))}</span><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;

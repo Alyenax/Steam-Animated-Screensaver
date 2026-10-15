@@ -14,7 +14,7 @@ The dependency lockfile pins development tools. Player and manager use native Ja
 
 Valve's stable [Steam Client Update, October 13, 2026](https://www.steamdeck.com/en/news?pubDate=20260808) explicitly documents `~/.steam/root/config/uioverrides/screensavers/` and points to the built-in bouncing-logo example. The public [tabs-screensavers repository](https://github.com/Acerocks22/tabs-screensavers) demonstrates a named directory with `index.html`, local scripts and images. This project recreates that structure independently. No local Steam installation containing the actual built-in screensaver was available during initial research.
 
-These sources establish the installation layout. Only target-device testing can establish this player's behavior in Steam's CEF runtime, especially codec playback, idle entry and activity dismissal. See PLAYER.md and VALIDATION.md.
+These sources establish the installation layout. A subsequent 0.1.0 Steam Machine report exposed a virtual-host assumption: Steam loads the returned screensaver path as an HTTPS hostname. The 0.1.1 correction uses a DNS-safe installation identifier and adds a mapped-HTTPS playback test; see STEAM_ERROR_105.md. Only target-device testing can establish this player's behavior in Steam's CEF runtime, especially codec playback, idle entry and activity dismissal. See PLAYER.md and VALIDATION.md.
 
 ## SteamGridDB and account scope
 

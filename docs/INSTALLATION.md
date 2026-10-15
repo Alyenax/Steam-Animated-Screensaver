@@ -23,9 +23,9 @@ For a portable launch without installing a shortcut, run `./steamos-animated-scr
 2. Rescan installed games or **Add game** by title, Steam AppID, or Store URL. Name matches require an explicit selection. Manually adding a game does not install it or assert ownership.
 3. Include games, optionally choose alternative artwork, and prepare. Animated Heroes take priority. Static fallback is opt-in and visibly identified.
 4. Preview. The same player is used by the Steam export.
-5. Install from Preparation/Settings. In Steam choose **Settings → Customization → Screensavers → SteamOS Animated Screensaver**. Restart Steam if discovery needs refreshing.
+5. Install from Preparation/Settings. In Steam choose **Settings → Customization → Screensavers → steamos-animated-screensaver**. Restart Steam if discovery needs refreshing.
 
-The target is the first detected Steam installation's `config/uioverrides/screensavers/SteamOS Animated Screensaver/`. Secondary *libraries* contribute games; they are not separate screen-saver install targets. The default root search handles native Steam symlinks and the documented Flatpak user directory, but Flatpak sandbox/CEF loading is untested. A `STEAM_ROOT` environment variable can prioritize a nonstandard Steam root when launching the manager.
+The target is the first detected Steam installation's `config/uioverrides/screensavers/steamos-animated-screensaver/`. Secondary *libraries* contribute games; they are not separate screen-saver install targets. The default root search handles native Steam symlinks and the documented Flatpak user directory, but Flatpak sandbox/CEF loading is untested. A `STEAM_ROOT` environment variable can prioritize a nonstandard Steam root when launching the manager.
 
 No selector settings are patched and no Steam client restart is forced. Existing screensavers and unrelated Steam files are left alone. Selecting the screensaver, idle entry, controller wake and dismissal must be validated on the device.
 
@@ -49,4 +49,4 @@ To erase all application data, close the manager, back up anything needed and ex
 
 ## Target-device acceptance
 
-See VALIDATION.md and PLAYER.md. No macOS release is provided; macOS is the development and software-validation host. Windows support is not implemented.
+See VALIDATION.md, PLAYER.md and STEAM_ERROR_105.md for the 0.1.0 identifier repair. No macOS release is provided; macOS is the development and software-validation host. Windows support is not implemented.
