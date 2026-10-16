@@ -184,6 +184,7 @@ async function readTimeouts(root, options = {}) {
   }
   return {
     available: true,
+    recommendedSeconds: 300,
     platform,
     running,
     acSeconds: values[0].seconds,

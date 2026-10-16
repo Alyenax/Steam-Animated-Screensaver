@@ -249,6 +249,10 @@ const translations = {
     steamIdleAC: 'Plugged in',
     steamIdleBattery: 'On battery',
     steamIdleOff: 'Disabled',
+    steamIdleRecommended: '5 min (recommended)',
+    steamIdleSuggestion:
+      'Start with 5 minutes. These suggested delays are saved only when you click Apply.',
+    steamIdleCurrent: 'Currently saved in Steam',
     steamIdleApply: 'Apply Steam delays',
     steamIdleRefresh: 'Read Steam settings again',
     steamIdleSaved: 'Steam delays saved. Reopen Steam in Big Picture.',
@@ -570,6 +574,10 @@ const translations = {
     steamIdleAC: 'Sur secteur',
     steamIdleBattery: 'Sur batterie',
     steamIdleOff: 'Désactivé',
+    steamIdleRecommended: '5 min (conseillé)',
+    steamIdleSuggestion:
+      'Commencez par 5 minutes. Ces délais proposés sont enregistrés uniquement en cliquant sur Appliquer.',
+    steamIdleCurrent: 'Réglages actuels de Steam',
     steamIdleApply: 'Appliquer les délais Steam',
     steamIdleRefresh: 'Relire les réglages Steam',
     steamIdleSaved: 'Délais Steam enregistrés. Rouvrez Steam en Big Picture.',
@@ -1255,7 +1263,7 @@ async function run(action, payload = {}, message, options = {}) {
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 0.1.10</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 0.1.11</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -1419,23 +1427,42 @@ const toggle = (key, label, hint) =>
   `<label class="setting-row"><span><span class="setting-row-label">${esc(t(label))}</span>${hint ? `<small>${esc(t(hint))}</small>` : ''}</span><span class="switch"><input type="checkbox" data-setting="${key}" ${state.settings[key] ? 'checked' : ''}><span></span></span></label>`;
 const panel = (title, ic, body) =>
   `<section class="settings-panel"><div class="panel-title">${icon(ic)}<h2>${esc(t(title))}</h2></div><div class="panel-body">${body}</div></section>`;
+function steamIdleValues() {
+  const idle = state.steam.idle;
+  if (steamIdleDraft) return steamIdleDraft;
+  return idle?.acDefault && idle?.batteryDefault
+    ? { acSeconds: idle.recommendedSeconds, batterySeconds: idle.recommendedSeconds }
+    : idle;
+}
 function steamIdlePanel() {
   const idle = state.steam.idle;
   const disabled = steamIdleBusy || !idle?.available;
-  const values = steamIdleDraft || idle;
+  const values = steamIdleValues();
+  const duration = (n) =>
+    n === 0
+      ? t('steamIdleOff')
+      : n === 300
+        ? t('steamIdleRecommended')
+        : n % 60 === 0
+          ? `${n / 60} min`
+          : `${n} s`;
+  const suggestion =
+    idle?.available && idle.acDefault && idle.batteryDefault
+      ? `<p role="status">${esc(t('steamIdleSuggestion'))}<br>${esc(t('steamIdleCurrent'))} : ${esc(t('steamIdleAC'))} ${esc(duration(idle.acSeconds))} · ${esc(t('steamIdleBattery'))} ${esc(duration(idle.batterySeconds))}.</p>`
+      : '';
   const options = (seconds) =>
     [...new Set([0, 60, 120, 300, 600, 900, 1800, 3600, seconds])]
       .filter(Number.isSafeInteger)
       .sort((a, b) => a - b)
       .map(
         (n) =>
-          `<option value="${n}" ${n === seconds ? 'selected' : ''}>${esc(n === 0 ? t('steamIdleOff') : n % 60 === 0 ? `${n / 60} min` : `${n} s`)}</option>`
+          `<option value="${n}" ${n === seconds ? 'selected' : ''}>${esc(duration(n))}</option>`
       )
       .join('');
   return panel(
     'steamIdleTitle',
     'film',
-    `<div id="steam-idle-settings"><p>${esc(t('steamIdleBody'))}</p><p>${esc(t('steamIdleSteps'))}</p>${idle?.available ? ['acSeconds', 'batterySeconds'].map((key) => `<label class="setting-row"><span class="setting-row-label">${esc(t(key === 'acSeconds' ? 'steamIdleAC' : 'steamIdleBattery'))}</span><select class="field" data-steam-idle="${key}" aria-label="${esc(t(key === 'acSeconds' ? 'steamIdleAC' : 'steamIdleBattery'))}" ${disabled ? 'disabled' : ''}>${options(values[key])}</select></label>`).join('') : `<p role="status">${esc(t(steamIdleBusy ? 'steamIdleLoading' : 'steamIdleMissing'))}</p>`}${idle?.error ? `<p role="alert">${esc(idle.error)}</p>` : ''}${idle?.running === true || (idle?.available && idle.running === null) ? `<p role="status">${esc(t(idle.running ? 'steamIdleRunning' : 'steamIdleUnknown'))}</p>` : ''}<div class="button-row">${button(t('steamIdleApply'), 'apply-steam-idle', 'check', true, disabled ? 'disabled' : '')}${button(t('steamIdleRefresh'), 'refresh-steam-idle', 'refresh', false, steamIdleBusy ? 'disabled' : '')}</div><p>${esc(t('steamIdleBackup'))}</p><p>${esc(t('steamIdleOS'))}</p></div>`
+    `<div id="steam-idle-settings"><p>${esc(t('steamIdleBody'))}</p><p>${esc(t('steamIdleSteps'))}</p>${suggestion}${idle?.available ? ['acSeconds', 'batterySeconds'].map((key) => `<label class="setting-row"><span class="setting-row-label">${esc(t(key === 'acSeconds' ? 'steamIdleAC' : 'steamIdleBattery'))}</span><select class="field" data-steam-idle="${key}" aria-label="${esc(t(key === 'acSeconds' ? 'steamIdleAC' : 'steamIdleBattery'))}" ${disabled ? 'disabled' : ''}>${options(values[key])}</select></label>`).join('') : `<p role="status">${esc(t(steamIdleBusy ? 'steamIdleLoading' : 'steamIdleMissing'))}</p>`}${idle?.error ? `<p role="alert">${esc(idle.error)}</p>` : ''}${idle?.running === true || (idle?.available && idle.running === null) ? `<p role="status">${esc(t(idle.running ? 'steamIdleRunning' : 'steamIdleUnknown'))}</p>` : ''}<div class="button-row">${button(t('steamIdleApply'), 'apply-steam-idle', 'check', true, disabled ? 'disabled' : '')}${button(t('steamIdleRefresh'), 'refresh-steam-idle', 'refresh', false, steamIdleBusy ? 'disabled' : '')}</div><p>${esc(t('steamIdleBackup'))}</p><p>${esc(t('steamIdleOS'))}</p></div>`
   );
 }
 async function loadSteamIdle() {
@@ -1455,7 +1482,7 @@ async function loadSteamIdle() {
 }
 async function applySteamIdle() {
   if (steamIdleBusy || !state.steam.idle?.available) return;
-  const values = { ...(steamIdleDraft || state.steam.idle) };
+  const values = { ...steamIdleValues() };
   steamIdleBusy = true;
   render();
   try {
@@ -2164,10 +2191,7 @@ document.addEventListener('input', (event) => {
 document.addEventListener('change', async (event) => {
   const el = event.target;
   if (el.dataset.steamIdle) {
-    steamIdleDraft ||= {
-      acSeconds: state.steam.idle.acSeconds,
-      batterySeconds: state.steam.idle.batterySeconds
-    };
+    steamIdleDraft ||= { ...steamIdleValues() };
     steamIdleDraft[el.dataset.steamIdle] = Number(el.value);
     return;
   }

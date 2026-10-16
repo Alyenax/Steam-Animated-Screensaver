@@ -1,9 +1,9 @@
-# 0.1.10-rc.1 — Steam automatic-start settings
+# 0.1.11-rc.1 — Five-minute setup and launch preview
 
-Add **Settings → Automatic start in Steam**. Choose plugged-in and battery delays, or Disabled. Quit Steam completely before applying, then reopen it in Big Picture with the custom screensaver selected.
+A first configuration now proposes **5 minutes on AC and battery**, while displaying Steam’s current defaults separately. Nothing is saved until Apply. Existing explicit delays, including Disabled, are preserved. A new installation starts in **English**; saved language choices are kept.
 
-Steam’s stable UI currently hides these controls on machines with a battery outside Gamescope. The same condition and configuration store were verified in Valve’s current macOS, Windows x64 and Linux packages before enabling the option across platforms. The app backs up config.vdf, preserves other settings and refuses writes while Steam runs or the file changes concurrently. OS screensaver/lock settings remain separate.
+To activate: choose games → Prepare → Preview → Install in Steam. In **Steam Big Picture → Settings → Customization → Screensavers**, select **steam-animated-screensaver** and test Preview. Quit Steam completely, set the delays in the app’s **Settings → Automatic start in Steam**, then reopen Big Picture or Gaming Mode. Use Update / Repair after later animation/playback changes.
 
-Validation: 127 automated tests, real controls in EN/FR, native macOS packaged-app tests and four-platform archive checks. Native automatic playback and physical keyboard interruption have been observed on Mac. Windows/Linux/SteamOS native acceptance remains pending; package inspection does not establish those runtime results.
+The README, simple changelog and Reddit drafts explain the missing delay controls on battery-equipped devices outside Gamescope and the app’s guarded workaround. The final 89-second demo includes ten games, original/16:9 framing, real batch preparation marked 8×, settings, the five-minute flow and actual automatic Steam playback on Mac, with quiet original CC0 music. A static review page is prepared for later hosting.
 
-Private development prerelease; no public 1.0 announcement. All four platform downloads are provided, with Mac DMG and ZIP. Existing data and exports are retained. The Mac app is ad-hoc signed and not notarized.
+Private development prerelease, supplied for SteamOS/Linux/Windows x64 and macOS Apple Silicon DMG/ZIP. Windows/Linux native Steam acceptance remains pending. Mac is ad-hoc signed and not notarized; Windows is unsigned. No public 1.0 or Reddit post is published by this preparation.

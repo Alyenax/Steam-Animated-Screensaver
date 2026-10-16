@@ -34,8 +34,19 @@ async function run() {
     const ac = page.locator('[data-steam-idle="acSeconds"]');
     const battery = page.locator('[data-steam-idle="batterySeconds"]');
     await ac.waitFor();
+    assert.equal((await core.invoke('state')).settings.language, 'en');
+    assert.equal(await page.locator('html').getAttribute('lang'), 'en');
+    assert.equal(await page.locator('[data-setting="language"]').inputValue(), 'en');
+    checks.push('A new profile starts in English without consulting the OS locale');
     assert.equal(await ac.inputValue(), '300');
-    assert.equal(await battery.inputValue(), '0');
+    assert.equal(await battery.inputValue(), '300');
+    assert(
+      (await page.locator('#steam-idle-settings').innerText()).includes('Currently saved in Steam')
+    );
+    assert.equal(await fs.readFile(filename, 'utf8'), original);
+    checks.push(
+      'Fresh Steam config proposes five minutes on AC and battery without writing; actual defaults remain visible'
+    );
     await ac.selectOption('60');
     await battery.selectOption('120');
     await page.locator('[data-action="apply-steam-idle"]').click();
@@ -97,6 +108,11 @@ async function run() {
     await ac.waitFor();
     assert.equal(await ac.inputValue(), '0');
     assert.equal(await battery.inputValue(), '0');
+    assert.equal(await page.locator('html').getAttribute('lang'), 'fr');
+    assert.equal((await core.invoke('state')).settings.language, 'fr');
+    checks.push(
+      'Explicit French choice persists after reload; English default does not overwrite it'
+    );
     checks.push('Disabled saves zero explicitly and survives page reload');
     assert.deepEqual(errors, []);
     const result = { passed: true, checks, pageErrors: errors, nativeWindowsLinux: false };

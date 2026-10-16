@@ -28,7 +28,7 @@ async function main() {
     add(
       'showcase-final.mp4',
       s.start + 0.25,
-      4,
+      s.game.includes('Rainbow Six') ? 2 : 4,
       s.framing === 'original' ? 'Original framing · full image' : '16:9 crop'
     );
   add('batch-live.mp4', 0.6, 4.5, 'Select all · prepare 10 games');
@@ -47,9 +47,15 @@ async function main() {
     add(
       'showcase-final.mp4',
       s.start + 0.25,
-      4,
+      s.game.includes('Rainbow Six') ? 2 : 4,
       s.framing === 'original' ? 'Original framing · full image' : '16:9 crop'
     );
+  add('steam-idle.mp4', 0.3, 8, 'Steam inactivity delay · 5 minutes · apply with Steam closed');
+  add('steam-big-picture-macos.mp4', 2, 10, 'Automatic playback in Steam Big Picture · macOS');
+  chapters[chapters.length - 1].fullFrame = true;
+  const previous = await fs
+    .readFile(path.join(out, 'VIDEO_VALIDATION.json'), 'utf8')
+    .then(JSON.parse, () => ({ chapters: [] }));
   const font = '/System/Library/Fonts/Supplemental/Arial.ttf';
   let total = 0;
   for (let i = 0; i < chapters.length; i++) {
@@ -58,10 +64,19 @@ async function main() {
     total += c.duration / c.speed;
     await fs.writeFile(path.join(out, `native-caption-${i}.txt`), c.caption);
     // Native 1280×752 window is letterboxed in a 1920×1080 recording: remove titlebar and right padding.
-    const filters = `crop=1838:1034:0:46,setpts=(PTS-STARTPTS)/${c.speed},fps=60,scale=1824:1026:flags=lanczos,pad=1920:1080:48:0:color=0x080d16,setsar=1,drawtext=fontfile='${font}':textfile=native-caption-${i}.txt:fontsize=27:fontcolor=white:x=(w-text_w)/2:y=1041`;
+    const framing = c.fullFrame
+      ? 'scale=1920:1080:flags=lanczos'
+      : 'crop=1838:1034:0:46,scale=1824:1026:flags=lanczos,pad=1920:1080:48:0:color=0x080d16';
+    const filters = `setpts=(PTS-STARTPTS)/${c.speed},fps=60,${framing},setsar=1,drawtext=fontfile='${font}':textfile=native-caption-${i}.txt:fontsize=27:fontcolor=white:x=(w-text_w)/2:y=1041`;
+    const old = previous.chapters[i];
     if (!(
       process.argv.includes('--reuse-clips') &&
-      i !== 10 &&
+      old &&
+      ['file', 'start', 'duration', 'caption', 'speed', 'fullFrame'].every(
+        (key) => old[key] === c[key]
+      ) &&
+      (await fs.stat(path.join(out, c.file))).mtimeMs <=
+        (await fs.stat(path.join(out, `edit-${i}.mp4`)).catch(() => ({ mtimeMs: 0 }))).mtimeMs &&
       (await fs.access(path.join(out, `edit-${i}.mp4`)).then(
         () => true,
         () => false
@@ -113,14 +128,14 @@ async function main() {
     '-movflags',
     '+faststart',
     '-y',
-    'Steam-Animated-Screensaver-demo-v2-clean.mp4'
+    'Steam-Animated-Screensaver-demo-clean.mp4'
   ]);
-  const target = 'Steam-Animated-Screensaver-demo-v2.mp4';
+  const target = 'Steam-Animated-Screensaver-demo.mp4';
   await run(ffmpeg, [
     '-v',
     'error',
     '-i',
-    'Steam-Animated-Screensaver-demo-v2-clean.mp4',
+    'Steam-Animated-Screensaver-demo-clean.mp4',
     '-i',
     'Quiet-Scenes-original.wav',
     '-map',
@@ -189,6 +204,10 @@ async function main() {
     '-y',
     'poster.jpg'
   ]);
+  await fs.copyFile(
+    path.join(out, 'poster.jpg'),
+    path.join(__dirname, '../screenshots/public/video-poster.jpg')
+  );
   console.log('Final video verified:', target, info.format.duration);
 }
 main().catch((e) => {

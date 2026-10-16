@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.11 — Five-minute proposal and clearer setup
+
+- Propose 5 minutes on AC and battery when neither Steam delay has been saved. Show the actual Steam defaults separately, require Apply and keep existing saved choices. Label 5 minutes as recommended.
+- Explain installation, Steam selection, Preview, complete Steam exit, delay application, restart and later Update / Repair in both README and changelog.
+- Update the launch video, illustrated README, simple changelog and Reddit drafts with the battery/outside-Gamescope issue and the app’s guarded workaround. Keep publication private pending the public launch.
+
 ## 0.1.10 — Steam inactivity settings
 
 - Add Settings → Automatic start in Steam, with separate plugged-in/battery delays, Disabled, current-value readback and French/English instructions.

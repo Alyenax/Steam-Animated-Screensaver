@@ -1,14 +1,15 @@
 # Public 1.0.0 preparation
 
-This is a launch kit, not a published 1.0.0. The current development app/package version is 0.1.10; the existing presentation captures remain 0.1.9. The repository remains private. No Reddit post has been sent.
+This is a launch kit, not a published 1.0.0. The current development app/package version is 0.1.11. Library/artwork captures are 0.1.9; the new delay panel is 0.1.11. The repository remains private. No Reddit post has been sent.
 
 ## Prepared material
 
 - Root README: functional overview, real app screenshots, setup and platform testing limits.
 - Root changelog: short first-public-release entry; earlier history lives in `docs/DEVELOPMENT_CHANGELOG.md`.
 - Reddit drafts: [English](REDDIT_EN.md) and [French](REDDIT_FR.md). The drafts assume public downloads exist; post them only after launch.
-- Video: local `dist/public-launch-v2/Steam-Animated-Screensaver-demo-v2.mp4` (73 seconds, 1080p60, quiet original music), plus a silent version. All ten requested games appear, with original/16:9 framing, real ten-game batch preparation marked 8× speed, alternatives and processing settings. Upload the MP4 directly to Reddit after launch.
-- Visuals: [credits and capture scope](../screenshots/public/CREDITS.md). Screenshots are from the actual 0.1.9 interface, without relabeling its version.
+- Video: local `dist/public-launch-v2/Steam-Animated-Screensaver-demo.mp4` (89 seconds, 1080p60, quiet original music), plus a silent version. All ten requested games appear, with original/16:9 framing, real ten-game batch preparation marked 8× speed, alternatives, processing settings, the five-minute delay flow and actual automatic playback in Mac Steam. Upload the MP4 directly to Reddit after launch.
+- Review page: `node scripts/showcase-preview.cjs` shows the video, rendered README, changelog and Reddit drafts. `--export` prepares `dist/showcase-site` for later hosting. No public hosting has been enabled.
+- Visuals: [credits and capture scope](../screenshots/public/CREDITS.md). Screenshots are from the actual app: earlier 0.1.9 library/artwork views and the 0.1.11 five-minute panel, without relabeling versions.
 
 ## Before public binary distribution
 

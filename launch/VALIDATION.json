@@ -1,5 +1,5 @@
 {
-  "scope": "Private 1.0 presentation preparation; current application 0.1.10, existing presentation captures 0.1.9",
+  "scope": "Private 1.0 presentation preparation; current application 0.1.11, artwork/batch footage 0.1.9, delay panel 0.1.11",
   "batch": {
     "result": "passed",
     "total": 10,
@@ -9,7 +9,7 @@
     "games": [
       "ELDEN RING",
       "Cyberpunk 2077",
-      "HELLDIVERS\u2122 2",
+      "HELLDIVERS™ 2",
       "Red Dead Redemption 2",
       "Disco Elysium",
       "Don't Starve Together",
@@ -53,7 +53,7 @@
         }
       },
       {
-        "name": "HELLDIVERS\u2122 2",
+        "name": "HELLDIVERS™ 2",
         "original": "d01da24ed8b2a96950984bf5.source.webp",
         "processed": "d01da24ed8b2a96950984bf5.smooth30-blend-v2.webm",
         "smoothing": "interpolate-30-v2",
@@ -151,174 +151,22 @@
     ]
   },
   "showcase": {
+    "version": "0.1.11",
     "result": "passed",
-    "method": "Actual unmodified standalone Player in packaged Mac app, real prepared catalog/media, native ScreenCaptureKit window capture. Capture-only focus/visibility emulation prevents background pauses; scene advance uses the Player public next/settings API.",
-    "settings": {
-      "language": "en",
-      "sceneDuration": 180,
-      "shuffle": false,
-      "transition": "crossfade",
-      "showLogos": true,
-      "showCover": true,
-      "coverPosition": "beside-title",
-      "framing": "original",
-      "smoothMotion": true,
-      "smoothingFps": 30,
-      "smoothingMode": "blend",
-      "maxSmoothingMB": 0,
-      "staticFallback": false,
-      "reducedMotion": false,
-      "maxStorageGB": 10,
-      "pauseOnGame": false
+    "video": {
+      "duration": 88.983333,
+      "width": 1920,
+      "height": 1080
     },
-    "segments": [
-      {
-        "game": "ELDEN RING",
-        "framing": "original",
-        "start": 0.016,
-        "title": "ELDEN RING",
-        "objectFit": "contain",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 4.817
-      },
-      {
-        "game": "ELDEN RING",
-        "framing": "16:9",
-        "start": 5.671,
-        "title": "ELDEN RING",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 10.473
-      },
-      {
-        "game": "Cyberpunk 2077",
-        "framing": "16:9",
-        "start": 13.232,
-        "title": "Cyberpunk 2077",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 17.934
-      },
-      {
-        "game": "HELLDIVERS\u2122 2",
-        "framing": "16:9",
-        "start": 19.533,
-        "title": "HELLDIVERS\u2122 2",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 24.234
-      },
-      {
-        "game": "Red Dead Redemption 2",
-        "framing": "16:9",
-        "start": 28.583,
-        "title": "Red Dead Redemption 2",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 33.284
-      },
-      {
-        "game": "Disco Elysium",
-        "framing": "original",
-        "start": 34.833,
-        "title": "Disco Elysium",
-        "objectFit": "contain",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 39.534
-      },
-      {
-        "game": "Don't Starve Together",
-        "framing": "16:9",
-        "start": 41.102,
-        "title": "Don't Starve Together",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 45.804
-      },
-      {
-        "game": "Tom Clancy's Rainbow Six Siege",
-        "framing": "16:9",
-        "start": 47.367,
-        "title": "Tom Clancy's Rainbow Six Siege",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 52.068
-      },
-      {
-        "game": "Baldur's Gate 3",
-        "framing": "original",
-        "start": 53.616,
-        "title": "Baldur's Gate 3",
-        "objectFit": "contain",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 58.318
-      },
-      {
-        "game": "Left 4 Dead 2",
-        "framing": "16:9",
-        "start": 59.895,
-        "title": "Left 4 Dead 2",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 64.597
-      },
-      {
-        "game": "ARC Raiders",
-        "framing": "16:9",
-        "start": 67.734,
-        "title": "ARC Raiders",
-        "objectFit": "cover",
-        "frame": {
-          "width": 1280,
-          "height": 720
-        },
-        "visibility": "visible",
-        "end": 72.435
-      }
+    "checks": [
+      "Final MP4 loads, plays with browser controls and seeks to actual Mac Steam playback",
+      "Actual README renders all six images and includes complete Steam activation and five-minute instructions",
+      "Actual changelog renders its four activation steps, including Steam selection, quit/apply and restart",
+      "Demo, README, changelog and both Reddit drafts have no horizontal overflow at 1440, 800 and 390px",
+      "Static export contains video and rendered documents; local preview does not serve app code or keys"
     ],
-    "errors": [],
-    "allRequestedGamesShown": true,
-    "processing": "Built-in 30 fps blend option for sources below target; native-fluid originals retained by the application."
+    "pageErrors": [],
+    "publicHostingEnabled": false
   },
   "cadence": {
     "scope": "Native capture presentation timestamps, steady scenes only; not unique artwork FPS",
@@ -345,7 +193,7 @@
         "p95GapMs": 20
       },
       {
-        "game": "HELLDIVERS\u2122 2",
+        "game": "HELLDIVERS™ 2",
         "framing": "16:9",
         "frames": 235,
         "maxGapMs": 23,
@@ -437,7 +285,7 @@
         "file": "showcase-final.mp4",
         "start": 0.266,
         "duration": 4,
-        "caption": "Original framing \u00b7 full image",
+        "caption": "Original framing · full image",
         "speed": 1,
         "timelineStart": 0
       },
@@ -477,7 +325,7 @@
         "file": "batch-live.mp4",
         "start": 0.6,
         "duration": 4.5,
-        "caption": "Select all \u00b7 prepare 10 games",
+        "caption": "Select all · prepare 10 games",
         "speed": 1,
         "timelineStart": 20
       },
@@ -485,7 +333,7 @@
         "file": "batch-live.mp4",
         "start": 5.493,
         "duration": 81.2,
-        "caption": "Automatic preparation \u00b7 10 games \u00b7 8\u00d7 speed",
+        "caption": "Automatic preparation · 10 games · 8× speed",
         "speed": 8,
         "timelineStart": 24.5
       },
@@ -525,7 +373,7 @@
         "file": "processing-enabled.mp4",
         "start": 0.3,
         "duration": 4.5,
-        "caption": "Optional 24 / 30 fps processing \u00b7 shown here: 30 fps, light blend",
+        "caption": "Optional 24 / 30 fps processing · shown here: 30 fps, light blend",
         "speed": 1,
         "timelineStart": 44.45
       },
@@ -533,7 +381,7 @@
         "file": "showcase-final.mp4",
         "start": 35.083,
         "duration": 4,
-        "caption": "Original framing \u00b7 full image",
+        "caption": "Original framing · full image",
         "speed": 1,
         "timelineStart": 48.95
       },
@@ -557,7 +405,7 @@
         "file": "showcase-final.mp4",
         "start": 53.866,
         "duration": 4,
-        "caption": "Original framing \u00b7 full image",
+        "caption": "Original framing · full image",
         "speed": 1,
         "timelineStart": 60.95
       },
@@ -588,7 +436,7 @@
     "games": [
       "ELDEN RING",
       "Cyberpunk 2077",
-      "HELLDIVERS\u2122 2",
+      "HELLDIVERS™ 2",
       "Red Dead Redemption 2",
       "Disco Elysium",
       "Don't Starve Together",
@@ -699,5 +547,199 @@
       "investigation": "docs/STEAM_IDLE_INVESTIGATION.json",
       "scope": "Static latest stable code and storage verified for macOS, Windows x64 and Linux. Guarded config writer and UI tested on isolated roots. Native automatic Steam playback previously verified on Mac only."
     }
+  },
+  "finalPresentationVideo": {
+    "result": "passed",
+    "duration": 88.984,
+    "bytes": 25457562,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": "60/1"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": "48000",
+      "music": "Quiet Scenes - original synthesis, CC0"
+    },
+    "allFramesDecoded": true,
+    "editingInterpolation": false,
+    "chapters": [
+      {
+        "file": "showcase-final.mp4",
+        "start": 0.266,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 0
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 5.921,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 4
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 13.482,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 8
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 19.783,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 12
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 28.833,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 16
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 0.6,
+        "duration": 4.5,
+        "caption": "Select all · prepare 10 games",
+        "speed": 1,
+        "timelineStart": 20
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 5.493,
+        "duration": 81.2,
+        "caption": "Automatic preparation · 10 games · 8× speed",
+        "speed": 8,
+        "timelineStart": 24.5
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 86.8,
+        "duration": 2.2,
+        "caption": "10 games ready",
+        "speed": 1,
+        "timelineStart": 34.65
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 0.3,
+        "duration": 1.8,
+        "caption": "Choose the framing",
+        "speed": 1,
+        "timelineStart": 36.85
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 9.8,
+        "duration": 3.2,
+        "caption": "Position the still artwork",
+        "speed": 1,
+        "timelineStart": 38.65
+      },
+      {
+        "file": "alternatives-loaded.mp4",
+        "start": 0.3,
+        "duration": 2.6,
+        "caption": "Find another animation",
+        "speed": 1,
+        "timelineStart": 41.85
+      },
+      {
+        "file": "processing-enabled.mp4",
+        "start": 0.3,
+        "duration": 4.5,
+        "caption": "Optional 24 / 30 fps processing · shown here: 30 fps, light blend",
+        "speed": 1,
+        "timelineStart": 44.45
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 35.083,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 48.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 41.352,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 52.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 47.617,
+        "duration": 2,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 56.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 53.866,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 58.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 60.145,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 62.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 67.984,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 66.95
+      },
+      {
+        "file": "steam-idle.mp4",
+        "start": 0.3,
+        "duration": 8,
+        "caption": "Steam inactivity delay · 5 minutes · apply with Steam closed",
+        "speed": 1,
+        "timelineStart": 70.95
+      },
+      {
+        "file": "steam-big-picture-macos.mp4",
+        "start": 2,
+        "duration": 10,
+        "caption": "Automatic playback in Steam Big Picture · macOS",
+        "speed": 1,
+        "fullFrame": true,
+        "timelineStart": 78.95
+      }
+    ],
+    "file": "dist/public-launch-v2/Steam-Animated-Screensaver-demo.mp4"
+  },
+  "currentDelayCapture": {
+    "result": "passed",
+    "version": "0.1.11",
+    "EnglishDefault": true,
+    "suggestedAC": 300,
+    "suggestedBattery": 300,
+    "actualApply": true,
+    "isolatedSteamConfig": true,
+    "personalSteamConfigModified": false,
+    "screenshot": "screenshots/public/steam-idle.png",
+    "clip": "steam-idle.mp4"
   }
 }

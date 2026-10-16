@@ -2547,3 +2547,16 @@ body.reduced-motion *:after {
     justify-content: center;
   }
 }
+
+/* Keep the recommended timeout label readable at desktop and handheld widths. */
+#steam-idle-settings select {
+  width: 190px;
+  max-width: 100%;
+  flex-shrink: 0;
+}
+@media (max-width: 600px) {
+  #steam-idle-settings .setting-row {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+}

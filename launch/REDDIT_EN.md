@@ -6,7 +6,11 @@ With the [October 13 stable Steam update](https://www.steamdeck.com/en/news?pubD
 
 So I made Steam Animated Screensaver. Pick your games, choose animations from SteamGridDB, preview them and install the screensaver in Steam. You can change the crop, add a separate still cover and move it around. Once everything is downloaded, it plays offline with the app closed. You'll need your own SteamGridDB API key to get the artwork.
 
-The video starts with the result, then shows a few settings.
+The video starts with the result, then shows batch preparation and a few settings.
+
+One Steam quirk I ran into: on machines with a battery outside Gamescope, Big Picture links to Power to set the delay, but the controls are missing there. The same condition is in the current Mac, Windows and Linux UI. I added a setting in the app to save Steam’s delay after you quit Steam, with a backup. It suggests five minutes for a first setup. This is separate from your OS screensaver.
+
+After preparing, click Install in Steam, then select steam-animated-screensaver in Big Picture → Settings → Customization → Screensavers. You can test Preview there. Quit Steam completely before applying a delay in the app, then reopen Big Picture.
 
 [Code and downloads](https://github.com/Alyenax/Steam-Animated-Screensaver)
 

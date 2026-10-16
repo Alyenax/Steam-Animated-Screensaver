@@ -1,0 +1,341 @@
+{
+  "version": "0.1.11",
+  "result": "passed",
+  "date": "2026-10-16",
+  "unitAndIntegration": {
+    "tests": 127,
+    "passed": 127,
+    "failed": 0,
+    "skipped": 0
+  },
+  "defaults": {
+    "language": "en",
+    "proposedAcSeconds": 300,
+    "proposedBatterySeconds": 300,
+    "savedChoicesPreserved": true,
+    "requiresApply": true
+  },
+  "ui": {
+    "passed": true,
+    "checks": [
+      "A new profile starts in English without consulting the OS locale",
+      "Fresh Steam config proposes five minutes on AC and battery without writing; actual defaults remain visible",
+      "Running Steam blocks write through the real Apply button; drafts retained",
+      "Real controls apply independent AC and battery delays with a private backup",
+      "Draft survives rerender/language change; instructions translated in French and English",
+      "Refresh rereads Steam; settings have no horizontal overflow at 1440, 800 and 390px",
+      "Explicit French choice persists after reload; English default does not overwrite it",
+      "Disabled saves zero explicitly and survives page reload"
+    ],
+    "pageErrors": [],
+    "nativeWindowsLinux": false
+  },
+  "showcase": {
+    "version": "0.1.11",
+    "result": "passed",
+    "video": {
+      "duration": 88.983333,
+      "width": 1920,
+      "height": 1080
+    },
+    "checks": [
+      "Final MP4 loads, plays with browser controls and seeks to actual Mac Steam playback",
+      "Actual README renders all six images and includes complete Steam activation and five-minute instructions",
+      "Actual changelog renders its four activation steps, including Steam selection, quit/apply and restart",
+      "Demo, README, changelog and both Reddit drafts have no horizontal overflow at 1440, 800 and 390px",
+      "Static export contains video and rendered documents; local preview does not serve app code or keys"
+    ],
+    "pageErrors": [],
+    "publicHostingEnabled": false
+  },
+  "video": {
+    "result": "passed",
+    "duration": 88.984,
+    "bytes": 25457562,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": "60/1"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": "48000",
+      "music": "Quiet Scenes - original synthesis, CC0"
+    },
+    "allFramesDecoded": true,
+    "editingInterpolation": false,
+    "chapters": [
+      {
+        "file": "showcase-final.mp4",
+        "start": 0.266,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 0
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 5.921,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 4
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 13.482,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 8
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 19.783,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 12
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 28.833,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 16
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 0.6,
+        "duration": 4.5,
+        "caption": "Select all · prepare 10 games",
+        "speed": 1,
+        "timelineStart": 20
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 5.493,
+        "duration": 81.2,
+        "caption": "Automatic preparation · 10 games · 8× speed",
+        "speed": 8,
+        "timelineStart": 24.5
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 86.8,
+        "duration": 2.2,
+        "caption": "10 games ready",
+        "speed": 1,
+        "timelineStart": 34.65
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 0.3,
+        "duration": 1.8,
+        "caption": "Choose the framing",
+        "speed": 1,
+        "timelineStart": 36.85
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 9.8,
+        "duration": 3.2,
+        "caption": "Position the still artwork",
+        "speed": 1,
+        "timelineStart": 38.65
+      },
+      {
+        "file": "alternatives-loaded.mp4",
+        "start": 0.3,
+        "duration": 2.6,
+        "caption": "Find another animation",
+        "speed": 1,
+        "timelineStart": 41.85
+      },
+      {
+        "file": "processing-enabled.mp4",
+        "start": 0.3,
+        "duration": 4.5,
+        "caption": "Optional 24 / 30 fps processing · shown here: 30 fps, light blend",
+        "speed": 1,
+        "timelineStart": 44.45
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 35.083,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 48.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 41.352,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 52.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 47.617,
+        "duration": 2,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 56.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 53.866,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 58.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 60.145,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 62.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 67.984,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 66.95
+      },
+      {
+        "file": "steam-idle.mp4",
+        "start": 0.3,
+        "duration": 8,
+        "caption": "Steam inactivity delay · 5 minutes · apply with Steam closed",
+        "speed": 1,
+        "timelineStart": 70.95
+      },
+      {
+        "file": "steam-big-picture-macos.mp4",
+        "start": 2,
+        "duration": 10,
+        "caption": "Automatic playback in Steam Big Picture · macOS",
+        "speed": 1,
+        "fullFrame": true,
+        "timelineStart": 78.95
+      }
+    ]
+  },
+  "nativeMac": {
+    "guard": {
+      "packaged": true,
+      "version": "0.1.11",
+      "platform": "darwin",
+      "passed": true,
+      "steamRunning": true,
+      "mode": "native real Steam process guard, isolated config untouched",
+      "realSteamConfigModified": false,
+      "pageErrors": []
+    },
+    "apply": {
+      "packaged": true,
+      "version": "0.1.11",
+      "platform": "darwin",
+      "passed": true,
+      "steamRunning": false,
+      "mode": "native closed-Steam apply, backup and readback on isolated config",
+      "realSteamConfigModified": false,
+      "pageErrors": []
+    },
+    "actualMaintainerSetting": {
+      "version": "0.1.11",
+      "purpose": "Replace the previous one-minute maintainer test configuration with the requested five-minute setting",
+      "acSeconds": 300,
+      "batterySeconds": 300,
+      "changed": true,
+      "backedUp": true
+    },
+    "installedVersion": "0.1.11",
+    "observedLanguage": "English",
+    "observedAc": "5 min (recommended)",
+    "observedBattery": "5 min (recommended)",
+    "libraryAndKeysRetained": true,
+    "packagedAppChecks": 18
+  },
+  "packageCheck": {
+    "version": "0.1.11",
+    "at": "2026-10-16T13:05:46.289Z",
+    "result": "passed",
+    "assets": [
+      {
+        "file": "Steam-Animated-Screensaver-0.1.11-steamos-x64.tar.gz",
+        "bytes": 182287752,
+        "sha256": "74c5381816e3ee0ecc398d056f0fffe86bb6caae9b3ee54dd0e378111f97dba7"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.11-linux-x64.tar.gz",
+        "bytes": 182287752,
+        "sha256": "74c5381816e3ee0ecc398d056f0fffe86bb6caae9b3ee54dd0e378111f97dba7"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.11-windows-x64.zip",
+        "bytes": 269394492,
+        "sha256": "9cd79dd01db09268bc4434b1a89ed4d47aa7b72cc49480e094fcc3bb9f0345be"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.11-macos-arm64.dmg",
+        "bytes": 185365162,
+        "sha256": "90fd5adef2f96ed408c7c4722c92bbd7543edbb0c8746868b6b402499f75cf1c"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.11-macos-arm64.zip",
+        "bytes": 170062336,
+        "sha256": "477bad818c559fe905910fc6bc5609bf128b85de7608bca176775426ab274730"
+      }
+    ],
+    "archiveFileCounts": {
+      "linux": 139,
+      "windows": 133
+    },
+    "checks": [
+      "All four platform downloads exist and match current version",
+      "ZIP/tar/DMG integrity checks",
+      "Packaged Core/Manager/Player and main/preload byte-match current source",
+      "No catalog or credential files at application root",
+      "Windows Electron/FFmpeg/FFprobe PE headers are x64",
+      "Extracted Windows/Linux archives byte-match their packaged application trees and executable permissions",
+      "SteamOS archive is byte-identical to the Linux archive"
+    ],
+    "limitations": [
+      "No native Windows/Linux/SteamOS execution on this Mac",
+      "SteamOS and Linux use the same Linux x64 application"
+    ]
+  },
+  "macArchiveCheck": {
+    "version": "0.1.11",
+    "result": "passed",
+    "files": 333,
+    "symlinks": 14,
+    "checks": [
+      "Final ZIP and mounted DMG app contents byte-match the tested app",
+      "Framework symlinks survive ZIP and DMG extraction",
+      "Both extracted app signatures verify strictly",
+      "Freshly extracted final ZIP app launches with isolated data, working IPC and no renderer Node access"
+    ]
+  },
+  "publication": {
+    "repositoryPrivate": true,
+    "publicVersion1Published": false,
+    "redditPosted": false,
+    "publicHostingEnabled": false
+  },
+  "limitations": [
+    "Windows/Linux/SteamOS native Steam runtime acceptance remains pending",
+    "Steam automatic activation was previously observed with the one-minute Mac setting; the five-minute values were saved, read back and retained after restart, without timing a new five-minute activation",
+    "Battery playback and controller/mouse dismissal not separately accepted",
+    "Library/artwork/batch video captures are 0.1.9; the new delay panel uses 0.1.11; final Steam footage is the separate native Mac automatic activation test"
+  ]
+}

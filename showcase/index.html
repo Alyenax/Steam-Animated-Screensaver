@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Steam Animated Screensaver — Demo</title>
+    <meta
+      name="description"
+      content="Demo, setup instructions and changelog for Steam Animated Screensaver."
+    />
+    <link rel="stylesheet" href="showcase.css" />
+    <script defer src="showcase.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <a class="name" href="index.html">Steam Animated Screensaver</a>
+      <nav aria-label="Documentation">
+        <a href="readme.html">README</a><a href="changelog.html">Changelog</a
+        ><a href="https://github.com/Alyenax/Steam-Animated-Screensaver">GitHub</a>
+      </nav>
+    </header>
+    <main>
+      <h1>Demo and setup</h1>
+      <p>
+        Animated SteamGridDB artwork as a Steam screensaver. The video shows the result, batch
+        preparation, settings and playback inside Steam on macOS.
+      </p>
+      <video
+        controls
+        playsinline
+        preload="metadata"
+        poster="screenshots/public/video-poster.jpg"
+        aria-label="Steam Animated Screensaver demonstration"
+      >
+        <source
+          src="https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v0.1.11-rc.1/Steam-Animated-Screensaver-demo.mp4"
+          type="video/mp4"
+        />
+        Your browser cannot play this video.
+        <a
+          href="https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v0.1.11-rc.1/Steam-Animated-Screensaver-demo.mp4"
+          >Download the MP4</a
+        >.
+      </video>
+      <div class="chapters" aria-label="Video chapters">
+        <button data-time="0">Original / 16:9</button
+        ><button data-time="20">Prepare 10 games</button
+        ><button data-time="36.85">Artwork settings</button
+        ><button data-time="71">Steam delay</button
+        ><button data-time="79">Inside Steam on Mac</button>
+      </div>
+      <p class="caption">
+        1 min 29 s · 1080p · quiet original
+        <a
+          href="https://github.com/Alyenax/Steam-Animated-Screensaver/blob/codex/steam-animated-screensaver/launch/MUSIC.md"
+          >CC0 music</a
+        >. Batch preparation is explicitly accelerated 8×. Artwork playback is real time; source
+        animation quality varies.
+      </p>
+      <section>
+        <h2>Apply it in Steam</h2>
+        <ol>
+          <li>
+            In the app: choose games, <strong>Prepare</strong>, check <strong>Preview</strong>, then
+            <strong>Install in Steam</strong>.
+          </li>
+          <li>
+            In <strong>Steam Big Picture → Settings → Customization → Screensavers</strong>, select
+            <strong>steam-animated-screensaver</strong>. Test Preview. SteamOS Gaming Mode has the
+            same Customization section.
+          </li>
+          <li>
+            Quit Steam completely. In the app, open
+            <strong>Settings → Automatic start in Steam</strong>, start with
+            <strong>5 minutes</strong> and apply.
+          </li>
+          <li>
+            Reopen Steam in Big Picture or Gaming Mode. The app can be closed. Use
+            <strong>Update / Repair</strong> after later changes.
+          </li>
+        </ol>
+        <p>
+          Some battery-equipped machines outside Gamescope are missing Steam’s delay controls. The
+          app provides the setting, with a backup and a closed-Steam check. Your OS screensaver and
+          lock settings are separate.
+        </p>
+      </section>
+      <section>
+        <h2>Help test it</h2>
+        <p>
+          SteamOS and macOS have received the most hands-on attention. Windows and Linux need more
+          testing inside the actual Steam client. Help with animation smoothness, processing speed
+          and reliability is welcome.
+        </p>
+        <p>
+          <a class="button" href="readme.html">Read the illustrated README</a>
+          <a class="button secondary" href="changelog.html">Read the changelog</a>
+        </p>
+      </section>
+    </main>
+    <footer>
+      Unofficial project. Artwork belongs to its artists and rights holders.
+      <a
+        href="https://github.com/Alyenax/Steam-Animated-Screensaver/blob/codex/steam-animated-screensaver/screenshots/public/CREDITS.md"
+        >Visual credits</a
+      >.
+    </footer>
+  </body>
+</html>

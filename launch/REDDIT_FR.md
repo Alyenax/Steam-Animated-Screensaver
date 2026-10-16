@@ -6,7 +6,11 @@ La [mise à jour stable de Steam du 13 octobre](https://www.steamdeck.com/en/new
 
 J’ai donc préparé Steam Animated Screensaver. On choisit ses jeux, leurs animations sur SteamGridDB, on vérifie le rendu et on installe le screensaver dans Steam. On peut régler le cadrage, ajouter une jaquette fixe et choisir son emplacement. Une fois les médias téléchargés, ça fonctionne hors ligne, app fermée. Il faut sa propre clé API SteamGridDB pour récupérer les images.
 
-La vidéo commence par le rendu, puis montre quelques réglages.
+La vidéo commence par le rendu, puis montre la préparation de plusieurs jeux et quelques réglages.
+
+Je suis aussi tombé sur un souci dans Steam : sur les machines avec batterie, hors Gamescope, Big Picture renvoie vers Alimentation pour régler le délai, mais les réglages n’y sont pas. La même condition existe dans les clients Mac, Windows et Linux actuels. J’ai ajouté le réglage dans l’app : on quitte Steam, on applique le délai, avec une sauvegarde du fichier de configuration. L’app propose cinq minutes pour commencer. Ça reste indépendant de l’économiseur d’écran du système.
+
+Après la préparation, il faut cliquer sur Installer dans Steam, puis sélectionner steam-animated-screensaver dans Big Picture → Paramètres → Personnalisation → Écrans de veille. On peut tester avec Aperçu. Pour appliquer un délai dans l’app, il faut quitter complètement Steam, puis rouvrir Big Picture après.
 
 [Code et téléchargements](https://github.com/Alyenax/Steam-Animated-Screensaver)
 
