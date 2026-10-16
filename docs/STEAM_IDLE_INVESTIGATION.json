@@ -1,0 +1,59 @@
+{
+  "date": "2026-10-16",
+  "channel": "stable",
+  "versions": {
+    "win64": "1791918634",
+    "ubuntu12": "1791918634",
+    "osx": "1791918634"
+  },
+  "sources": [
+    {
+      "role": "ui",
+      "url": "https://client-update.fastly.steamstatic.com/steamui_websrc_all.zip.1025f89bf0a001a635a8f405e40ded056dc25ff3",
+      "bytes": 35646844,
+      "sha256": "aedfabf3da1fbbb76026ce43f203570a8793a06aae6701345ec7579758878534"
+    },
+    {
+      "role": "linux-bins",
+      "url": "https://client-update.fastly.steamstatic.com/bins_ubuntu12.zip.2c1cc6cacab7a43df6b8a1324d32a2a7e863f299",
+      "bytes": 76109237,
+      "sha256": "e2186c3a1d76fca05d71a0e2119fd8adad0c4ac46dd6fb4c8cd6e232153db5cf"
+    },
+    {
+      "role": "windows-bins",
+      "url": "https://client-update.fastly.steamstatic.com/bins_win64.zip.0ed643edc3bd395674066241d556cd970f4bdc19",
+      "bytes": 64307884,
+      "sha256": "2378aa4845fea7b08d3cc33a88db240db20e33cf8bb934f7f4037d89a1bac1e9"
+    },
+    {
+      "role": "Windows native settings descriptors",
+      "file": "windows-SteamUI.dll",
+      "sha256": "1b9457943205dc3af0bd53463ba331cbd2a381388699705c02271aac7a2b1252",
+      "store": 1,
+      "storeEnum": "ConfigStore_Install=1; Registry=4"
+    },
+    {
+      "role": "Linux native settings descriptors",
+      "file": "linux-bins-steamui.so",
+      "sha256": "57fe9388aa45cd3f65cb26de8e2274698ffa4e284f0021c7e8a6e028da1995ca",
+      "store": 1,
+      "storeEnum": "ConfigStore_Install=1; Registry=4"
+    },
+    {
+      "role": "macOS native settings descriptors",
+      "file": "steamui.dylib",
+      "sha256": "b2418203eeb67ad4e14096ab14a83a0c75c4fac659d283d7626528fb26fed0e1",
+      "store": 1,
+      "storeEnum": "ConfigStore_Install=1; Registry=4"
+    }
+  ],
+  "finding": "Battery present AND not Gamescope: Customization links to Power, but Power hides idle controls. Shared UI on Windows/macOS/Linux.",
+  "storage": "config/config.vdf > InstallConfigStore/Software/Valve/Steam/System",
+  "keys": ["IdleScreensaverACSeconds", "IdleScreensaverBatterySeconds"],
+  "nativeDefaultsSeconds": {
+    "ac": 300,
+    "battery": 0
+  },
+  "scope": "Static first-party stable package inspection on all three platforms; native automatic activation verified on macOS in separate maintainer test. Windows/Linux native execution not claimed.",
+  "steamBinariesModified": false
+}

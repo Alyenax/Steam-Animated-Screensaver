@@ -1,0 +1,138 @@
+{
+  "version": "0.1.10",
+  "date": "2026-10-16",
+  "result": "passed",
+  "host": "macOS arm64",
+  "unitAndIntegration": {
+    "tests": 127,
+    "passed": 127,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ui": {
+    "passed": true,
+    "checks": [
+      "Running Steam blocks write through the real Apply button; drafts retained",
+      "Real controls apply independent AC and battery delays with a private backup",
+      "Draft survives rerender/language change; instructions translated in French and English",
+      "Refresh rereads Steam; settings have no horizontal overflow at 1440, 800 and 390px",
+      "Disabled saves zero explicitly and survives page reload"
+    ],
+    "pageErrors": [],
+    "nativeWindowsLinux": false
+  },
+  "nativeMac": {
+    "guard": {
+      "packaged": true,
+      "version": "0.1.10",
+      "platform": "darwin",
+      "passed": true,
+      "steamRunning": true,
+      "mode": "native real Steam process guard, isolated config untouched",
+      "realSteamConfigModified": false,
+      "pageErrors": []
+    },
+    "apply": {
+      "packaged": true,
+      "version": "0.1.10",
+      "platform": "darwin",
+      "passed": true,
+      "steamRunning": false,
+      "mode": "native closed-Steam apply, backup and readback on isolated config",
+      "realSteamConfigModified": false,
+      "pageErrors": []
+    },
+    "existingAppInstalled": {
+      "version": "0.1.10",
+      "previousAppBackedUp": true,
+      "libraryAndKeysPreserved": true,
+      "actualTimerRead": {
+        "acSeconds": 60,
+        "batterySeconds": 60
+      },
+      "sameValueApply": "successful no-op through native accessibility control",
+      "steamReopened": true
+    },
+    "packagedAppChecks": 18,
+    "rendererIsolation": {
+      "node": "undefined",
+      "bridge": "function"
+    },
+    "rendererCrashLogged": true
+  },
+  "archives": {
+    "version": "0.1.10",
+    "at": "2026-10-16T12:43:32.356Z",
+    "result": "passed",
+    "assets": [
+      {
+        "file": "Steam-Animated-Screensaver-0.1.10-steamos-x64.tar.gz",
+        "bytes": 182269036,
+        "sha256": "ae1bb0701410ef5ce41070ff6033b4b346c3ad8b51c5b6f3ec0335284e718e71"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.10-linux-x64.tar.gz",
+        "bytes": 182269036,
+        "sha256": "ae1bb0701410ef5ce41070ff6033b4b346c3ad8b51c5b6f3ec0335284e718e71"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.10-windows-x64.zip",
+        "bytes": 269392376,
+        "sha256": "797c536a3047bb2e24ef9c987c00a91f74298dbdec6cf8e7defc16b040d02753"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.10-macos-arm64.dmg",
+        "bytes": 185362599,
+        "sha256": "a11e3d96529409748cb2ac48fffe0fb7b0dcb05cd66b4f52e695db0d5dd841fa"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-0.1.10-macos-arm64.zip",
+        "bytes": 170060256,
+        "sha256": "8f1ad876aaec339a6d30b416e42a219f48b1638ac9fe83ea6a9a25536208da6d"
+      }
+    ],
+    "archiveFileCounts": {
+      "linux": 139,
+      "windows": 133
+    },
+    "checks": [
+      "All four platform downloads exist and match current version",
+      "ZIP/tar/DMG integrity checks",
+      "Packaged Core/Manager/Player and main/preload byte-match current source",
+      "No catalog or credential files at application root",
+      "Windows Electron/FFmpeg/FFprobe PE headers are x64",
+      "Extracted Windows/Linux archives byte-match their packaged application trees and executable permissions",
+      "SteamOS archive is byte-identical to the Linux archive"
+    ],
+    "limitations": [
+      "No native Windows/Linux/SteamOS execution on this Mac",
+      "SteamOS and Linux use the same Linux x64 application"
+    ]
+  },
+  "macArchives": {
+    "version": "0.1.10",
+    "result": "passed",
+    "files": 333,
+    "symlinks": 14,
+    "checks": [
+      "Final ZIP and mounted DMG app contents byte-match the tested app",
+      "Framework symlinks survive ZIP and DMG extraction",
+      "Both extracted app signatures verify strictly",
+      "Freshly extracted final ZIP app launches with isolated data, working IPC and no renderer Node access"
+    ]
+  },
+  "steamInvestigation": {
+    "stableVersions": {
+      "win64": "1791918634",
+      "ubuntu12": "1791918634",
+      "osx": "1791918634"
+    },
+    "finding": "Battery present AND not Gamescope: Customization links to Power, but Power hides idle controls. Shared UI on Windows/macOS/Linux.",
+    "evidence": "docs/STEAM_IDLE_INVESTIGATION.json"
+  },
+  "limitations": [
+    "Windows/Linux/SteamOS native Steam runtime acceptance remains pending",
+    "Native automatic activation was previously verified on this Mac; new write/apply tests use isolated Steam configs",
+    "Battery playback, controller/mouse dismissal and long-duration Steam stability not separately accepted"
+  ]
+}

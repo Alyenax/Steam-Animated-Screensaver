@@ -4,6 +4,7 @@
 
 First public release, pending final release checks.
 
+- Configure Steam’s automatic screensaver delay separately on AC and battery, with a backup and Steam-closed check.
 - Build an offline Steam screensaver from animated SteamGridDB artwork, with previews and installation from the app.
 - Add installed or uninstalled library games, manual search, bulk selection and top-100 options. Exclude Steam runtime components.
 - Choose animations and separate still artwork, with four artwork positions and adjustable Original / 16:9 / 16:10 framing.

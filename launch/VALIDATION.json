@@ -1,5 +1,5 @@
 {
-  "scope": "Private 1.0 presentation preparation; application stays 0.1.9",
+  "scope": "Private 1.0 presentation preparation; current application 0.1.10, existing presentation captures 0.1.9",
   "batch": {
     "result": "passed",
     "total": 10,
@@ -9,7 +9,7 @@
     "games": [
       "ELDEN RING",
       "Cyberpunk 2077",
-      "HELLDIVERS™ 2",
+      "HELLDIVERS\u2122 2",
       "Red Dead Redemption 2",
       "Disco Elysium",
       "Don't Starve Together",
@@ -53,7 +53,7 @@
         }
       },
       {
-        "name": "HELLDIVERS™ 2",
+        "name": "HELLDIVERS\u2122 2",
         "original": "d01da24ed8b2a96950984bf5.source.webp",
         "processed": "d01da24ed8b2a96950984bf5.smooth30-blend-v2.webm",
         "smoothing": "interpolate-30-v2",
@@ -212,10 +212,10 @@
         "end": 17.934
       },
       {
-        "game": "HELLDIVERS™ 2",
+        "game": "HELLDIVERS\u2122 2",
         "framing": "16:9",
         "start": 19.533,
-        "title": "HELLDIVERS™ 2",
+        "title": "HELLDIVERS\u2122 2",
         "objectFit": "cover",
         "frame": {
           "width": 1280,
@@ -345,7 +345,7 @@
         "p95GapMs": 20
       },
       {
-        "game": "HELLDIVERS™ 2",
+        "game": "HELLDIVERS\u2122 2",
         "framing": "16:9",
         "frames": 235,
         "maxGapMs": 23,
@@ -437,7 +437,7 @@
         "file": "showcase-final.mp4",
         "start": 0.266,
         "duration": 4,
-        "caption": "Original framing · full image",
+        "caption": "Original framing \u00b7 full image",
         "speed": 1,
         "timelineStart": 0
       },
@@ -477,7 +477,7 @@
         "file": "batch-live.mp4",
         "start": 0.6,
         "duration": 4.5,
-        "caption": "Select all · prepare 10 games",
+        "caption": "Select all \u00b7 prepare 10 games",
         "speed": 1,
         "timelineStart": 20
       },
@@ -485,7 +485,7 @@
         "file": "batch-live.mp4",
         "start": 5.493,
         "duration": 81.2,
-        "caption": "Automatic preparation · 10 games · 8× speed",
+        "caption": "Automatic preparation \u00b7 10 games \u00b7 8\u00d7 speed",
         "speed": 8,
         "timelineStart": 24.5
       },
@@ -525,7 +525,7 @@
         "file": "processing-enabled.mp4",
         "start": 0.3,
         "duration": 4.5,
-        "caption": "Optional 24 / 30 fps processing · shown here: 30 fps, light blend",
+        "caption": "Optional 24 / 30 fps processing \u00b7 shown here: 30 fps, light blend",
         "speed": 1,
         "timelineStart": 44.45
       },
@@ -533,7 +533,7 @@
         "file": "showcase-final.mp4",
         "start": 35.083,
         "duration": 4,
-        "caption": "Original framing · full image",
+        "caption": "Original framing \u00b7 full image",
         "speed": 1,
         "timelineStart": 48.95
       },
@@ -557,7 +557,7 @@
         "file": "showcase-final.mp4",
         "start": 53.866,
         "duration": 4,
-        "caption": "Original framing · full image",
+        "caption": "Original framing \u00b7 full image",
         "speed": 1,
         "timelineStart": 60.95
       },
@@ -588,7 +588,7 @@
     "games": [
       "ELDEN RING",
       "Cyberpunk 2077",
-      "HELLDIVERS™ 2",
+      "HELLDIVERS\u2122 2",
       "Red Dead Redemption 2",
       "Disco Elysium",
       "Don't Starve Together",
@@ -681,13 +681,23 @@
       "limitations": [
         "AC playback observed; battery delay configured but not tested on battery",
         "Controller and mouse dismissal not separately accepted",
-        "No long-duration stability claim",
-        "Consumer-facing automatic timer control is not implemented in the Manager"
+        "No long-duration stability claim"
       ],
       "finalConfiguration": {
         "idlescreensaveracseconds": "60",
         "idlescreensaverbatteryseconds": "60"
       }
+    },
+    "timerOption": {
+      "version": "0.1.10",
+      "platforms": [
+        "macOS",
+        "Windows",
+        "Linux",
+        "SteamOS"
+      ],
+      "investigation": "docs/STEAM_IDLE_INVESTIGATION.json",
+      "scope": "Static latest stable code and storage verified for macOS, Windows x64 and Linux. Guarded config writer and UI tested on isolated roots. Native automatic Steam playback previously verified on Mac only."
     }
   }
 }

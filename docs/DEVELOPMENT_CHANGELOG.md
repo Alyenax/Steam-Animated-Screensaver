@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.10 — Steam inactivity settings
+
+- Add Settings → Automatic start in Steam, with separate plugged-in/battery delays, Disabled, current-value readback and French/English instructions.
+- Investigate stable Steam 1791918634 on macOS, Windows x64 and Linux before enabling the option: shared UI hides idle controls on battery-equipped machines outside Gamescope; native descriptors use the same install config store.
+- Require Steam to be fully closed, preserve all unrelated configuration text, make a private backup, write atomically and verify. Refuse malformed/ambiguous configs, links, concurrent changes and unavailable process checks.
+- Validate config fault cases, real UI controls and native Mac packaging; keep Windows/Linux static inspection and package validation distinct from hands-on Steam acceptance.
+
 ## 0.1.9 — Visible animation selection and direct playback startup
 
 - Move Find animations / Change animation to the top of each game detail, before its preview, crop and fixed artwork. Open the alternative gallery directly, keep the button available for retry, and show provider errors separately from empty results.

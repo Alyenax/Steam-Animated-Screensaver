@@ -1,6 +1,8 @@
-# Validation — Steam Animated Screensaver 0.1.9
+# Validation — Steam Animated Screensaver 0.1.10
 
 Validation host: macOS arm64. This report distinguishes native execution, automated software tests and cross-platform package inspection. Windows, Linux and SteamOS packages are built here; native execution and actual Steam CEF idle/wake acceptance on those targets remain pending. Passing tests does not establish universal stability.
+
+The 0.1.10 update adds guarded Steam inactivity configuration after inspection of current first-party Windows/macOS/Linux client packages. Its dedicated unit tests exercise backups, unchanged unrelated values, closed/running Steam, malformed/ambiguous files, links and concurrent changes. The real UI test exercises Apply, blocked Apply, refresh, persistence, EN/FR and responsive widths. Full suite: 127 passing tests. Native Mac packaged-app results are recorded with the private release; Windows/Linux/SteamOS native Steam acceptance remains pending. See [the client investigation](STEAM_IDLE_INVESTIGATION.md).
 
 ## Executed results
 

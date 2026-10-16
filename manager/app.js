@@ -241,6 +241,27 @@ const translations = {
     mediaPurgedPlaceholder: 'Media purged',
     lastMediaPurge: 'Last media purge',
     steamIntegration: 'Steam integration',
+    steamIdleTitle: 'Automatic start in Steam',
+    steamIdleBody:
+      'Choose how long Steam waits without input before starting the selected screensaver in Big Picture or Gaming Mode.',
+    steamIdleSteps:
+      'Quit Steam completely, choose the delays and apply. Reopen Steam in Big Picture, then select steam-animated-screensaver in Settings → Customization. The manager can be closed afterward.',
+    steamIdleAC: 'Plugged in',
+    steamIdleBattery: 'On battery',
+    steamIdleOff: 'Disabled',
+    steamIdleApply: 'Apply Steam delays',
+    steamIdleRefresh: 'Read Steam settings again',
+    steamIdleSaved: 'Steam delays saved. Reopen Steam in Big Picture.',
+    steamIdleRunning:
+      'Steam is running. Quit it completely before applying. No changes have been made.',
+    steamIdleUnknown:
+      'Steam process check unavailable. Applying will be blocked until this check succeeds.',
+    steamIdleMissing: 'Open Steam once and scan again to read its settings.',
+    steamIdleLoading: 'Reading Steam settings…',
+    steamIdleBackup:
+      'Only Steam’s two screensaver delays are changed. A private config.vdf backup is kept beside the original file.',
+    steamIdleOS:
+      'This is Steam’s screensaver. Your operating system’s screen saver, display sleep and lock settings are separate and may interrupt it.',
     steamInstallBody:
       'Copy the standalone player and prepared scenes into the Steam screensavers folder. Select steam-animated-screensaver in Steam settings afterward.',
     install: 'Install screensaver',
@@ -541,6 +562,28 @@ const translations = {
     mediaPurgedPlaceholder: 'Médias purgés',
     lastMediaPurge: 'Dernière purge des médias',
     steamIntegration: 'Intégration Steam',
+    steamIdleTitle: 'Démarrage automatique dans Steam',
+    steamIdleBody:
+      'Choisissez le délai sans interaction avant le lancement du screensaver sélectionné dans Big Picture ou le mode Jeu.',
+    steamIdleSteps:
+      'Quittez complètement Steam, choisissez les délais et appliquez. Rouvrez Steam en Big Picture, puis sélectionnez steam-animated-screensaver dans Paramètres → Personnalisation. Vous pourrez ensuite fermer notre app.',
+    steamIdleAC: 'Sur secteur',
+    steamIdleBattery: 'Sur batterie',
+    steamIdleOff: 'Désactivé',
+    steamIdleApply: 'Appliquer les délais Steam',
+    steamIdleRefresh: 'Relire les réglages Steam',
+    steamIdleSaved: 'Délais Steam enregistrés. Rouvrez Steam en Big Picture.',
+    steamIdleRunning:
+      'Steam est ouvert. Quittez-le complètement avant d’appliquer. Aucune modification effectuée.',
+    steamIdleUnknown:
+      'Impossible de vérifier si Steam est fermé. L’application des délais restera bloquée tant que cette vérification échoue.',
+    steamIdleMissing:
+      'Ouvrez Steam une première fois, puis relancez la détection pour lire ses réglages.',
+    steamIdleLoading: 'Lecture des réglages Steam…',
+    steamIdleBackup:
+      'Seuls les deux délais du screensaver Steam sont modifiés. Une sauvegarde privée de config.vdf est conservée à côté du fichier original.',
+    steamIdleOS:
+      'Il s’agit du screensaver de Steam. L’économiseur d’écran, la veille et le verrouillage de votre système restent indépendants et peuvent l’interrompre.',
     steamInstallBody:
       'Copiez le lecteur autonome et ses scènes dans le dossier des écrans de veille Steam. Sélectionnez ensuite steam-animated-screensaver dans les réglages Steam.',
     install: 'Installer l’écran de veille',
@@ -916,6 +959,8 @@ let state = structuredClone(defaultState),
   purgingMedia = false,
   previewGeneration = 0,
   toastTimer;
+let steamIdleDraft = null,
+  steamIdleBusy = false;
 const lang = () => (state.settings.language === 'fr' ? 'fr' : 'en');
 const t = (key) => translations[lang()][key] || translations.en[key] || key;
 const esc = (value) =>
@@ -1210,7 +1255,7 @@ async function run(action, payload = {}, message, options = {}) {
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 0.1.9</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 0.1.10</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -1374,6 +1419,62 @@ const toggle = (key, label, hint) =>
   `<label class="setting-row"><span><span class="setting-row-label">${esc(t(label))}</span>${hint ? `<small>${esc(t(hint))}</small>` : ''}</span><span class="switch"><input type="checkbox" data-setting="${key}" ${state.settings[key] ? 'checked' : ''}><span></span></span></label>`;
 const panel = (title, ic, body) =>
   `<section class="settings-panel"><div class="panel-title">${icon(ic)}<h2>${esc(t(title))}</h2></div><div class="panel-body">${body}</div></section>`;
+function steamIdlePanel() {
+  const idle = state.steam.idle;
+  const disabled = steamIdleBusy || !idle?.available;
+  const values = steamIdleDraft || idle;
+  const options = (seconds) =>
+    [...new Set([0, 60, 120, 300, 600, 900, 1800, 3600, seconds])]
+      .filter(Number.isSafeInteger)
+      .sort((a, b) => a - b)
+      .map(
+        (n) =>
+          `<option value="${n}" ${n === seconds ? 'selected' : ''}>${esc(n === 0 ? t('steamIdleOff') : n % 60 === 0 ? `${n / 60} min` : `${n} s`)}</option>`
+      )
+      .join('');
+  return panel(
+    'steamIdleTitle',
+    'film',
+    `<div id="steam-idle-settings"><p>${esc(t('steamIdleBody'))}</p><p>${esc(t('steamIdleSteps'))}</p>${idle?.available ? ['acSeconds', 'batterySeconds'].map((key) => `<label class="setting-row"><span class="setting-row-label">${esc(t(key === 'acSeconds' ? 'steamIdleAC' : 'steamIdleBattery'))}</span><select class="field" data-steam-idle="${key}" aria-label="${esc(t(key === 'acSeconds' ? 'steamIdleAC' : 'steamIdleBattery'))}" ${disabled ? 'disabled' : ''}>${options(values[key])}</select></label>`).join('') : `<p role="status">${esc(t(steamIdleBusy ? 'steamIdleLoading' : 'steamIdleMissing'))}</p>`}${idle?.error ? `<p role="alert">${esc(idle.error)}</p>` : ''}${idle?.running === true || (idle?.available && idle.running === null) ? `<p role="status">${esc(t(idle.running ? 'steamIdleRunning' : 'steamIdleUnknown'))}</p>` : ''}<div class="button-row">${button(t('steamIdleApply'), 'apply-steam-idle', 'check', true, disabled ? 'disabled' : '')}${button(t('steamIdleRefresh'), 'refresh-steam-idle', 'refresh', false, steamIdleBusy ? 'disabled' : '')}</div><p>${esc(t('steamIdleBackup'))}</p><p>${esc(t('steamIdleOS'))}</p></div>`
+  );
+}
+async function loadSteamIdle() {
+  if (steamIdleBusy) return;
+  steamIdleBusy = true;
+  if (route === 'settings') render();
+  try {
+    await invoke('steamIdleState');
+    steamIdleDraft = null;
+    await refresh(true);
+  } catch (error) {
+    toast(error.message);
+  } finally {
+    steamIdleBusy = false;
+    if (route === 'settings') render();
+  }
+}
+async function applySteamIdle() {
+  if (steamIdleBusy || !state.steam.idle?.available) return;
+  const values = { ...(steamIdleDraft || state.steam.idle) };
+  steamIdleBusy = true;
+  render();
+  try {
+    await invoke('setSteamIdle', {
+      acSeconds: values.acSeconds,
+      batterySeconds: values.batterySeconds
+    });
+    steamIdleDraft = null;
+    await refresh(true);
+    toast(t('steamIdleSaved'));
+  } catch (error) {
+    await invoke('steamIdleState').catch(() => {});
+    await refresh(true);
+    toast(state.steam.idle?.running ? t('steamIdleRunning') : error.message);
+  } finally {
+    steamIdleBusy = false;
+    render();
+  }
+}
 function settingsView() {
   const used = Number(state.storage.used) || 0,
     max = Number(state.settings.maxStorageGB) || 10;
@@ -1392,7 +1493,7 @@ function settingsView() {
       .join(
         ''
       )}</select></label><label class="setting-row"><span class="setting-row-label">${esc(t('smoothingFps'))}</span><select class="field" data-setting="smoothingFps">${[24, 30].map((n) => `<option value="${n}" ${state.settings.smoothingFps === n ? 'selected' : ''}>${n} ${lang() === 'fr' ? 'i/s' : 'fps'}</option>`).join('')}</select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('maxSmoothingMB'))}</span><small>${esc(t('smoothingSizeHint'))}</small></span><input class="field" data-setting="maxSmoothingMB" type="number" min="0" max="1000000" step="1" value="${Number(state.settings.maxSmoothingMB) || 0}" aria-label="${esc(t('maxSmoothingMB'))}"></label>${toggle('staticFallback', 'staticFallback', 'staticHint')}${toggle('reducedMotion', 'reducedMotion', 'motionHint')}${toggle('pauseOnGame', 'pauseOnGame', 'pauseHint')}`
-  )}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div><div class="purge-section"><p>${esc(t('purgeMediaHint'))}</p>${button(t(purgingMedia ? 'purgingMedia' : 'purgeMedia'), 'purge-media', 'trash', false, purgingMedia ? 'disabled' : '')}${state.lastMediaPurge ? `<p class="purge-result">${esc(t('lastMediaPurge'))} : ${esc(new Date(state.lastMediaPurge.at).toLocaleString(lang()))} · ${esc(bytes(state.lastMediaPurge.bytes))}</p>` : ''}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}${panel('diagnosticsTitle', 'info', `<p>${esc(t('logsHint'))}</p>${state.diagnostics?.available ? `<p class="log-path">${esc(state.diagnostics.file)}</p>${button(t('openLogs'), 'open-logs', 'drive')}${state.diagnostics.error ? `<p role="alert">${esc(state.diagnostics.error)}</p>` : ''}` : `<p>${esc(t('logsUnavailable'))}</p>`}`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
+  )}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div><div class="purge-section"><p>${esc(t('purgeMediaHint'))}</p>${button(t(purgingMedia ? 'purgingMedia' : 'purgeMedia'), 'purge-media', 'trash', false, purgingMedia ? 'disabled' : '')}${state.lastMediaPurge ? `<p class="purge-result">${esc(t('lastMediaPurge'))} : ${esc(new Date(state.lastMediaPurge.at).toLocaleString(lang()))} · ${esc(bytes(state.lastMediaPurge.bytes))}</p>` : ''}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}${steamIdlePanel()}${panel('diagnosticsTitle', 'info', `<p>${esc(t('logsHint'))}</p>${state.diagnostics?.available ? `<p class="log-path">${esc(state.diagnostics.file)}</p>${button(t('openLogs'), 'open-logs', 'drive')}${state.diagnostics.error ? `<p role="alert">${esc(state.diagnostics.error)}</p>` : ''}` : `<p>${esc(t('logsUnavailable'))}</p>`}`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
 }
 function render() {
   const active = document.activeElement;
@@ -1400,6 +1501,7 @@ function render() {
     'data-route',
     'data-action',
     'data-setting',
+    'data-steam-idle',
     'data-include',
     'data-detail',
     'data-filter'
@@ -1434,6 +1536,7 @@ function navigate(next) {
   previewPlaying = true;
   render();
   window.scrollTo(0, 0);
+  if (next === 'settings') void loadSteamIdle();
 }
 function postPlayer(action, extra = {}) {
   document
@@ -1898,6 +2001,12 @@ async function handleAction(action) {
     case 'clearUnused':
       await run(action, {}, 'clearSuccess');
       break;
+    case 'refresh-steam-idle':
+      await loadSteamIdle();
+      break;
+    case 'apply-steam-idle':
+      await applySteamIdle();
+      break;
     case 'install':
       await run(action, {}, 'installSuccess');
       break;
@@ -2054,6 +2163,14 @@ document.addEventListener('input', (event) => {
 });
 document.addEventListener('change', async (event) => {
   const el = event.target;
+  if (el.dataset.steamIdle) {
+    steamIdleDraft ||= {
+      acSeconds: state.steam.idle.acSeconds,
+      batterySeconds: state.steam.idle.batterySeconds
+    };
+    steamIdleDraft[el.dataset.steamIdle] = Number(el.value);
+    return;
+  }
   if (el.dataset.cropSetting) {
     updateCropPreview();
     await saveCrop();

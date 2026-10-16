@@ -1,6 +1,6 @@
 # Public 1.0.0 preparation
 
-This is a launch kit, not a published 1.0.0. The app/package version stays at 0.1.9 until the release is built. The repository remains private. No Reddit post has been sent.
+This is a launch kit, not a published 1.0.0. The current development app/package version is 0.1.10; the existing presentation captures remain 0.1.9. The repository remains private. No Reddit post has been sent.
 
 ## Prepared material
 
@@ -26,7 +26,7 @@ Capture and final MP4 verification: [VALIDATION.json](VALIDATION.json). Both the
 
 On every platform: launch, search previews, prepare/change animation, still-artwork choice, framing, install/update, idle activation in Steam, offline playback and controller/keyboard/mouse dismissal. For Linux and Windows, start with a fresh standard installation and record dependencies or permission problems. Longer playback sessions should check CPU/GPU/memory use and process cleanup.
 
-The current detailed report documents automated Mac execution and package inspection separately. SteamOS hands-on feedback comes from the maintainer; this launch capture uses the packaged Mac app and native window recording. Mac Steam selection was observed separately; the user confirmed custom playback in Preview. Automatic Mac activation is now observed using the internal Steam timer workaround; physical keyboard interruption was subsequently confirmed by the maintainer. Controller/mouse dismissal has not been separately accepted. The Manager still lacks a consumer-facing timer control. It is not Gamescope or Windows Steam footage.
+The current detailed report documents automated Mac execution and package inspection separately. SteamOS hands-on feedback comes from the maintainer; this launch capture uses the packaged Mac app and native window recording. Mac Steam selection was observed separately; the user confirmed custom playback in Preview. Automatic Mac activation is now observed using the internal Steam timer workaround; physical keyboard interruption was subsequently confirmed by the maintainer. Controller/mouse dismissal has not been separately accepted. The Manager now provides Settings → Automatic start in Steam, with guarded config writes; Windows/Linux native Steam acceptance remains pending. It is not Gamescope or Windows Steam footage.
 
 ## Steam context
 

@@ -1,11 +1,9 @@
-# 0.1.9-rc.1 — Animation selection and direct startup
+# 0.1.10-rc.1 — Steam automatic-start settings
 
-**Library → Game details → Change animation** is now at the top of the game sheet, above the preview, crop and fixed artwork. Games without prepared media show **Find animations**. The alternatives open directly in view. The button remains available after empty results or an error so the search can be retried.
+Add **Settings → Automatic start in Steam**. Choose plugged-in and battery delays, or Disabled. Quit Steam completely before applying, then reopen it in Big Picture with the custom screensaver selected.
 
-Choose an animation, then **Prepare this game**. Browsing alternatives preserves the current media; selecting/preparing replaces the animation and retains the fixed artwork, crop and inclusion. Use **Update / Repair** afterward to apply it to the installed Steam screensaver.
+Steam’s stable UI currently hides these controls on machines with a battery outside Gamescope. The same condition and configuration store were verified in Valve’s current macOS, Windows x64 and Linux packages before enabling the option across platforms. The app backs up config.vdf, preserves other settings and refuses writes while Steam runs or the file changes concurrently. OS screensaver/lock settings remain separate.
 
-The player no longer displays an introductory/empty-library screen while loading a valid catalog or its first media. The first decoded image appears directly, without an introductory fade. Normal transitions between scenes and actual unavailable-media messages remain. The regression test deliberately delays the catalog and animation in English and French and checks every rendered frame for an intro flash.
+Validation: 127 automated tests, real controls in EN/FR, native macOS packaged-app tests and four-platform archive checks. Native automatic playback and physical keyboard interruption have been observed on Mac. Windows/Linux/SteamOS native acceptance remains pending; package inspection does not establish those runtime results.
 
-**After updating the app, use Settings → Steam integration → Update / Repair**, then restart Steam if it keeps the previous page. An existing Steam snapshot is independent of the app and does not receive code changes until updated.
-
-All four platform downloads are supplied: SteamOS/Linux x64, Windows x64 and macOS Apple Silicon DMG/ZIP. Native Mac and automated software checks are recorded separately from native Windows/Linux/SteamOS and actual Steam idle/wake acceptance, which remain pending. Private candidate; no credentials or game artwork included; GitHub Actions stays disabled.
+Private development prerelease; no public 1.0 announcement. All four platform downloads are provided, with Mac DMG and ZIP. Existing data and exports are retained. The Mac app is ad-hoc signed and not notarized.

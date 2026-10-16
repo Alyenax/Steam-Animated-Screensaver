@@ -68,6 +68,8 @@ let core,
   quitReady = false;
 const actions = new Set([
   'state',
+  'steamIdleState',
+  'setSteamIdle',
   'diagnosticsEvent',
   'openLogs',
   'scan',

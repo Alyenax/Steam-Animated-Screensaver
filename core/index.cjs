@@ -8,6 +8,7 @@ const selection = require('../manager/selection.js');
 const { planPurge, applyPurge } = require('./purge.cjs');
 const { createSteamAccount, parseProfile } = require('./steam-account.cjs');
 const { scanSteam, isSteamGameRunning } = require('./scanner.cjs');
+const steamIdle = require('./steam-idle.cjs');
 const { createSGDB, positiveId } = require('./sgdb.cjs');
 const { atomicWrite, readJSON, acquireLock, storageBytes, safeFilename } = require('./store.cjs');
 const defaults = {
@@ -784,6 +785,36 @@ function createCore(options = {}) {
     if (closed) throw new Error('Screensaver Manager is closed.');
     if (!p || typeof p !== 'object' || Array.isArray(p)) throw new Error('Invalid action payload.');
     if (action === 'state') return publicState();
+    if (action === 'steamIdleState' || action === 'setSteamIdle') {
+      if (!state.steam.roots.length) {
+        const scan = await scanSteam(options.steamRoots);
+        state.steam = { ...state.steam, detected: scan.detected, roots: scan.roots };
+      }
+      const root = state.steam.roots[0];
+      if (!root) {
+        if (action === 'setSteamIdle')
+          throw new Error('Steam was not detected. Open Steam once, then rescan.');
+        state.steam.idle = { available: false };
+      } else {
+        const idleOptions = { platform: options.platform, isRunning: options.isSteamRunning };
+        if (action === 'setSteamIdle') {
+          state.steam.idle = await steamIdle.writeTimeouts(root, p, idleOptions);
+          diagnostics?.record('info', 'steam.idle_saved', {
+            acSeconds: state.steam.idle.acSeconds,
+            batterySeconds: state.steam.idle.batterySeconds,
+            changed: state.steam.idle.changed,
+            backedUp: state.steam.idle.backedUp
+          });
+        } else {
+          try {
+            state.steam.idle = await steamIdle.readTimeouts(root, idleOptions);
+          } catch (error) {
+            state.steam.idle = { available: false, error: safeError(error) };
+          }
+        }
+      }
+      return publicState();
+    }
     if (action === 'diagnosticsEvent') {
       const event = [
         'renderer.error',
