@@ -2,7 +2,9 @@
 
 ## 1.0.0 - October 16, 2026
 
-First public release by Alyenax.
+First public release by Alyenax, under GPL-3.0-only.
+
+- Include GPLv3 and retained notices in all four platform packages. Optional support is available through Ko-fi and GitHub's Sponsor button.
 
 - Turn animated SteamGridDB artwork into an offline screensaver for SteamOS Gaming Mode and desktop Big Picture.
 - Add installed or uninstalled games, search manually, select all, or choose a top 100. Steam runtime components are filtered out.

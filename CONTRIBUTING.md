@@ -6,6 +6,10 @@ Preserve the component contracts in docs/CONTRACTS.md. Test real boundaries: fil
 
 Use a descriptive name for implementation branches. Product name: **Steam Animated Screensaver**; slug: `steam-animated-screensaver`. Historical identifiers are permitted only for safe migration.
 
+## License
+
+Contributions to the original application are provided under GPL-3.0-only. Preserve the previous MIT notice and all third-party notices. See LICENSE, NOTICE and docs/THIRD_PARTY.md.
+
 ## Release requirement
 
 Every published version must provide **SteamOS x64, Linux x64, Windows x64 and macOS Apple Silicon** downloads together. macOS includes both DMG and ZIP. SteamOS and Linux use the same Linux x64 application. Never silently publish only the development host's package.

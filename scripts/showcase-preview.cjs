@@ -29,7 +29,7 @@ function href(url, file) {
   const page = Object.entries(documents).find(([, source]) => source === resolved)?.[0];
   return esc(
     page ||
-      (/^screenshots\/public\/[\w.-]+\.(png|jpg|gif)$/.test(resolved)
+      (/^screenshots\/public\/[\w.-]+\.(png|jpg|gif|svg)$/.test(resolved)
         ? resolved
         : github + resolved)
   );
@@ -164,13 +164,15 @@ async function serve({ recordUrl = true, port = Number(process.env.SAS_PREVIEW_P
       } else if (['showcase.css', 'showcase.js'].includes(name)) {
         file = path.join(root, 'showcase', name);
         type = name.endsWith('.css') ? 'text/css' : 'text/javascript';
-      } else if (/^screenshots\/public\/[\w.-]+\.(png|jpg|gif)$/.test(name)) {
+      } else if (/^screenshots\/public\/[\w.-]+\.(png|jpg|gif|svg)$/.test(name)) {
         file = path.join(root, name);
-        type = name.endsWith('.gif')
-          ? 'image/gif'
-          : name.endsWith('.png')
-            ? 'image/png'
-            : 'image/jpeg';
+        type = name.endsWith('.svg')
+          ? 'image/svg+xml'
+          : name.endsWith('.gif')
+            ? 'image/gif'
+            : name.endsWith('.png')
+              ? 'image/png'
+              : 'image/jpeg';
       } else {
         response.writeHead(404);
         return response.end();

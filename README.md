@@ -80,6 +80,12 @@ Contributors are welcome. Many SteamGridDB animations have a low frame rate, whi
 
 </details>
 
+## Support
+
+You can support development on [Ko-fi](https://ko-fi.com/alyenax). The app and its public releases remain available to everyone.
+
+[![Support Steam Animated Screensaver on Ko-fi](screenshots/public/support-kofi.svg)](https://ko-fi.com/alyenax)
+
 <details>
 <summary>Development and credits</summary>
 
@@ -92,6 +98,6 @@ npm start
 
 Node 22.12+ is required for development. [Architecture](docs/ARCHITECTURE.md) · [Storage and privacy](docs/STORAGE.md) · [Third-party components](docs/THIRD_PARTY.md).
 
-Original app code is [MIT licensed](LICENSE). This is an unofficial project, unaffiliated with Valve or SteamGridDB. Artwork belongs to its owners and artists; users download it separately, and it is not bundled with the app. [Visual credits](screenshots/public/CREDITS.md).
+Current original app code is licensed under the [GNU General Public License, version 3 only](LICENSE) (**GPL-3.0-only**). Copyright 2026 Alyenax. Copies previously distributed under MIT retain their rights; this change is not retroactive. The original MIT terms and notice are preserved in [licenses/MIT-previous.txt](licenses/MIT-previous.txt). This is an unofficial project, unaffiliated with Valve or SteamGridDB. Artwork belongs to its owners and artists; users download it separately, and it is not bundled with the app. [Visual credits](screenshots/public/CREDITS.md).
 
 </details>

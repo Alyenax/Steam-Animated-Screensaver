@@ -45,6 +45,10 @@ async function runUI({ capture = false } = {}) {
     const settled = () => page.waitForFunction(() => !document.body.hasAttribute('aria-busy'));
     const go = async (route) => {
       await page.locator(`[data-route="${route}"]`).first().click();
+      if (route === 'settings')
+        await page.waitForFunction(
+          () => document.querySelector('[data-action="refresh-steam-idle"]')?.disabled === false
+        );
     };
     await page.goto(instance.url + '/manager/index.html');
     await page.locator('[data-action="prepare-home"]').waitFor();

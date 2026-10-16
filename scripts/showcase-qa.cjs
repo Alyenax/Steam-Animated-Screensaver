@@ -49,7 +49,13 @@ async function main() {
     await page.waitForFunction(() =>
       [...document.images].every((img) => img.complete && img.naturalWidth > 0)
     );
-    assert.equal(await page.locator('article img').count(), 6);
+    assert.equal(await page.locator('article img').count(), 7);
+    assert.equal(
+      await page
+        .getByRole('link', { name: 'Support Steam Animated Screensaver on Ko-fi' })
+        .getAttribute('href'),
+      'https://ko-fi.com/alyenax'
+    );
     assert.equal(
       await page.locator('article img').first().getAttribute('src'),
       'screenshots/public/screensaver-demo.gif'
@@ -69,7 +75,7 @@ async function main() {
     );
     assert((await page.locator('article').innerText()).includes('5 minutes'));
     checks.push(
-      'Actual README opens with the animated GIF, renders all six images and includes complete Steam activation and five-minute instructions'
+      'Actual README opens with the animated GIF, renders all seven images and includes complete Steam activation and five-minute instructions'
     );
     await page.evaluate(() =>
       document.querySelectorAll('details').forEach((d) => (d.open = false))

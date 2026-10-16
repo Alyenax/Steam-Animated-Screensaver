@@ -23,7 +23,7 @@ The original account catalog/media are read as source material. Its key is copie
 | Left 4 Dead 2 | [Mikachuuu_](https://cdn2.steamgriddb.com/hero/0969cc92581148eb5f98f23e4f9e17c6.webp) | [Motka](https://cdn2.steamgriddb.com/grid/879c7c9a27682b01e41948a42cea0cbe.png) |
 | ARC Raiders | [BrownPuppy](https://cdn2.steamgriddb.com/hero/a7e16024da6555834545cbabbdca9295.webp) | [r_dsgnd](https://cdn2.steamgriddb.com/grid/de7eac7d1f55e2064a021725aa4ee552.png) |
 
-Source: SteamGridDB. Game rights belong to their respective owners; this project is unaffiliated with Valve, SteamGridDB or the publishers. Artist credits remain visible. The MIT license covers original app code, not third-party artwork. Raw media and credentials stay outside Git and app packages.
+Source: SteamGridDB. Game rights belong to their respective owners; this project is unaffiliated with Valve, SteamGridDB or the publishers. Artist credits remain visible. The application license covers original app code, not third-party artwork. Raw media and credentials stay outside Git and app packages.
 
 ## Capture tools
 

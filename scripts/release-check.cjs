@@ -65,7 +65,8 @@ async function check() {
     const shipped = JSON.parse(await fs.readFile(path.join(appRoot, 'package.json'), 'utf8'));
     if (shipped.version !== pkg.version || shipped.productName !== pkg.productName)
       throw new Error(`Stale ${platform} package`);
-    for (const folder of ['core', 'manager', 'player', 'docs'])
+    if (shipped.license !== 'GPL-3.0-only') throw new Error(`Incorrect ${platform} license`);
+    for (const folder of ['core', 'manager', 'player', 'docs', 'licenses'])
       for (const file of await fs.readdir(path.join(root, folder))) {
         if (platform !== 'windows' && file === 'icon.ico') continue;
         const source = await fs.readFile(path.join(root, folder, file)),
@@ -78,6 +79,7 @@ async function check() {
       'README.md',
       'CHANGELOG.md',
       'LICENSE',
+      'NOTICE',
       'CONTRIBUTING.md',
       'SECURITY.md'
     ])

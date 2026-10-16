@@ -4,7 +4,7 @@
   "version": "1.0.0",
   "description": "Prepare, preview and install animated SteamGridDB artwork as a Steam screensaver.",
   "main": "main.cjs",
-  "license": "MIT",
+  "license": "GPL-3.0-only",
   "private": true,
   "engines": {
     "node": ">=22"
@@ -34,5 +34,9 @@
   "author": {
     "name": "Alyenax",
     "url": "https://github.com/Alyenax"
+  },
+  "funding": {
+    "type": "ko-fi",
+    "url": "https://ko-fi.com/alyenax"
   }
 }

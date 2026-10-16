@@ -1,6 +1,6 @@
 # Architecture and research
 
-This project is a clean-room implementation. No private GabeCubeAura code, media, API key or dependency was copied. The reference repository's release list was inspected read-only on 2026-10-15: its newest published candidate was `v1.4.1-lab.124`. It has no declared repository license; its implementation was therefore not imported.
+This project is an independent implementation. No private GabeCubeAura implementation code, media, API key or dependency was copied. Its current license follows GabeCubeAura: GPL-3.0-only, with the previous license preserved for copies already distributed under those terms.
 
 ## Why Electron
 

@@ -43,6 +43,8 @@ async function build(platform = 'linux', arch = 'x64') {
       'main.cjs',
       'preload.cjs',
       'LICENSE',
+      'NOTICE',
+      'licenses',
       'README.md',
       'docs',
       'CHANGELOG.md',

@@ -6,6 +6,10 @@ The 0.1.10 update adds guarded Steam inactivity configuration after inspection o
 
 The 0.1.11 update additionally checks that a fresh profile starts in English, a first delay configuration proposes five minutes without writing, existing explicit delays including Disabled survive reload, and a saved French choice is retained. The final presentation video decodes fully and includes the current delay controls plus separately recorded native Mac Steam playback.
 
+## Licensing and support package checks
+
+This release changes licensing and support links. It retains the original MIT notice, adopts GPL-3.0-only for the current application, and packages both notices for all platforms. Release reports distinguish the new package checks from the existing Steam playback evidence. No new native Windows, Linux or SteamOS runtime acceptance is claimed.
+
 ## Public 1.0.0 checks
 
 The public release reruns the 127 unit and integration tests and the browser and packaged Mac checks. Linux and Windows media tools are now built locally with the pinned complete sources and recipes included in each package. Their ELF or PE architecture, static dependencies, source checksums and required media configuration are inspected. These checks do not substitute for running those executables on their target platforms. Exact results accompany the release.

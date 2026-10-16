@@ -246,7 +246,9 @@ async function run({ appPath, reportPath } = {}) {
         .evaluate((video) => video.error),
       null
     );
+    await page.bringToFront();
     await page.screenshot({
+      timeout: 30000,
       path: path.resolve(
         __dirname,
         '..',

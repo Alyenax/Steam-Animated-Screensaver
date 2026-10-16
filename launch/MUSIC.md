@@ -14,4 +14,4 @@ Link to the [track](https://www.scottbuckley.com.au/library/song-of-the-forge/) 
 - Exact source URL, checksum and excerpt: [MUSIC_SOURCE.json](MUSIC_SOURCE.json)
 - The source MP3 and prepared WAV remain in ignored `dist/public-launch-v2` and are not application dependencies or app package contents.
 
-The music license covers the soundtrack only. Game artwork remains subject to its owners' rights, and the app's MIT license does not replace either set of rights.
+The music license covers the soundtrack only. Game artwork remains subject to its owners' rights, and the app's license does not replace either set of rights.
