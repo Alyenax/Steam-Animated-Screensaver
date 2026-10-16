@@ -571,7 +571,7 @@
   "finalPresentationVideo": {
     "result": "passed",
     "duration": 88.984,
-    "bytes": 25489120,
+    "bytes": 25454422,
     "video": {
       "codec": "h264",
       "width": 1920,
@@ -581,8 +581,8 @@
     "audio": {
       "codec": "aac",
       "sampleRate": "48000",
-      "music": "Virtual Rush - vitalezzz (CC0)",
-      "source": "https://opengameart.org/content/virtual-rush",
+      "music": "Song Of The Forge - Scott Buckley (CC-BY-4.0)",
+      "source": "https://www.scottbuckley.com.au/library/song-of-the-forge/",
       "excerptStartSeconds": 30,
       "targetLUFS": -23
     },
@@ -767,23 +767,25 @@
   },
   "musicRevision": {
     "result": "passed",
-    "music": "Virtual Rush",
-    "artist": "vitalezzz",
-    "license": "CC0-1.0",
-    "source": "https://opengameart.org/content/virtual-rush",
+    "music": "Song Of The Forge",
+    "artist": "Scott Buckley",
+    "license": "CC-BY-4.0",
+    "source": "https://www.scottbuckley.com.au/library/song-of-the-forge/",
     "excerptStartSeconds": 30,
-    "measuredLUFS": -23.51,
-    "truePeakDbFS": -12.25,
+    "measuredLUFS": -21.15,
+    "truePeakDbFS": -6.77,
     "videoStreams": [
       {
         "file": "Steam-Animated-Screensaver-demo.mp4",
         "videoStreamUnchanged": true,
-        "hash": "SHA256=4c8a5b3f202a55224796646aa314a3010d4854dae45054e94b62c37d8606de98"
+        "hash": "SHA256=4c8a5b3f202a55224796646aa314a3010d4854dae45054e94b62c37d8606de98",
+        "embeddedCredit": "'Song Of The Forge' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au https://creativecommons.org/licenses/by/4.0/"
       },
       {
         "file": "Steam-Animated-Screensaver-SteamOS-overview.mp4",
         "videoStreamUnchanged": true,
-        "hash": "SHA256=72f0fa3aff0b1b7cd62231885c675b28cd5fe39a9b6e5f25024ed991811ccd46"
+        "hash": "SHA256=72f0fa3aff0b1b7cd62231885c675b28cd5fe39a9b6e5f25024ed991811ccd46",
+        "embeddedCredit": "'Song Of The Forge' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au https://creativecommons.org/licenses/by/4.0/"
       }
     ]
   },
@@ -796,7 +798,7 @@
     "appCapturePlatform": "macOS",
     "disclosureInVideo": true,
     "nativeSteamOSRecording": false,
-    "music": "Virtual Rush - vitalezzz (CC0)",
+    "music": "Song Of The Forge - Scott Buckley (CC-BY-4.0)",
     "chapters": [
       {
         "file": "showcase-final.mp4",

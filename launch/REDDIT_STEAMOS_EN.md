@@ -15,3 +15,5 @@ I’d love some Steam Deck and Steam Machine testers. Windows and Linux could al
 I’d also love some help improving it, especially the animation smoothness. SteamGridDB artwork often looks choppy at full screen. Processing at 24 or 30 fps is available, but can be slow and the results vary. Other contributions are welcome too.
 
 The app footage in the video was captured on macOS.
+
+Music in the video: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

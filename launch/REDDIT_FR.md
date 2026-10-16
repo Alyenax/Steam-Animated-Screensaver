@@ -19,3 +19,5 @@ Je cherche des testeurs sur toutes les plateformes, surtout Linux et Windows. J�
 Et si certains veulent contribuer, je suis preneur. J’aimerais surtout améliorer la fluidité : les animations SteamGridDB sont souvent peu fluides à la base, et ça se voit en plein écran. Il y a des traitements optionnels en 24/30 ips, mais c’est parfois long et le résultat varie. Pour faire mieux, corriger des crashs, améliorer le support des plateformes ou ajouter des choses utiles, toute aide serait appréciée.
 
 Merci aussi aux artistes de SteamGridDB pour leur travail.
+
+Music in the video: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

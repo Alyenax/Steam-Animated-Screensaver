@@ -13,3 +13,5 @@ Steam hides the timer controls on devices with a battery outside Gamescope. The 
 I’d love some testers, especially on Windows and Linux. Those builds have passed automated checks, but need more testing on real machines. Most hands-on testing so far has been on SteamOS and Mac.
 
 I’d also love some help improving it, especially the animation smoothness. SteamGridDB artwork often looks choppy at full screen. Processing at 24 or 30 fps is available, but can be slow and the results vary. Other contributions are welcome too.
+
+Music in the video: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

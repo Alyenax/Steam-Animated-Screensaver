@@ -3,6 +3,7 @@ const fs = require('node:fs/promises'),
   path = require('node:path'),
   assert = require('node:assert/strict');
 const { execFileSync } = require('node:child_process');
+const musicSource = require('../launch/MUSIC_SOURCE.json');
 const out = path.resolve(__dirname, '../dist/public-launch-v2');
 const ffmpeg = process.env.SAS_CAPTURE_FFMPEG || require('ffmpeg-static');
 const ffprobe = process.env.SAS_CAPTURE_FFPROBE || require('ffprobe-static').path;
@@ -57,7 +58,7 @@ const run = (args) =>
     '-i',
     'steamos-clean.mp4',
     '-i',
-    'Virtual-Rush-demo.wav',
+    musicSource.preparedFile,
     '-map',
     '0:v:0',
     '-map',
@@ -76,6 +77,8 @@ const run = (args) =>
     String(total),
     '-map_metadata',
     '-1',
+    '-metadata',
+    'comment=' + musicSource.credit + ' ' + musicSource.licenseUrl,
     '-movflags',
     '+faststart',
     '-y',
@@ -101,7 +104,7 @@ const run = (args) =>
         appCapturePlatform: 'macOS',
         disclosureInVideo: true,
         nativeSteamOSRecording: false,
-        music: 'Virtual Rush - vitalezzz (CC0)',
+        music: musicSource.title + ' - ' + musicSource.artist + ' (' + musicSource.license + ')',
         chapters
       },
       null,

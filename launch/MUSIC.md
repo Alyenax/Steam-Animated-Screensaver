@@ -1,16 +1,17 @@
-# Demo soundtrack — Virtual Rush
+# Demo soundtrack
 
-**Virtual Rush — vitalezzz**, released under **CC0 1.0** on the artist's [OpenGameArt page](https://opengameart.org/content/virtual-rush).
+**Song Of The Forge by Scott Buckley**, released under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/). [Artist's download and license page](https://www.scottbuckley.com.au/library/song-of-the-forge/).
 
-The current general and SteamOS videos use the energetic section starting 30 seconds into this electronic track, mixed at a moderate level with a short opening fade and a five-second ending fade. It replaces the earlier synthesized Quiet Scenes / Bright Scenes arrangements. The video edits and images are unchanged by this revision.
+Both presentation videos use an orchestral excerpt starting 30 seconds into the recording, with choir and percussion. The excerpt uses a normalization target of −23 LUFS, with a short opening fade and a five-second ending fade. It replaces the electronic Virtual Rush mix. The video edit and playback speed are unchanged.
 
-- Artist/source: [vitalezzz — Virtual Rush](https://opengameart.org/content/virtual-rush)
-- Declared license: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+Credit to keep with any upload of either video:
+
+> 'Song Of The Forge' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
+
+Link to the [track](https://www.scottbuckley.com.au/library/song-of-the-forge/) and [license](https://creativecommons.org/licenses/by/4.0/). Changes made: excerpted, level-matched and faded to accompany the app demonstration. Credits are included in the README, showcase pages, Reddit drafts and MP4 metadata. If uploading to YouTube, include the credit in the video description, as the artist requests.
+
 - Reproduce the excerpt: `node scripts/prepare-demo-music.cjs`
 - Exact source URL, checksum and excerpt: [MUSIC_SOURCE.json](MUSIC_SOURCE.json)
-- Source recording and prepared WAV stay in ignored `dist/public-launch-v2`; they are not application dependencies.
-- General mix: approximately −23 LUFS; SteamOS cut uses the same treatment.
+- The source MP3 and prepared WAV remain in ignored `dist/public-launch-v2` and are not application dependencies or app package contents.
 
-Credit retained: **Music: Virtual Rush by vitalezzz — CC0, via OpenGameArt.org.** The music license does not cover any game artwork shown in the videos. The app's MIT license does not replace the artist's music license.
-
-Earlier synthesized arrangements remain reproducible from Git history with `create-demo-music.cjs`; they are not used in the current video mix.
+The music license covers the soundtrack only. Game artwork remains subject to its owners' rights, and the app's MIT license does not replace either set of rights.

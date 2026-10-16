@@ -1,23 +1,14 @@
 'use strict';
-// Download the artist's CC0 recording, pin its bytes and prepare the presentation excerpt.
+// Download the artist's licensed recording, pin its bytes and prepare the presentation excerpt.
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const { execFileSync } = require('node:child_process');
-const source = {
-  title: 'Virtual Rush',
-  artist: 'vitalezzz',
-  license: 'CC0-1.0',
-  page: 'https://opengameart.org/content/virtual-rush',
-  url: 'https://opengameart.org/sites/default/files/virtual_rush_2.mp3',
-  sha256: 'd8477fef3511da6dd27eca9ba0ecbb14de817507bcc03d963f2fcf353c879290',
-  excerptStartSeconds: 30,
-  excerptDurationSeconds: 120
-};
+const source = require('../launch/MUSIC_SOURCE.json');
 (async () => {
   const out = path.resolve(__dirname, '../dist/public-launch-v2');
   await fs.mkdir(out, { recursive: true });
-  const original = path.join(out, 'virtual-rush-source.mp3');
+  const original = path.join(out, source.sourceFile);
   let bytes = await fs.readFile(original).catch(() => null);
   if (!bytes) {
     const response = await fetch(source.url, { signal: AbortSignal.timeout(60000) });
@@ -47,7 +38,7 @@ const source = {
       '-map_metadata',
       '-1',
       '-y',
-      path.join(out, 'Virtual-Rush-demo.wav')
+      path.join(out, source.preparedFile)
     ],
     { stdio: 'pipe' }
   );

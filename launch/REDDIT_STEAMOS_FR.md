@@ -19,3 +19,5 @@ Et si certains veulent contribuer, je suis preneur. Les animations SteamGridDB s
 La vidéo jointe montre l’interface de l’app capturée sur Mac ; ce n’est pas une capture du mode Jeu de SteamOS. Il existe aussi des versions Mac, Windows et Linux. Windows/Linux ont surtout besoin de davantage d’essais en réel.
 
 Merci aux artistes de SteamGridDB pour leur travail.
+
+Music in the video: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
