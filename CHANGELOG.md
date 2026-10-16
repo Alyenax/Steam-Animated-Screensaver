@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.7 — Native macOS preview app
+
+- Package the same Manager/Core/Player as an Apple Silicon `.app`, ZIP and drag-to-Applications DMG for macOS 13+. No Node, Homebrew, Rosetta or local server is required.
+- Bundle native FFmpeg / FFprobe built from pinned sources with LGPL/BSD libraries, software AV1 decoding and complete source/rebuild materials. Keep development nonfree and Intel binaries out of the app.
+- Include the existing product icon, stable bundle identity, ad-hoc signature and explicit notarization/SteamOS acceptance scope. Preserve app data across replacement.
+- Exercise the distributed `.app` through actual image-preview generation, new 24 fps preparation, local animation playback/pause, framing and renderer isolation.
+
 ## 0.1.6 — Steam components and adjustable framing
 
 - Filter Proton versions/runtimes, Steam Linux Runtime and Steamworks Common Redistributables from scans, owned-library import, search, manual addition and offline exports. Remove old catalog entries at startup while preserving installed Steam files and cached media.

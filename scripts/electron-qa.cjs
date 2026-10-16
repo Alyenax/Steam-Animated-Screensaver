@@ -3,13 +3,17 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const os = require('node:os');
 const assert = require('node:assert/strict');
-async function run() {
+async function run({ appPath, reportPath } = {}) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-electron-qa-'));
   let browser, app;
   try {
     const { chromium, _electron } = require('playwright');
     browser = await chromium.launch({ channel: 'chrome', headless: true });
-    const fixture = await require('./qa-fixture.cjs').createFixture({ root, browser });
+    const fixture = await require('./qa-fixture.cjs').createFixture({
+      root,
+      browser,
+      animationFps: appPath ? 12 : 24
+    });
     await fixture.add(901);
     await fixture.core.invoke('prepare');
     for (let i = 0; i < 200; i++) {
@@ -20,14 +24,38 @@ async function run() {
     await fixture.core.close();
     await browser.close();
     browser = null;
+    let executablePath = require('electron');
+    if (appPath) {
+      appPath = path.resolve(appPath);
+      const name = require('node:child_process')
+        .execFileSync(
+          'plutil',
+          ['-extract', 'CFBundleExecutable', 'raw', path.join(appPath, 'Contents/Info.plist')],
+          { encoding: 'utf8' }
+        )
+        .trim();
+      executablePath = path.join(appPath, 'Contents/MacOS', name);
+      await fs.access(executablePath);
+    }
     app = await _electron.launch({
-      executablePath: require('electron'),
-      args: [path.resolve(__dirname, '..')],
+      executablePath,
+      args: appPath ? [] : [path.resolve(__dirname, '..')],
       env: { ...process.env, CINEMA_DATA_DIR: fixture.dataDir, STEAM_ROOT: fixture.steamRoot },
       timeout: 20000
     });
     const page = await app.firstWindow();
     page.setDefaultTimeout(10000);
+    const bundle = await app.evaluate(({ app }) => ({
+      packaged: app.isPackaged,
+      arch: process.arch,
+      executable: process.execPath,
+      resources: process.resourcesPath
+    }));
+    if (appPath) {
+      assert.equal(bundle.packaged, true);
+      assert.equal(bundle.arch, 'arm64');
+      assert.equal(bundle.executable, executablePath);
+    }
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.locator('[data-route="preview"]').first().waitFor();
@@ -59,7 +87,7 @@ async function run() {
     await assert.rejects(fs.stat(path.join(fixture.dataDir, 'steam-api.key')), { code: 'ENOENT' });
     const normalizedImage = await page.evaluate(async () => {
       const state = await window.cinema.invoke('state');
-      return window.cinema.invoke('previewImage', { file: state.games[0].media.file });
+      return window.cinema.invoke('previewImage', { file: state.games[0].media.file, force: true });
     });
     const decoded = await page.evaluate(
       (file) =>
@@ -119,6 +147,57 @@ async function run() {
       ),
       true
     );
+    let preparedVideo = null;
+    if (appPath) {
+      await page.evaluate(async () => {
+        await window.cinema.invoke('settings', {
+          smoothMotion: true,
+          smoothingFps: 24,
+          smoothingMode: 'fast'
+        });
+        await window.cinema.invoke('prepare', { ids: ['steam:7000901'] });
+      });
+      let preparedState;
+      const deadline = Date.now() + 60000;
+      do {
+        preparedState = await page.evaluate(() => window.cinema.invoke('state'));
+        if (preparedState.job.status === 'completed') break;
+        await page.waitForTimeout(50);
+      } while (Date.now() < deadline);
+      assert.equal(preparedState.job.status, 'completed');
+      const processed = await page.evaluate(async () =>
+        (await window.cinema.invoke('state')).games.find((g) => g.id === 'steam:7000901')
+      );
+      assert.equal(processed.smoothingError, undefined);
+      assert.ok(processed.smoothed);
+      assert.equal(processed.smoothed.smoothingConfig.fps, 24);
+      assert.equal(processed.smoothed.smoothingConfig.mode, 'fast');
+      const probe = JSON.parse(
+        require('node:child_process').execFileSync(
+          path.join(bundle.resources, 'app/binaries/ffprobe'),
+          [
+            '-v',
+            'error',
+            '-select_streams',
+            'v:0',
+            '-show_entries',
+            'stream=avg_frame_rate,codec_name',
+            '-of',
+            'json',
+            path.join(fixture.dataDir, 'media', processed.smoothed.file)
+          ],
+          { encoding: 'utf8' }
+        )
+      );
+      const [numerator, denominator] = probe.streams[0].avg_frame_rate.split('/').map(Number);
+      assert.equal(numerator / denominator, 24);
+      assert.notEqual(processed.smoothed.file, processed.media.file);
+      preparedVideo = {
+        measuredFps: numerator / denominator,
+        codec: probe.streams[0].codec_name,
+        originalPreserved: true
+      };
+    }
     await page.locator('[data-route="preview"]').first().click();
     await page.locator('#player-frame').waitFor();
     let frame;
@@ -152,7 +231,12 @@ async function run() {
       null
     );
     await page.screenshot({
-      path: path.resolve(__dirname, '..', 'screenshots', '09-electron-preview-qa.png'),
+      path: path.resolve(
+        __dirname,
+        '..',
+        'screenshots',
+        appPath ? '18-macos-app-preview-qa.png' : '09-electron-preview-qa.png'
+      ),
       fullPage: true
     });
     await page.locator('[data-action="toggle-play"]').click();
@@ -164,31 +248,36 @@ async function run() {
       null
     );
     assert.deepEqual(errors, []);
-    console.log(
-      JSON.stringify(
-        {
-          result: 'passed',
-          isolation,
-          preferences,
-          checks: [
-            'Actual app:// protocol media playback',
-            'Native image-preview IPC and JPEG decoding',
-            'Native Steam key save/removal and 24 fps profile settings IPC',
-            'Full product name and no Local-first badge',
-            'Real Electron preview pause',
-            'Native per-game crop overrides general framing without reprocessing media',
-            'Sender/action restrictions',
-            'Native purge action requires confirmation before any filesystem change',
-            'No Node in renderer',
-            'Sandbox enabled',
-            'Library lock released on close'
-          ],
-          pageErrors: errors
-        },
-        null,
-        2
-      )
-    );
+    const report = {
+      bundle,
+      preparedVideo,
+      result: 'passed',
+      isolation,
+      preferences,
+      checks: [
+        ...(appPath
+          ? [
+              'Distributed macOS .app launched as packaged arm64 executable',
+              'Bundled native FFmpeg/FFprobe regenerate actual image preview',
+              'Bundled tools prepare and play a new 24 fps Fast derivative'
+            ]
+          : []),
+        'Actual app:// protocol media playback',
+        'Native image-preview IPC and JPEG decoding',
+        'Native Steam key save/removal and 24 fps profile settings IPC',
+        'Full product name and no Local-first badge',
+        'Real Electron preview pause',
+        'Native per-game crop overrides general framing without reprocessing media',
+        'Sender/action restrictions',
+        'Native purge action requires confirmation before any filesystem change',
+        'No Node in renderer',
+        'Sandbox enabled',
+        'Library lock released on close'
+      ],
+      pageErrors: errors
+    };
+    if (reportPath) await fs.writeFile(reportPath, JSON.stringify(report, null, 2) + '\n');
+    console.log(JSON.stringify(report, null, 2));
   } finally {
     if (app) await app.close().catch(() => {});
     if (browser) await browser.close();
@@ -196,7 +285,14 @@ async function run() {
   }
 }
 if (require.main === module)
-  run().catch((error) => {
+  run({
+    appPath: process.argv.includes('--app')
+      ? process.argv[process.argv.indexOf('--app') + 1]
+      : undefined,
+    reportPath: process.argv.includes('--report')
+      ? process.argv[process.argv.indexOf('--report') + 1]
+      : undefined
+  }).catch((error) => {
     console.error(error);
     process.exitCode = 1;
   });

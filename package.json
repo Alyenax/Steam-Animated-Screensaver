@@ -1,7 +1,7 @@
 {
   "name": "steamos-animated-screensaver",
   "productName": "SteamOS Animated Screensaver",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Bring Your Steam Library to Life. A standalone animated screensaver powered by SteamGridDB.",
   "main": "main.cjs",
   "license": "MIT",
@@ -15,7 +15,8 @@
     "test": "node --test tests/*.test.cjs",
     "check": "node scripts/check.cjs",
     "package:linux": "node scripts/package.cjs linux x64",
-    "smoke:electron": "CINEMA_SMOKE_TEST=1 electron ."
+    "smoke:electron": "CINEMA_SMOKE_TEST=1 electron .",
+    "package:mac": "node scripts/package.cjs darwin arm64"
   },
   "dependencies": {
     "ffmpeg-static": "5.3.0",

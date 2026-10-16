@@ -1,6 +1,16 @@
 # Installation, updates and recovery
 
-## Candidate requirements
+## macOS Apple Silicon app
+
+Requires macOS 13+ on an Apple Silicon Mac. Open the private release's macOS DMG, drag **SteamOS Animated Screensaver.app** to Applications, and open it. Alternatively, extract the ZIP and double-click the app. Media tools are bundled natively; there is no Node, Rosetta, Homebrew or server setup.
+
+In Settings, add a personal SteamGridDB key. Scan the local Mac Steam library, optionally import the account's owned games, or add a game manually. Prepare, then open Preview. Cropping, fixed artwork and 24/30 fps processing are available. No demo games are inserted into the real catalog. The app's data is separate from the bundle in `~/Library/Application Support/steamos-animated-screensaver`.
+
+The app is ad-hoc signed, not notarized with an Apple Developer identity. For a blocked downloaded copy, use the per-app **System Settings → Privacy & Security → Open Anyway** action described by [Apple](https://support.apple.com/en-us/102445). Global security settings are not changed.
+
+Quit the app before replacing it with an updated copy; the catalog and cache remain. Remove the `.app` to uninstall the Manager. The complete cache purge remains in Settings; removing the app does not erase personal data. This Mac build provides the Manager and Preview, not a macOS system `.saver` extension. Automatic Steam screensaver activation still needs SteamOS validation. Intel support is not claimed.
+
+## Linux candidate requirements
 
 - Linux x86_64, graphical Desktop Mode, current Steam client supporting custom screensavers.
 - User-space writable home directory, working Chromium sandbox/user namespaces, and the GTK/NSS/GBM/audio libraries expected by Electron. The package bundles Chromium but does not claim to bundle an entire Linux userspace.
@@ -55,4 +65,4 @@ To erase all application data, close the manager, back up anything needed and ex
 
 ## Target-device acceptance
 
-See VALIDATION.md, PLAYER.md and STEAM_ERROR_105.md for the 0.1.0 identifier repair. No macOS release is provided; macOS is the development and software-validation host. Windows support is not implemented.
+See VALIDATION.md, PLAYER.md and STEAM_ERROR_105.md for the 0.1.0 identifier repair. The macOS Apple Silicon app supports Manager and Preview testing; SteamOS integration acceptance remains separate. Windows and Intel Mac packages are not provided.

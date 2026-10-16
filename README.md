@@ -4,7 +4,7 @@
 
 Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, optionally import owned games from Steam, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
 
-**0.1.6 is a private installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.7 provides a macOS Apple Silicon test app and a private Linux installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
@@ -29,13 +29,21 @@ The application uses its full name, **SteamOS Animated Screensaver**, throughout
 
 The initial space-containing export identifier has been replaced with `steamos-animated-screensaver`. [Repair instructions](docs/STEAM_ERROR_105.md) include a small script that preserves existing media. Restart Steam and select the new identifier afterward. The affected device still needs to confirm the correction.
 
+## Open the macOS app
+
+On an **Apple Silicon Mac with macOS 13 or newer**, download the macOS `.dmg` from the private release, open it and drag **SteamOS Animated Screensaver.app** into Applications. You can also unzip the macOS `.zip` and open the app directly. Node, Homebrew and a local server are not required.
+
+Add your SteamGridDB key in **Settings**, scan/import/add games, prepare their artwork, then use **Preview**. Image previews, fixed artwork, smoothing and framing use the same Manager/Core/Player as SteamOS. Your Mac keeps its own library and cache in `~/Library/Application Support/steamos-animated-screensaver`; the application bundle contains no personal key or fabricated library.
+
+The private app has an ad-hoc signature and is not Apple notarized. If macOS blocks a downloaded copy, follow [Apple's per-app Open Anyway instructions](https://support.apple.com/en-us/102445). The Mac app manages and previews artwork; SteamOS idle activation and controller wake remain target-device tests. Intel Mac builds are not provided.
+
 ## Install the Linux x64 candidate
 
 Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Steam Machine are the intended hardware; the binary has not yet been executed on those devices. In Desktop Mode:
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.6-linux-x64.tar.gz
+tar -xzf SteamOS-Animated-Screensaver-0.1.7-linux-x64.tar.gz
 cd steamos-animated-screensaver-linux-x64
 ./install.sh
 ```

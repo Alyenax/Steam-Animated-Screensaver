@@ -9,7 +9,7 @@ const names = [
   'Horizon · original QA animation',
   'Orbit · QA search result'
 ];
-async function createFixture({ root, browser }) {
+async function createFixture({ root, browser, animationFps = 24 }) {
   const dataDir = path.join(root, 'data'),
     steamRoot = path.join(root, 'steam');
   await fs.mkdir(path.join(steamRoot, 'steamapps'), { recursive: true });
@@ -104,7 +104,7 @@ async function createFixture({ root, browser }) {
       '-i',
       pngFile,
       '-vf',
-      "zoompan=z='1.025+0.02*sin(on/40)':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=960x540:fps=24",
+      `zoompan=z='1.025+0.02*sin(on/40)':x='iw/2-iw/zoom/2':y='ih/2-ih/zoom/2':d=1:s=960x540:fps=${animationFps}`,
       '-t',
       '3',
       '-c:v',

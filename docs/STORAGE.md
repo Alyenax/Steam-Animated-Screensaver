@@ -2,7 +2,7 @@
 
 ## Local data
 
-On Linux, the default application data directory is `~/.config/steamos-animated-screensaver` (Electron's app-data root respects the platform configuration). macOS development uses `~/Library/Application Support/steamos-animated-screensaver`. `CINEMA_DATA_DIR` selects an absolute isolated directory for development/QA; `npm run dev` otherwise uses the repository's ignored `.data` directory.
+On Linux, the default application data directory is `~/.config/steamos-animated-screensaver` (Electron's app-data root respects the platform configuration). The macOS app uses `~/Library/Application Support/steamos-animated-screensaver`. `CINEMA_DATA_DIR` selects an absolute isolated directory for development/QA; `npm run dev` otherwise uses the repository's ignored `.data` directory.
 
 - `catalog.json`: versioned game identities, settings, preparation queue and measured media metadata. Atomic temporary-write/rename; user-only permissions.
 - `steamgriddb.key`: personal key, user-only permissions. Never exported to the player.
