@@ -125,10 +125,7 @@ body {
   max-width: 36em;
   line-height: 1.6;
 }
-.spark {
-  color: #7bc4e8;
-  font-size: 52px;
-}
+
 @keyframes drift {
   from {
     transform: scale(1);

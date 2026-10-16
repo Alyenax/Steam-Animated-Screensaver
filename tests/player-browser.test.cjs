@@ -122,7 +122,11 @@ test(
     await page.goto(`${origin}/preview.html`);
     const frame = page.frames().find((f) => f.url().includes('/player/index.html'));
     await frame.waitForFunction(() => !!window.SteamAnimatedScreensaverPlayer);
-    assert.equal(await frame.locator('#empty').isVisible(), true);
+    assert.equal(
+      await frame.locator('#empty').isVisible(),
+      false,
+      'Preview waits silently for its parent catalog'
+    );
     const makeGame = (id, media = '/media/scene.webm') => ({
       id,
       name: `Game ${id}`,

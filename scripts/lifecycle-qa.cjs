@@ -142,7 +142,7 @@ async function run() {
       'Restart after fatal exit detects interruption, recovers stale library lock and preserves the library'
     );
     const report = {
-      version: '0.1.8',
+      version: require('../package.json').version,
       platform: process.platform,
       arch: process.arch,
       packaged: !!supplied,

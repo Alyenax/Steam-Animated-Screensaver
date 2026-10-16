@@ -156,7 +156,7 @@ async function run() {
       path.resolve(__dirname, '../docs/SELECTION_VALIDATION.json'),
       JSON.stringify(
         {
-          version: '0.1.8',
+          version: require('../package.json').version,
           fixture:
             'Isolated 125-game catalog and deterministic ranking provider; no personal credentials.',
           checks,

@@ -288,10 +288,13 @@ const translations = {
     addedSuccess: 'Game added to your library.',
     searchKeyNeeded: 'Add a SteamGridDB API key in Settings to search for games.',
     close: 'Close',
-    artworkTitle: 'Choose the scene.',
+    artworkTitle: 'Available animations',
+    changeAnimation: 'Change animation',
+    animationKeyNeeded: 'Add a SteamGridDB API key in Settings to find other animations.',
+    prepareGame: 'Prepare this game',
     artworkBody:
-      'Automatic matching picks suitable artwork. Select an alternative to make the choice yours.',
-    loadArtworks: 'Find artwork alternatives',
+      'Choose an animation, then prepare the game to apply it. Update the installed Steam screensaver afterward.',
+    loadArtworks: 'Find animations',
     artworksLoading: 'Finding artwork…',
     noArtworks: 'No compatible artwork found. Try enabling still artwork in Settings.',
     artworkCredit: 'Artwork by',
@@ -586,10 +589,14 @@ const translations = {
     addedSuccess: 'Jeu ajouté à votre bibliothèque.',
     searchKeyNeeded: 'Ajoutez une clé API SteamGridDB dans les réglages pour rechercher des jeux.',
     close: 'Fermer',
-    artworkTitle: 'Choisir une illustration',
+    artworkTitle: 'Animations disponibles',
+    changeAnimation: 'Changer l’animation',
+    animationKeyNeeded:
+      'Ajoutez une clé API SteamGridDB dans les réglages pour trouver d’autres animations.',
+    prepareGame: 'Préparer ce jeu',
     artworkBody:
-      'La sélection automatique trouve une illustration adaptée. Choisissez une alternative pour personnaliser votre collection.',
-    loadArtworks: 'Trouver d’autres illustrations',
+      'Choisissez une animation, puis préparez le jeu pour l’appliquer. Mettez ensuite à jour l’écran de veille installé dans Steam.',
+    loadArtworks: 'Trouver des animations',
     artworksLoading: 'Recherche d’illustrations…',
     noArtworks:
       'Aucune illustration compatible. Essayez d’autoriser les images fixes dans les réglages.',
@@ -899,6 +906,7 @@ let state = structuredClone(defaultState),
   polling = false,
   detailId = null,
   assets = null,
+  artworksError = null,
   coverAssets = null,
   coverChoosing = false,
   searchResults = null,
@@ -1202,7 +1210,7 @@ async function run(action, payload = {}, message, options = {}) {
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 0.1.8</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 0.1.9</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -1529,6 +1537,7 @@ async function searchGames() {
 async function showDetail(id) {
   detailId = id;
   assets = null;
+  artworksError = null;
   coverAssets = null;
   renderDetail();
   detailDialog.showModal();
@@ -1558,21 +1567,7 @@ function renderDetail(preferArtwork = false) {
               'detail',
               g.name
             );
-  detailDialog.innerHTML = `<div class="dialog-head"><div><div class="eyebrow">${esc(t(g.manualSelection ? 'manualChoice' : 'automatic'))}</div><h2 id="detail-title">${esc(g.name)}</h2><p>${esc(statusName(g))}${!g.included ? ' · ' + esc(t('notIncluded')) : ''}</p></div><button class="icon-button" data-action="close-detail" aria-label="${esc(t('close'))}">${icon('close')}</button></div><div class="dialog-body">${`<div class="detail-framing">${detailMedia}</div>`}${cropEditor(g)}<div class="detail-meta">${g.steamAppId ? `<span>Steam #${esc(g.steamAppId)}</span>` : ''}${g.sgdbId ? `<span>SGDB #${esc(g.sgdbId)}</span>` : ''}${g.media ? `<span>${g.media.width} × ${g.media.height} · ${esc(g.media.format)}${g.media.animated ? ` · ${esc(t('duration'))}: ${Number(g.media.duration) > 0 ? Number(g.media.duration).toLocaleString(lang(), { maximumFractionDigits: 1 }) + ' s' : esc(t('durationUnknown'))}` : ''}</span><span>${esc(t('artworkCredit'))} ${esc(authorName(g.media.author))}</span>` : ''}</div>${g.error ? `<div class="banner error">${esc(g.error)}</div>` : ''}<div class="detail-actions"><div class="button-row">${button(t('prepareScenes'), 'prepare-game', 'prepare', true, !state.hasKey ? 'disabled' : '')}${safeRemote(g.media?.sourceUrl || g.selectedAsset?.url) ? `<a class="button ghost" href="${attr(safeRemote(g.media?.sourceUrl || g.selectedAsset?.url))}" target="_blank" rel="noopener noreferrer">${icon('external')}${esc(t('source'))}</a>` : ''}</div>${button(t('removeGame'), 'remove-game', 'trash')}</div>${coverPicker(g)}${g.manualSelection ? `<div style="margin-bottom:20px">${button(t('automaticChoice'), 'automatic-choice', 'refresh')}</div>` : ''}<div class="section-heading"><div><h2>${esc(t('artworkTitle'))}</h2><p>${esc(t('artworkBody'))}</p></div></div>${
-    assets === null
-      ? `<p class="modal-hint">${esc(t('noArtworkYet'))}</p>${button(t('loadArtworks'), 'load-artworks', 'image', false, !state.hasKey ? 'disabled' : '')}`
-      : assets === 'loading'
-        ? `<div class="dialog-empty"><span class="spinner"></span> ${esc(t('artworksLoading'))}</div>`
-        : assets.length
-          ? `<div class="asset-grid">${assets
-              .map((a, i) => {
-                const image = safeRemote(a.thumb) || safeRemote(a.url),
-                  selected = g.selectedAsset?.id === a.id;
-                return `<button class="asset-choice ${selected ? 'selected' : ''}" data-select-asset="${i}" aria-label="${esc(t('choose') + ' ' + (i + 1))}" aria-pressed="${selected}">${previewImage([a.thumb, a.url], 'asset', g.name + ' ' + (i + 1))}<span class="asset-badge">${esc(t(selected ? 'selected' : a.animated ? 'animated' : 'still'))}</span><div class="asset-caption"><strong>${esc(authorName(a.author))}</strong><br>${Number(a.width) || '?'} × ${Number(a.height) || '?'} · ${esc(a.kind || 'hero')}${a.reasons?.length ? `<br>${esc(a.reasons.join(' · '))}` : ''}</div></button>`;
-              })
-              .join('')}</div>`
-          : `<div class="dialog-empty">${esc(t('noArtworks'))}</div>`
-  }</div>`;
+  detailDialog.innerHTML = `<div class="dialog-head"><div><div class="eyebrow">${esc(t(g.manualSelection ? 'manualChoice' : 'automatic'))}</div><h2 id="detail-title">${esc(g.name)}</h2><p>${esc(statusName(g))}${!g.included ? ' · ' + esc(t('notIncluded')) : ''}</p></div><button class="icon-button" data-action="close-detail" aria-label="${esc(t('close'))}">${icon('close')}</button></div><div class="dialog-body"><div class="animation-actions">${button(t(g.media || g.selectedAsset ? 'changeAnimation' : 'loadArtworks'), 'load-artworks', 'image', true, `${!state.hasKey || assets === 'loading' ? 'disabled' : ''} aria-controls="animation-choices" aria-expanded="${assets !== null}"`)}${button(t('prepareGame'), 'prepare-game', 'prepare', false, !state.hasKey ? 'disabled' : '')}${g.manualSelection ? button(t('automaticChoice'), 'automatic-choice', 'refresh') : ''}</div>${!state.hasKey ? `<p class="modal-hint">${esc(t('animationKeyNeeded'))}</p>` : ''}${animationPicker(g)}<div class="detail-framing">${detailMedia}</div>${cropEditor(g)}<div class="detail-meta">${g.steamAppId ? `<span>Steam #${esc(g.steamAppId)}</span>` : ''}${g.sgdbId ? `<span>SGDB #${esc(g.sgdbId)}</span>` : ''}${g.media ? `<span>${g.media.width} × ${g.media.height} · ${esc(g.media.format)}${g.media.animated ? ` · ${esc(t('duration'))}: ${Number(g.media.duration) > 0 ? Number(g.media.duration).toLocaleString(lang(), { maximumFractionDigits: 1 }) + ' s' : esc(t('durationUnknown'))}` : ''}</span><span>${esc(t('artworkCredit'))} ${esc(authorName(g.media.author))}</span>` : ''}</div>${g.error ? `<div class="banner error">${esc(g.error)}</div>` : ''}<div class="detail-actions"><div class="button-row">${safeRemote(g.media?.sourceUrl || g.selectedAsset?.url) ? `<a class="button ghost" href="${attr(safeRemote(g.media?.sourceUrl || g.selectedAsset?.url))}" target="_blank" rel="noopener noreferrer">${icon('external')}${esc(t('source'))}</a>` : ''}</div>${button(t('removeGame'), 'remove-game', 'trash')}</div>${coverPicker(g)}</div>`;
   updateCropPreview();
   if (wasOpen) {
     let target = preferArtwork
@@ -1590,6 +1585,30 @@ function renderDetail(preferArtwork = false) {
     )?.focus({ preventScroll: true });
     detailDialog.scrollTop = scrollTop;
   }
+}
+function animationPicker(g) {
+  if (assets === null) return '<section id="animation-choices" hidden></section>';
+  const content =
+    assets === 'loading'
+      ? `<p class="modal-hint" role="status"><span class="spinner"></span> ${esc(t('artworksLoading'))}</p>`
+      : artworksError
+        ? `<div class="banner error" role="alert">${esc(artworksError)}</div>`
+        : assets.length
+          ? `<div class="asset-grid">${assets
+              .map((a, i) => {
+                const selected =
+                  g.selectedAsset?.id === a.id &&
+                  (!g.selectedAsset.kind || g.selectedAsset.kind === a.kind);
+                return `<button class="asset-choice ${selected ? 'selected' : ''}" data-select-asset="${i}" aria-label="${esc(t('choose') + ' ' + (i + 1))}" aria-pressed="${selected}">${previewImage([a.thumb, a.url], 'asset', g.name + ' ' + (i + 1))}<span class="asset-badge">${esc(t(selected ? 'selected' : a.animated ? 'animated' : 'still'))}</span><div class="asset-caption"><strong>${esc(authorName(a.author))}</strong><br>${Number(a.width) || '?'} × ${Number(a.height) || '?'} · ${esc(a.kind || 'hero')}${a.reasons?.length ? `<br>${esc(a.reasons.join(' · '))}` : ''}</div></button>`;
+              })
+              .join('')}</div>`
+          : `<p class="modal-hint">${esc(t('noArtworks'))}</p>`;
+  return `<section id="animation-choices" class="animation-choices" aria-labelledby="animation-choices-title"><div class="section-heading"><div><h2 id="animation-choices-title">${esc(t('artworkTitle'))}</h2><p>${esc(t('artworkBody'))}</p></div></div>${content}</section>`;
+}
+function revealAnimationChoices() {
+  detailDialog
+    .querySelector('#animation-choices:not([hidden])')
+    ?.scrollIntoView({ block: 'start' });
 }
 function framingOptions(value, inherit = false) {
   return [
@@ -1688,7 +1707,9 @@ async function selectCover(selectedCover) {
 async function loadArtworks() {
   const id = detailId;
   assets = 'loading';
+  artworksError = null;
   renderDetail();
+  revealAnimationChoices();
   try {
     const result = await invoke('artworks', { id });
     state.previewsPaused = false;
@@ -1698,8 +1719,10 @@ async function loadArtworks() {
     toast(error.message);
     if (detailId !== id) return;
     assets = [];
+    artworksError = error.message || t('operationError');
   }
   renderDetail(true);
+  revealAnimationChoices();
 }
 async function scan() {
   if (scanning) return;

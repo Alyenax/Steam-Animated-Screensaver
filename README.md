@@ -2,7 +2,7 @@
 
 Create and install a Steam screensaver from animated SteamGridDB artwork. Scan installed games, import owned games, or add titles manually; choose artwork, prepare it locally, and preview the result.
 
-**0.1.8 provides SteamOS, Linux, Windows x64 and macOS Apple Silicon packages.** The native macOS manager and automated software checks are exercised locally. Native Windows/Linux execution and Steam Big Picture/Gaming Mode acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.9 provides SteamOS, Linux, Windows x64 and macOS Apple Silicon packages.** The native macOS manager and automated software checks are exercised locally. Native Windows/Linux execution and Steam Big Picture/Gaming Mode acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
@@ -31,6 +31,12 @@ The initial space-containing export identifier has been replaced with `steam-ani
 
 Extract the entire Windows ZIP and run **Steam Animated Screensaver.exe**. macOS, Windows, Linux and SteamOS install the same offline player into `<Steam client root>/config/uioverrides/screensavers/steam-animated-screensaver`. On desktop platforms, select it in Steam **Big Picture → Settings → Customization**. Platform roots and update/migration instructions are in [INSTALLATION.md](docs/INSTALLATION.md).
 
+## Change a game's animation
+
+Open **Library → Game details → Change animation** (or **Find animations** for a game without prepared media). The button is at the top, above the current preview, crop controls and fixed artwork. Choose an alternative, then **Prepare this game**. The fixed artwork, crop and inclusion are preserved. Browse/retry without changing the current animation until a choice is made. After preparing, use **Update / Repair** to apply the choice to the installed Steam screensaver.
+
+Playback starts directly on the first decoded animation. No introduction or empty-library page is shown while the catalog or media loads. Existing Steam snapshots need **Update / Repair** after upgrading the app to receive this player fix.
+
 ## Library selection and diagnostic logs
 
 Use **Select all shown / Deselect all shown** after filtering or searching. Choose your library's **100 most popular on Steam** (concurrent players) or **100 most played by you** (imported total playtime). Import the **current Steam top 100** separately to discover games; software is filtered out and new entries start excluded. No hosted server is required. Steam popularity uses Valve's public endpoints, with progress, cancellation and a 30-minute count cache. Personal playtime requires an owned-library import.
@@ -51,7 +57,7 @@ Download the platform `.tar.gz` and `SHA256SUMS` from the private release. Steam
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf Steam-Animated-Screensaver-0.1.8-steamos-x64.tar.gz
+tar -xzf Steam-Animated-Screensaver-0.1.9-steamos-x64.tar.gz
 cd steam-animated-screensaver-linux-x64
 ./install.sh
 ```

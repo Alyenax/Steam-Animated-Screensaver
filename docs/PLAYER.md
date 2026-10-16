@@ -90,3 +90,9 @@ Node tests cover CDN URL and redirect restrictions, oversize/truncated downloads
 6. Verify Steam's in-game-disable/idle behavior, suspend/resume, client restart, repeated install/repair/uninstall and an interrupted update.
 
 No physical SteamOS, Steam Deck or Steam Machine acceptance is claimed from a local browser or a successful file installation.
+
+## Direct startup (0.1.9)
+
+The initial HTML empty-state element is hidden before any script runs. Loading a catalog hides any previous error/empty state immediately. A valid catalog keeps the screen silent until its first media decodes, then shows that scene immediately without an initial fade. The first-scene transition override is removed on the following animation frame so later crossfades/fade-to-black behavior is preserved.
+
+An embedded Manager player waits silently for its first parent-supplied catalog. A genuinely empty standalone catalog or exhaustion of invalid media still produces functional feedback. `tests/player-startup.test.cjs` delays catalog.js and the GIF response, monitors rendered frames in EN/FR and asserts that no presentation page becomes visible before playback. Existing Steam snapshots must be updated to include the new HTML/player.

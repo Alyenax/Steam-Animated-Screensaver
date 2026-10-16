@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.1.9 — Visible animation selection and direct playback startup
+
+- Move Find animations / Change animation to the top of each game detail, before its preview, crop and fixed artwork. Open the alternative gallery directly, keep the button available for retry, and show provider errors separately from empty results.
+- Verify choosing/preparing a different animation updates actual media and the Steam snapshot while retaining the fixed artwork, crop and inclusion. Exercise EN desktop and FR handheld layouts.
+- Hide the empty-state markup from the initial HTML paint, keep loading silent and wait for the parent catalog in Preview. Reveal the first decoded scene without an introductory fade; retain transitions between later scenes and real empty/error feedback.
+- Add a throttled catalog/media startup regression test and end-to-end animation-picker fault/retry/export checks. Supply all four platform packages.
+
 ## 0.1.8 — Platform packages, library selection and diagnostics
 
 - Rename app, repository, branch, package identifiers and downloads to Steam Animated Screensaver; migrate existing data and owned exports. Replace promotional copy with functional labels in EN/FR.

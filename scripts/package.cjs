@@ -37,6 +37,7 @@ async function build(platform = 'linux', arch = 'x64') {
   const dist = path.join(root, 'dist');
   await fs.mkdir(dist, { recursive: true });
   const staging = await fs.mkdtemp(path.join(dist, '.stage-'));
+  const packagingTemp = await fs.mkdtemp(path.join(dist, '.packager-'));
   try {
     for (const item of [
       'core',
@@ -149,6 +150,7 @@ async function build(platform = 'linux', arch = 'x64') {
     const { packager } = require('@electron/packager');
     const outputs = await packager({
       dir: staging,
+      tmpdir: packagingTemp,
       out: dist,
       name: macOS || windows ? pkg.productName : 'steam-animated-screensaver',
       executableName: windows ? pkg.productName : 'steam-animated-screensaver',
@@ -224,11 +226,20 @@ async function build(platform = 'linux', arch = 'x64') {
     execFileSync('tar', ['-czf', path.join(dist, filename), '-C', dist, path.basename(output)], {
       stdio: 'inherit'
     });
+    const counterpart = filename.replace(
+      steamOS ? '-steamos-' : '-linux-',
+      steamOS ? '-linux-' : '-steamos-'
+    );
+    await fs.copyFile(path.join(dist, filename), path.join(dist, counterpart));
     const content = await fs.readFile(path.join(dist, filename));
     const hash = crypto.createHash('sha256').update(content).digest('hex');
     await fs.writeFile(
       path.join(dist, steamOS ? 'STEAMOS_SHA256SUMS' : 'LINUX_SHA256SUMS'),
       `${hash}  ${filename}\n`
+    );
+    await fs.writeFile(
+      path.join(dist, steamOS ? 'LINUX_SHA256SUMS' : 'STEAMOS_SHA256SUMS'),
+      `${hash}  ${counterpart}\n`
     );
     console.log(
       JSON.stringify(
@@ -239,6 +250,7 @@ async function build(platform = 'linux', arch = 'x64') {
     );
   } finally {
     await fs.rm(staging, { recursive: true, force: true });
+    await fs.rm(packagingTemp, { recursive: true, force: true });
   }
 }
 async function finishMac({ dist, output, pkg }) {

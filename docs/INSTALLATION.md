@@ -37,7 +37,7 @@ The script refuses linked or unowned destinations. It does not use `sudo`, chang
 2. Scan installed games, import owned games with a separate optional Steam API key, or add games manually. A SteamID alone identifies an account but does not replace Valve's required API key for owned-library import.
 3. In Library, filter/search, then **Select all shown** or **Deselect all shown**. The two library top-100 buttons use current concurrent Steam players or personal total playtime. They replace inclusion only among the owned games in the current filtered list.
 4. **Import current Steam top 100** adds available games from Valve's ranking without asserting ownership. New entries are excluded until selected. The upstream top 100 may include software; it is filtered out, so fewer than 100 games can remain. Ranking requests show progress and can be cancelled without changing the previous selection.
-5. Prepare the selected animations, inspect Preview and choose optional fixed artwork, framing and 24/30 fps processing.
+5. Open a game’s sheet and use **Change animation / Find animations** at the top to browse alternatives. Choose an animation and **Prepare this game**; fixed artwork and crop choices are retained. Inspect Preview and choose optional 24/30 fps processing.
 6. Install from Preparation or Settings. Restart Steam if needed, open **Big Picture → Settings → Customization → Screensavers**, then select **steam-animated-screensaver**. SteamOS Gaming Mode exposes the corresponding Customization settings.
 
 ## Steam paths
@@ -57,6 +57,8 @@ A `STEAM_ROOT` environment variable prioritizes a custom client root. Root symli
 The first new-name launch moves the previous owned data folder to `steam-animated-screensaver` atomically, preserving keys, catalog and cached bytes. Close the previous manager first. If both folders already exist, they are not merged or overwritten. Chromium uses a separate `steam-animated-screensaver-electron` profile so its early lock cannot mask the data migration.
 
 Update / Repair writes the ready included player snapshot and then retires owned exports carrying either historical identifier. It preserves unrelated screensavers. The standalone repair script can rename a single owned historical export without preparing its media again.
+
+After upgrading to 0.1.9, use **Update / Repair** once to remove the introductory loading page from an existing installed Steam snapshot. Restart Steam if it retains the previous page.
 
 Changes appear immediately in Preview; **Update / Repair** applies them to Steam. An installed snapshot works offline with the manager closed. Interrupted preparation can resume; completed files are reused. A malformed catalog is preserved as `.corrupt-TIMESTAMP`. The exclusive library lock detects an active manager and recovers a dead process's stale lock.
 

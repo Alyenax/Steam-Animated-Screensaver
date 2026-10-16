@@ -396,6 +396,14 @@
       }
       const show = () => {
         if (token !== generation || destroyed) return;
+        if (!old && !options.reducedMotion) {
+          // The first decoded frame appears directly; later scene changes keep their transitions.
+          scene.classList.add('instant');
+          global.requestAnimationFrame(() => {
+            if (!destroyed && scene.isConnected)
+              scene.classList.toggle('instant', options.reducedMotion);
+          });
+        }
         scene.classList.add('visible');
         if (isVideo && playing) art.play().catch(runtimeFailure);
         if (old) {
@@ -463,7 +471,8 @@
   function previous() {
     if (historyPosition > 0) display(history[--historyPosition], false);
   }
-  function loadCatalog(value) {
+  function loadCatalog(value, waitingForParent = false) {
+    empty.hidden = true;
     ++generation;
     clearTimer();
     clearTimeout(loadTimer);
@@ -479,7 +488,7 @@
     historyPosition = -1;
     newOrder();
     if (games.length) next();
-    else emptyState();
+    else if (!waitingForParent) emptyState();
   }
   function setSettings(partial) {
     const nextSettings = settings({ ...options, ...partial });
@@ -555,5 +564,5 @@
   global.addEventListener('resize', resizeFrames);
   global.addEventListener('pagehide', destroy, { once: true });
   doc.addEventListener('visibilitychange', visibility);
-  loadCatalog(global.SAS_CATALOG);
+  loadCatalog(global.SAS_CATALOG, global.parent !== global);
 })(typeof window !== 'undefined' ? window : globalThis);

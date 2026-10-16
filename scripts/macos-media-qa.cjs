@@ -97,6 +97,9 @@ async function run(appPath) {
     }
     const report = {
       result: 'passed',
+      version: JSON.parse(
+        await fs.readFile(path.join(appPath, 'Contents/Resources/app/package.json'), 'utf8')
+      ).version,
       app: path.resolve(appPath),
       fixture: 'Original generated test media; no personal API key or remote artwork',
       checks

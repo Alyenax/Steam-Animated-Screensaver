@@ -1,9 +1,9 @@
 {
-  "version": "0.1.8",
+  "version": "0.1.9",
   "host": "macOS arm64",
   "unitAndIntegration": {
-    "tests": 115,
-    "passed": 115,
+    "tests": 116,
+    "passed": 116,
     "failed": 0,
     "skipped": 0
   },
@@ -15,8 +15,25 @@
     "checks": 6,
     "uncaughtErrors": 0
   },
+  "animationPickerEndToEnd": {
+    "version": "0.1.9",
+    "result": "passed",
+    "fixture": "Isolated real Core/Manager/media/export with original generated animations and injected provider faults; no personal key or downloaded game artwork.",
+    "checks": [
+      "Unprepared game exposes Find animations immediately, with a clear key requirement",
+      "Ready games expose Change animation above the preview in EN desktop and FR handheld; the gallery opens visibly with working images",
+      "Provider errors and empty results keep search accessible; retry recovers without changing the current animation",
+      "Choosing and preparing another animation changes actual media and Steam export, preserves fixed artwork/crop/inclusion, and persists the choice"
+    ],
+    "unexpectedErrors": []
+  },
+  "startupRegression": {
+    "passed": true,
+    "scope": "Actual installed player with catalog.js delayed and GIF delayed 600 ms, rendered frames observed in EN/FR; no intro visible and first-scene opacity is 1 immediately."
+  },
   "nativePackagedMac": {
-    "checks": 17,
+    "checks": 18,
+    "version": "0.1.9",
     "rendererCrashRecorded": {
       "reason": "killed",
       "exitCode": 2
@@ -24,7 +41,7 @@
     "unexpectedErrors": []
   },
   "nativeLifecycle": {
-    "version": "0.1.8",
+    "version": "0.1.9",
     "platform": "darwin",
     "arch": "arm64",
     "packaged": true,
@@ -41,24 +58,11 @@
     "checks": 8,
     "result": "passed"
   },
-  "publicValveProvider": {
-    "result": "passed",
-    "upstreamEntries": 100,
-    "gamesAfterFiltering": 93
-  },
-  "faultsCovered": [
-    "Corrupt media and cached thumbnail",
-    "Unavailable/rate-limited/invalid provider responses",
-    "Cancelled selection leaves prior inclusion unchanged",
-    "Interrupted preparation with restart/resume",
-    "Simulated disk-full diagnostic commit preserves previous JSON",
-    "Immediate process exit preserves last fatal JSON entry",
-    "Native renderer error/rejection/console and forced termination",
-    "Native main-process fatal exception and stale-lock recovery"
-  ],
   "largeCatalog": "5000 games: bulk inclusion, both rankings, restart and exact persisted inclusion verified",
   "scope": [
+    "Original generated test media and injected provider faults; no personal key or downloaded game artwork",
     "Short lifecycle/fault-injection suite, not a long-duration soak",
-    "Native Windows/Linux/SteamOS runtime and actual Steam idle/wake require target-client acceptance"
+    "Native Windows/Linux/SteamOS runtime and actual Steam idle/wake require target-client acceptance",
+    "Public Valve ranking evidence from unchanged provider in 0.1.8 remains in POPULARITY_LIVE_VALIDATION.json"
   ]
 }

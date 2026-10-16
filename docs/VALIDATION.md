@@ -1,16 +1,18 @@
-# Validation — Steam Animated Screensaver 0.1.8
+# Validation — Steam Animated Screensaver 0.1.9
 
 Validation host: macOS arm64. This report distinguishes native execution, automated software tests and cross-platform package inspection. Windows, Linux and SteamOS packages are built here; native execution and actual Steam CEF idle/wake acceptance on those targets remain pending. Passing tests does not establish universal stability.
 
 ## Executed results
 
-- 115 unit/integration tests passed, zero failures or skipped tests.
+- 116 unit/integration tests passed, zero failures or skipped tests.
 - 31 main browser end-to-end checks and 6 selection checks passed, with no unexpected browser errors.
-- 17 packaged native Mac checks, eight native media checks and four native lifecycle/recovery checks passed.
-- Public Valve smoke returned 93 games after filtering 100 upstream entries; no API key was used.
+- 18 packaged native Mac checks, eight native media checks and four native lifecycle/recovery checks passed.
+- Public Valve smoke from 0.1.8 returned 93 games after filtering 100 upstream entries; the provider is unchanged and that evidence remains historical.
 - A 5,000-game catalog passed bulk inclusion, both exact top-100 selections, save and restart.
 
 Machine-readable results: [STABILITY_VALIDATION.json](STABILITY_VALIDATION.json).
+
+The 0.1.9 regression also delays the installed player’s catalog and first GIF, observes rendered frames in EN/FR and checks that startup shows no presentation page or introductory fade. A dedicated animation-picker end-to-end flow covers immediate button visibility, desktop/handheld layouts, working previews, provider error/empty/retry, choosing/preparing a different animation and preserving fixed artwork/crop in the Steam export. Evidence: [ANIMATION_PICKER_VALIDATION.json](ANIMATION_PICKER_VALIDATION.json).
 
 ## Test layers
 
@@ -57,6 +59,7 @@ npm run check
 npm test
 node scripts/ui-qa.cjs --capture
 node scripts/selection-ui-qa.cjs --capture
+node scripts/animation-picker-qa.cjs --capture
 node scripts/progress-ui-qa.cjs
 npm run package:mac
 npm run package:windows

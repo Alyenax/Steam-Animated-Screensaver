@@ -47,12 +47,14 @@ async function run({ appPath, reportPath } = {}) {
     page.setDefaultTimeout(10000);
     const bundle = await app.evaluate(({ app }) => ({
       packaged: app.isPackaged,
+      version: app.getVersion(),
       arch: process.arch,
       executable: process.execPath,
       resources: process.resourcesPath
     }));
     if (appPath) {
       assert.equal(bundle.packaged, true);
+      assert.equal(bundle.version, require('../package.json').version);
       assert.equal(bundle.arch, 'arm64');
       assert.equal(bundle.executable, executablePath);
     }
@@ -109,6 +111,17 @@ async function run({ appPath, reportPath } = {}) {
         document.querySelector('.game-visual[data-detail="steam:7000901"] .managed-image img')
           ?.naturalWidth > 0
     );
+
+    await page.locator('.game-visual[data-detail="steam:7000901"]').click();
+    const animationButton = page.locator('[data-action="load-artworks"]');
+    assert.equal(await animationButton.innerText(), 'Change animation');
+    const animationBox = await animationButton.boundingBox(),
+      detailBox = await page.locator('#detail-dialog').boundingBox();
+    assert(
+      animationBox.y >= detailBox.y &&
+        animationBox.y + animationBox.height <= detailBox.y + detailBox.height
+    );
+    await page.locator('[data-action="close-detail"]').click();
 
     const isolation = await page.evaluate(() => ({
       node: typeof require,
@@ -333,6 +346,7 @@ async function run({ appPath, reportPath } = {}) {
           : []),
         'Actual app:// protocol media playback',
         'Native image-preview IPC and JPEG decoding',
+        'Change animation is visible immediately at the top of a ready game sheet',
         'Native Steam key save/removal and 24 fps profile settings IPC',
         'Full product name and no Local-first badge',
         'Real Electron preview pause',

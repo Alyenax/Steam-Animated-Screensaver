@@ -1,0 +1,12 @@
+{
+  "version": "0.1.9",
+  "result": "passed",
+  "fixture": "Isolated real Core/Manager/media/export with original generated animations and injected provider faults; no personal key or downloaded game artwork.",
+  "checks": [
+    "Unprepared game exposes Find animations immediately, with a clear key requirement",
+    "Ready games expose Change animation above the preview in EN desktop and FR handheld; the gallery opens visibly with working images",
+    "Provider errors and empty results keep search accessible; retry recovers without changing the current animation",
+    "Choosing and preparing another animation changes actual media and Steam export, preserves fixed artwork/crop/inclusion, and persists the choice"
+  ],
+  "unexpectedErrors": []
+}

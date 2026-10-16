@@ -1,11 +1,11 @@
-# 0.1.8-rc.1 — Steam Animated Screensaver
+# 0.1.9-rc.1 — Animation selection and direct startup
 
-The app, repository, branch and download names now use **Steam Animated Screensaver**. The interface uses functional labels in French and English. Existing catalog, API keys and prepared files migrate to the new data folder; close the previous manager before upgrading.
+**Library → Game details → Change animation** is now at the top of the game sheet, above the preview, crop and fixed artwork. Games without prepared media show **Find animations**. The alternatives open directly in view. The button remains available after empty results or an error so the search can be retried.
 
-Library now supports select/deselect all within the current search/filter, top 100 owned games by concurrent Steam players, and top 100 by personal imported playtime. A separate Steam top-100 import adds games without asserting ownership. New discovery entries start excluded. Popularity requests show progress, support cancellation and retain previous choices on failure. Software in Valve's ranking is filtered out, so the result may contain fewer than 100 games.
+Choose an animation, then **Prepare this game**. Browsing alternatives preserves the current media; selecting/preparing replaces the animation and retains the fixed artwork, crop and inclusion. Use **Update / Repair** afterward to apply it to the installed Steam screensaver.
 
-Each release provides SteamOS x64, Linux x64, Windows x64 ZIP and macOS Apple Silicon DMG/ZIP. The manager installs the same player into Steam's local override directory on all platforms. Steam Big Picture/Gaming Mode activation and wake remain target-client acceptance checks; native Mac app tests do not establish native Windows/Linux compatibility.
+The player no longer displays an introductory/empty-library screen while loading a valid catalog or its first media. The first decoded image appears directly, without an introductory fade. Normal transitions between scenes and actual unavailable-media messages remain. The regression test deliberately delays the catalog and animation in English and French and checks every rendered frame for an intro flash.
 
-Settings now exposes a local diagnostic JSON containing action/preparation errors, stacks, decoder details and renderer/process failures. Five rotating JSON files are retained, API keys are masked, and there is no automatic upload. Crash dumps stay local. Tests include forced renderer/main-process failures and restart recovery in an isolated app profile.
+**After updating the app, use Settings → Steam integration → Update / Repair**, then restart Steam if it keeps the previous page. An existing Steam snapshot is independent of the app and does not receive code changes until updated.
 
-See [INSTALLATION.md](INSTALLATION.md) for paths and migration, and [VALIDATION.md](VALIDATION.md) for executed checks and their limits. GitHub Actions stays disabled. This is a private installation candidate, with no personal credentials or downloaded game artwork included.
+All four platform downloads are supplied: SteamOS/Linux x64, Windows x64 and macOS Apple Silicon DMG/ZIP. Native Mac and automated software checks are recorded separately from native Windows/Linux/SteamOS and actual Steam idle/wake acceptance, which remain pending. Private candidate; no credentials or game artwork included; GitHub Actions stays disabled.
