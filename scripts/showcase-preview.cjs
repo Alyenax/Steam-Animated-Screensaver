@@ -4,6 +4,7 @@ const syncFS = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const root = path.resolve(__dirname, '..');
+const inlineVideos = require('../launch/INLINE_VIDEOS.json').videos;
 const videoName = 'Steam-Animated-Screensaver-demo.mp4';
 const steamosName = 'Steam-Animated-Screensaver-SteamOS-overview.mp4';
 const video = path.join(root, 'dist/public-launch-v2', videoName);
@@ -50,8 +51,14 @@ async function markdown(file) {
         return esc(node.value);
       case 'heading':
         return `<h${node.depth}>${body()}</h${node.depth}>`;
-      case 'paragraph':
-        return `<p>${body()}</p>`;
+      case 'paragraph': {
+        const inlineVideo = inlineVideos.find(
+          (v) => source.slice(node.position.start.offset, node.position.end.offset).trim() === v.url
+        );
+        return inlineVideo
+          ? `<video controls playsinline preload="metadata" src="${esc(inlineVideo.file)}"></video>`
+          : `<p>${body()}</p>`;
+      }
       case 'strong':
         return `<strong>${body()}</strong>`;
       case 'emphasis':
@@ -112,6 +119,8 @@ async function exportSite() {
     recursive: true
   });
   await fs.copyFile(video, path.join(output, videoName));
+  for (const v of inlineVideos)
+    await fs.copyFile(path.join(root, 'dist/public-launch-v2', v.file), path.join(output, v.file));
   await fs.writeFile(path.join(output, 'steamos.html'), await index(steamosName, 'steamos.html'));
   await fs.copyFile(
     path.join(root, 'dist/public-launch-v2', steamosName),
@@ -148,6 +157,9 @@ async function serve({ recordUrl = true, port = Number(process.env.SAS_PREVIEW_P
       let file, type;
       if (name === 'video.mp4' || name === 'steamos-video.mp4') {
         file = name === 'video.mp4' ? video : path.join(root, 'dist/public-launch-v2', steamosName);
+        type = 'video/mp4';
+      } else if (inlineVideos.some((v) => v.file === name)) {
+        file = path.join(root, 'dist/public-launch-v2', name);
         type = 'video/mp4';
       } else if (['showcase.css', 'showcase.js'].includes(name)) {
         file = path.join(root, 'showcase', name);

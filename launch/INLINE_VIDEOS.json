@@ -1,0 +1,33 @@
+{
+  "result": "passed",
+  "videos": [
+    {
+      "file": "Steam-Animated-Screensaver-demo-inline.mp4",
+      "bytes": 9520136,
+      "duration": 88.984,
+      "width": 1280,
+      "height": 720,
+      "fps": "60/1",
+      "audio": "aac",
+      "allFramesDecoded": true,
+      "originalUnchanged": true,
+      "originalSha256": "71ca07079ea2e74802b11f6949bcc9596418d1e06a1a08723c1db1c9b46d3e2e",
+      "sha256": "cba9d03e2bf693eb1f44e08c83ad1ec04cf37e0dca3e95741131c33d7d2080b4",
+      "url": "https://github.com/user-attachments/assets/f62bff01-aada-40e7-9652-aa0f95f78d85"
+    },
+    {
+      "file": "Steam-Animated-Screensaver-SteamOS-overview-inline.mp4",
+      "bytes": 9536638,
+      "duration": 78.984,
+      "width": 1280,
+      "height": 720,
+      "fps": "60/1",
+      "audio": "aac",
+      "allFramesDecoded": true,
+      "originalUnchanged": true,
+      "originalSha256": "7e856fdfd4c549392ef98762fdf904f8b98de334997fbbecf45174d84a860aaa",
+      "sha256": "b3f97c0bb704a17937002c03c218b2b97fc9edc97efc4e4d8430b3835f570dbf",
+      "url": "https://github.com/user-attachments/assets/e76ae4fc-57e7-4334-a1e4-a17a6caf4dbd"
+    }
+  ]
+}

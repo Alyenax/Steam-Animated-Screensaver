@@ -86,6 +86,25 @@ async function main() {
       'Steam-Animated-Screensaver-SteamOS-overview.mp4'
     ])
       assert((await page.locator(`article a[href$="/${name}"]`).count()) > 0);
+    assert.equal(await page.locator('article video').count(), 2);
+    for (const v of await page.locator('article video').all()) {
+      await v.evaluate((v) => v.play());
+      await page.waitForTimeout(350);
+      const state = await v.evaluate((v) => ({
+        time: v.currentTime,
+        error: v.error,
+        width: v.videoWidth,
+        height: v.videoHeight,
+        controls: v.controls
+      }));
+      assert(state.time > 0 && !state.error && state.controls);
+      assert.equal(state.width, 1280);
+      assert.equal(state.height, 720);
+      await v.evaluate((v) => v.pause());
+    }
+    checks.push(
+      'Both inline 720p videos load and play with native controls alongside original 1080p download links'
+    );
     assert((await page.locator('article').innerText()).includes('Scott Buckley'));
     assert((await page.locator('article').innerText()).includes('CC BY 4.0'));
     checks.push(
