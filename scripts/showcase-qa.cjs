@@ -59,6 +59,14 @@ async function main() {
     checks.push(
       'Actual changelog renders its four activation steps, including Steam selection, quit/apply and restart'
     );
+    await page.goto(server.url + 'steamos.html');
+    await page.waitForFunction(() => document.querySelector('video').readyState >= 2);
+    const steamOSDuration = await page.locator('video').evaluate((v) => v.duration);
+    assert(steamOSDuration > 78 && steamOSDuration < 80);
+    assert((await page.locator('main').innerText()).includes('not a native SteamOS'));
+    checks.push(
+      'SteamOS overview loads its 79-second video and clearly discloses macOS app capture'
+    );
     for (const width of [1440, 800, 390]) {
       await page.setViewportSize({ width, height: 950 });
       for (const route of [
@@ -66,7 +74,10 @@ async function main() {
         'readme.html',
         'changelog.html',
         'reddit-en.html',
-        'reddit-fr.html'
+        'reddit-fr.html',
+        'steamos.html',
+        'reddit-steamos-en.html',
+        'reddit-steamos-fr.html'
       ]) {
         await page.goto(server.url + route);
         assert.equal(
@@ -77,7 +88,7 @@ async function main() {
       }
     }
     checks.push(
-      'Demo, README, changelog and both Reddit drafts have no horizontal overflow at 1440, 800 and 390px'
+      'Both demos, README, changelog and all four Reddit drafts have no horizontal overflow at 1440, 800 and 390px'
     );
     for (const file of [
       'index.html',
@@ -85,7 +96,9 @@ async function main() {
       'changelog.html',
       'showcase.css',
       'showcase.js',
-      'Steam-Animated-Screensaver-demo.mp4'
+      'Steam-Animated-Screensaver-demo.mp4',
+      'Steam-Animated-Screensaver-SteamOS-overview.mp4',
+      'steamos.html'
     ])
       await fs.access(path.join(exported, file));
     assert(

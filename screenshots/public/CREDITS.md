@@ -27,4 +27,4 @@ Source: SteamGridDB. Game rights belong to their respective owners; this project
 
 Development-only scripts: `capture-window-macos.m`, `capture-launch-native.cjs`, `prepare-demo-smoothing.cjs`, `capture-demo-player.cjs`, `capture-demo-settings.cjs`, `capture-demo-alternatives.cjs`, and `render-launch-native.cjs` under the root scripts directory. They require the local prepared demo bundle, native media tools, an existing local SteamGridDB key and macOS screen recording permission. Outputs remain ignored in `dist/public-launch-v2`; the final named file is `Steam-Animated-Screensaver-demo.mp4`. The separate `capture-steam-idle.cjs` script records the current guarded five-minute flow without changing a personal Steam config. These are maintainer presentation tools, not a consumer setup path.
 
-The soundtrack is an original synthesis, with no external samples: [Quiet Scenes and CC0 dedication](../../launch/MUSIC.md). This dedication does not cover the artwork.
+The soundtrack is an original synthesis, with no external samples: [Bright Scenes and CC0 dedication](../../launch/MUSIC.md). This dedication does not cover the artwork.

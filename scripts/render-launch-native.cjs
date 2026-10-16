@@ -131,13 +131,14 @@ async function main() {
     'Steam-Animated-Screensaver-demo-clean.mp4'
   ]);
   const target = 'Steam-Animated-Screensaver-demo.mp4';
+  const temporaryTarget = '.Steam-Animated-Screensaver-remix.mp4';
   await run(ffmpeg, [
     '-v',
     'error',
     '-i',
     'Steam-Animated-Screensaver-demo-clean.mp4',
     '-i',
-    'Quiet-Scenes-original.wav',
+    'Bright-Scenes-original.wav',
     '-map',
     '0:v:0',
     '-map',
@@ -145,7 +146,7 @@ async function main() {
     '-c:v',
     'copy',
     '-af',
-    `volume=0.3548,afade=t=in:d=2.5,afade=t=out:st=${total - 5}:d=5`,
+    `loudnorm=I=-24:TP=-9:LRA=8,afade=t=in:d=2.5,afade=t=out:st=${total - 5}:d=5`,
     '-c:a',
     'aac',
     '-b:a',
@@ -159,11 +160,19 @@ async function main() {
     '-movflags',
     '+faststart',
     '-y',
-    target
+    temporaryTarget
   ]);
-  await run(ffmpeg, ['-v', 'error', '-i', target, '-f', 'null', '-']);
+  await run(ffmpeg, ['-v', 'error', '-i', temporaryTarget, '-f', 'null', '-']);
   const info = JSON.parse(
-    await run(ffprobe, ['-v', 'error', '-show_streams', '-show_format', '-of', 'json', target])
+    await run(ffprobe, [
+      '-v',
+      'error',
+      '-show_streams',
+      '-show_format',
+      '-of',
+      'json',
+      temporaryTarget
+    ])
   );
   const v = info.streams.find((s) => s.codec_type === 'video'),
     a = info.streams.find((s) => s.codec_type === 'audio');
@@ -171,6 +180,7 @@ async function main() {
   assert.equal(v.width, 1920);
   assert.equal(v.height, 1080);
   assert.equal(a.codec_name, 'aac');
+  await fs.rename(path.join(out, temporaryTarget), path.join(out, target));
   await fs.writeFile(
     path.join(out, 'VIDEO_VALIDATION.json'),
     JSON.stringify(
@@ -182,7 +192,9 @@ async function main() {
         audio: {
           codec: a.codec_name,
           sampleRate: a.sample_rate,
-          music: 'Quiet Scenes - original synthesis, CC0'
+          music: 'Bright Scenes - original synthesis, CC0',
+          bpm: 104,
+          targetLUFS: -24
         },
         allFramesDecoded: true,
         editingInterpolation: false,

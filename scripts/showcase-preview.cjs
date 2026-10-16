@@ -5,6 +5,7 @@ const path = require('node:path');
 const http = require('node:http');
 const root = path.resolve(__dirname, '..');
 const videoName = 'Steam-Animated-Screensaver-demo.mp4';
+const steamosName = 'Steam-Animated-Screensaver-SteamOS-overview.mp4';
 const video = path.join(root, 'dist/public-launch-v2', videoName);
 const github =
   'https://github.com/Alyenax/Steam-Animated-Screensaver/blob/codex/steam-animated-screensaver/';
@@ -17,7 +18,9 @@ const documents = {
   'readme.html': 'README.md',
   'changelog.html': 'CHANGELOG.md',
   'reddit-en.html': 'launch/REDDIT_EN.md',
-  'reddit-fr.html': 'launch/REDDIT_FR.md'
+  'reddit-fr.html': 'launch/REDDIT_FR.md',
+  'reddit-steamos-en.html': 'launch/REDDIT_STEAMOS_EN.md',
+  'reddit-steamos-fr.html': 'launch/REDDIT_STEAMOS_FR.md'
 };
 function href(url, file) {
   if (/^(https?:|mailto:|#)/.test(url)) return esc(url);
@@ -76,10 +79,15 @@ async function markdown(file) {
         return node.value ? esc(node.value) : body();
     }
   }
-  const language = file === 'launch/REDDIT_FR.md' ? 'fr' : 'en';
+  const language = file.endsWith('_FR.md') ? 'fr' : 'en';
   return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(file)} — Steam Animated Screensaver</title><link rel="stylesheet" href="showcase.css"></head><body><header class="top"><a class="name" href="index.html">Steam Animated Screensaver</a><nav aria-label="Documentation"><a href="index.html">Demo</a><a href="readme.html">README</a><a href="changelog.html">Changelog</a><a href="reddit-en.html">Reddit EN</a><a href="reddit-fr.html">FR</a></nav></header><main><article>${render(ast)}</article></main><footer>Rendered from the actual ${esc(file)} file.</footer></body></html>`;
 }
-async function index(localVideo) {
+async function index(localVideo, page = 'index.html') {
+  if (page === 'steamos.html')
+    return (await fs.readFile(path.join(root, 'showcase/steamos.html'), 'utf8')).replaceAll(
+      steamosName,
+      localVideo
+    );
   return (await fs.readFile(path.join(root, 'showcase/index.html'), 'utf8')).replaceAll(
     'https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v0.1.11-rc.1/' +
       videoName,
@@ -98,10 +106,15 @@ async function exportSite() {
     recursive: true
   });
   await fs.copyFile(video, path.join(output, videoName));
+  await fs.writeFile(path.join(output, 'steamos.html'), await index(steamosName, 'steamos.html'));
+  await fs.copyFile(
+    path.join(root, 'dist/public-launch-v2', steamosName),
+    path.join(output, steamosName)
+  );
   console.log(output);
   return output;
 }
-async function serve({ recordUrl = true } = {}) {
+async function serve({ recordUrl = true, port = Number(process.env.SAS_PREVIEW_PORT) || 0 } = {}) {
   const server = http.createServer(async (request, response) => {
     try {
       const base = `http://127.0.0.1:${server.address().port}`;
@@ -115,15 +128,20 @@ async function serve({ recordUrl = true } = {}) {
       const name = decodeURIComponent(new URL(request.url, base).pathname).replace(/^\//, '');
       response.setHeader('Cache-Control', 'no-store');
       response.setHeader('X-Content-Type-Options', 'nosniff');
-      if (['', 'index.html'].includes(name) || documents[name]) {
+      if (['', 'index.html', 'steamos.html'].includes(name) || documents[name]) {
         response.setHeader('Content-Type', 'text/html; charset=utf-8');
         return response.end(
-          documents[name] ? await markdown(documents[name]) : await index('/video.mp4')
+          documents[name]
+            ? await markdown(documents[name])
+            : await index(
+                name === 'steamos.html' ? '/steamos-video.mp4' : '/video.mp4',
+                name || 'index.html'
+              )
         );
       }
       let file, type;
-      if (name === 'video.mp4') {
-        file = video;
+      if (name === 'video.mp4' || name === 'steamos-video.mp4') {
+        file = name === 'video.mp4' ? video : path.join(root, 'dist/public-launch-v2', steamosName);
         type = 'video/mp4';
       } else if (['showcase.css', 'showcase.js'].includes(name)) {
         file = path.join(root, 'showcase', name);
@@ -164,7 +182,7 @@ async function serve({ recordUrl = true } = {}) {
       response.end('Preview unavailable.');
     }
   });
-  await new Promise((resolve) => server.listen(0, '127.0.0.1', resolve));
+  await new Promise((resolve) => server.listen(port, '127.0.0.1', resolve));
   const url = `http://127.0.0.1:${server.address().port}/`;
   console.log(url);
   await fs.mkdir(path.join(root, 'dist'), { recursive: true });
