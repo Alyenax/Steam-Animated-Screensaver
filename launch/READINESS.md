@@ -26,7 +26,7 @@ Capture and final MP4 verification: [VALIDATION.json](VALIDATION.json). Both the
 
 On every platform: launch, search previews, prepare/change animation, still-artwork choice, framing, install/update, idle activation in Steam, offline playback and controller/keyboard/mouse dismissal. For Linux and Windows, start with a fresh standard installation and record dependencies or permission problems. Longer playback sessions should check CPU/GPU/memory use and process cleanup.
 
-The current detailed report documents automated Mac execution and package inspection separately. SteamOS hands-on feedback comes from the maintainer; this launch capture uses the packaged Mac app and native window recording. Mac Steam selection was observed separately; the user confirmed custom playback in Preview. Automatic Mac activation is now observed using the internal Steam timer workaround; dismissal remains inconclusive with remote input. The Manager still lacks a consumer-facing timer control. It is not Gamescope or Windows Steam footage.
+The current detailed report documents automated Mac execution and package inspection separately. SteamOS hands-on feedback comes from the maintainer; this launch capture uses the packaged Mac app and native window recording. Mac Steam selection was observed separately; the user confirmed custom playback in Preview. Automatic Mac activation is now observed using the internal Steam timer workaround; physical keyboard interruption was subsequently confirmed by the maintainer. Controller/mouse dismissal has not been separately accepted. The Manager still lacks a consumer-facing timer control. It is not Gamescope or Windows Steam footage.
 
 ## Steam context
 

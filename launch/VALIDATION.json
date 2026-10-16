@@ -613,7 +613,7 @@
     "idleActivation": "Verified native automatic playback after setting both Steam timers to 60 seconds; long-delay comparison kept Steam home visible beyond 70 seconds.",
     "note": "File installation is separate from Steam selector/idle acceptance.",
     "previewPlayback": "User confirms animated games display in Steam Preview on 2026-10-16",
-    "dismissal": "Inconclusive with remote input",
+    "dismissal": "Physical keyboard interruption confirmed by the maintainer on 2026-10-16",
     "timeoutResearch": {
       "date": "2026-10-16",
       "officialSource": "https://www.steamdeck.com/en/news?pubDate=20261013",
@@ -633,7 +633,7 @@
     "macIdleTest": {
       "date": "2026-10-16",
       "scope": "Native installed Steam client on this MacBook; no preview or ForceScreensaver call used during automatic test",
-      "result": "automatic-playback-verified; dismissal-inconclusive",
+      "result": "automatic-playback-verified; physical-keyboard-dismissal-user-confirmed",
       "configuration": {
         "path": "config/config.vdf > InstallConfigStore/Software/Valve/Steam/System",
         "acSeconds": 60,
@@ -668,12 +668,19 @@
         "observed": "Steam home remained visible at 2, 30, 65 and 70 seconds"
       },
       "dismissal": {
-        "status": "inconclusive",
-        "reason": "Remote Escape/click did not produce an observable return, and later focus/fullscreen changes produced black capture. Remote Escape also failed to close native Steam menus, so a player defect is not established."
+        "status": "user-confirmed",
+        "method": "Physical keyboard",
+        "date": "2026-10-16",
+        "reportedObservation": "Keyboard input interrupted the screensaver.",
+        "source": "Direct maintainer confirmation in this task",
+        "previousRemoteTest": {
+          "status": "inconclusive",
+          "reason": "Remote Escape/click did not produce an observable return, and later focus/fullscreen changes produced black capture. Remote Escape also failed to close native Steam menus, so a player defect is not established."
+        }
       },
       "limitations": [
         "AC playback observed; battery delay configured but not tested on battery",
-        "No physical keyboard/controller dismissal acceptance",
+        "Controller and mouse dismissal not separately accepted",
         "No long-duration stability claim",
         "Consumer-facing automatic timer control is not implemented in the Manager"
       ],
