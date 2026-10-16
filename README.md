@@ -10,6 +10,8 @@ Choose games, prepare their animations and install the screensaver in Steam. Pre
 
 Maintained by [Alyenax](https://github.com/Alyenax).
 
+[![Support Steam Animated Screensaver on Ko-fi](screenshots/public/support-kofi.svg)](https://ko-fi.com/alyenax)
+
 <details>
 <summary>Features and screenshots</summary>
 
@@ -83,8 +85,6 @@ Contributors are welcome. Many SteamGridDB animations have a low frame rate, whi
 ## Support
 
 You can support development on [Ko-fi](https://ko-fi.com/alyenax). The app and its public releases remain available to everyone.
-
-[![Support Steam Animated Screensaver on Ko-fi](screenshots/public/support-kofi.svg)](https://ko-fi.com/alyenax)
 
 <details>
 <summary>Development and credits</summary>
