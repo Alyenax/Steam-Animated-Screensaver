@@ -7,7 +7,7 @@ This is a launch kit, not a published 1.0.0. The app/package version stays at 0.
 - Root README: functional overview, real app screenshots, setup and platform testing limits.
 - Root changelog: short first-public-release entry; earlier history lives in `docs/DEVELOPMENT_CHANGELOG.md`.
 - Reddit drafts: [English](REDDIT_EN.md) and [French](REDDIT_FR.md). The drafts assume public downloads exist; post them only after launch.
-- Video: local `dist/public-launch/Steam-Animated-Screensaver-demo.mp4`, with captions and a clean version (66 seconds, 1080p). The opening compares the same animation at its original size and cropped to 16:9, before showing settings. Upload the MP4 directly to Reddit when publishing; do not post the private release URL as a public download.
+- Video: local `dist/public-launch-v2/Steam-Animated-Screensaver-demo-v2.mp4` (73 seconds, 1080p60, quiet original music), plus a silent version. All ten requested games appear, with original/16:9 framing, real ten-game batch preparation marked 8× speed, alternatives and processing settings. Upload the MP4 directly to Reddit after launch.
 - Visuals: [credits and capture scope](../screenshots/public/CREDITS.md). Screenshots are from the actual 0.1.9 interface, without relabeling its version.
 
 ## Before public binary distribution
@@ -26,7 +26,7 @@ Capture and final MP4 verification: [VALIDATION.json](VALIDATION.json). Both the
 
 On every platform: launch, search previews, prepare/change animation, still-artwork choice, framing, install/update, idle activation in Steam, offline playback and controller/keyboard/mouse dismissal. For Linux and Windows, start with a fresh standard installation and record dependencies or permission problems. Longer playback sessions should check CPU/GPU/memory use and process cleanup.
 
-The current detailed report documents automated Mac execution and package inspection separately. SteamOS hands-on feedback comes from the maintainer; this launch capture itself is a Mac browser run of the actual UI/player, not a recording inside Gamescope or Windows Steam.
+The current detailed report documents automated Mac execution and package inspection separately. SteamOS hands-on feedback comes from the maintainer; this launch capture uses the packaged Mac app and native window recording. Mac Steam selection was observed separately; the user confirmed custom playback in Preview. Inactivity activation and dismissal remain pending; this MacBook has a Steam timeout UI routing defect. It is not Gamescope or Windows Steam footage.
 
 ## Steam context
 

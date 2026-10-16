@@ -81,3 +81,9 @@ Local data paths:
 - Linux / SteamOS: `${XDG_CONFIG_HOME:-~/.config}/steam-animated-screensaver`
 
 Close the manager before deleting data. Removing the data folder also removes keys, catalog, media and JSON logs; the separate Chromium profile can be removed independently. Never remove a Steam game library to uninstall this app.
+
+## Automatic start in Big Picture
+
+Select the custom screensaver and test **Preview** first. Steam controls the inactivity timer separately from this app. On Gamescope, its battery/AC timers are in Steam's Power settings. Desktop Big Picture also supports screensavers, but its timer UI can differ.
+
+On the MacBook client inspected on October 16, 2026, **Customization → Configure screensaver timeouts** leads to Power without any timer controls: the link is shown for a device with a battery, while the destination's idle controls require Gamescope. Manual Preview works. Automatic activation on that Mac is not validated; changing macOS's own screen-saver timeout does not configure this Steam setting. Do not assume a one-minute timer has been set merely because the custom screensaver is selected. This finding applies to the inspected Steam build, not every Mac or future client.

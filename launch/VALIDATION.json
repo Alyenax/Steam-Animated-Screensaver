@@ -1,93 +1,634 @@
 {
-  "capture": {
-    "sourceVersion": "0.1.9",
-    "format": "Actual unmodified Manager/Player, isolated three-game catalog, copied existing local media; no live search/import/preparation or Steam activation claimed.",
-    "sourceCatalogUnchanged": true,
-    "credentialsRead": false,
-    "externalRequests": [],
+  "scope": "Private 1.0 presentation preparation; application stays 0.1.9",
+  "batch": {
+    "result": "passed",
+    "total": 10,
+    "processed": 10,
     "errors": [],
-    "duration": 65.174,
-    "chapters": [
+    "durationSeconds": 84.677,
+    "games": [
+      "ELDEN RING",
+      "Cyberpunk 2077",
+      "HELLDIVERS™ 2",
+      "Red Dead Redemption 2",
+      "Disco Elysium",
+      "Don't Starve Together",
+      "Tom Clancy's Rainbow Six Siege",
+      "Baldur's Gate 3",
+      "Left 4 Dead 2",
+      "ARC Raiders"
+    ]
+  },
+  "smoothing": {
+    "result": "passed",
+    "settings": {
+      "fps": 30,
+      "mode": "blend",
+      "maxSmoothingMB": 0
+    },
+    "errors": [],
+    "games": [
       {
-        "seconds": 0.01,
-        "title": "Full-screen player — original size, full image"
-      },
-      {
-        "seconds": 9.89,
-        "title": "Full-screen player — 16:9 crop, same animation"
-      },
-      {
-        "seconds": 18.34,
-        "title": "Library"
-      },
-      {
-        "seconds": 25.71,
-        "title": "Game details — animation selection and crop"
-      },
-      {
-        "seconds": 35.41,
-        "title": "Preview — move the still artwork"
-      },
-      {
-        "seconds": 47.77,
-        "title": "Settings — optional 24/30 fps processing"
-      },
-      {
-        "seconds": 58.59,
-        "title": "Full-screen player — final result"
-      }
-    ],
-    "artwork": [
-      {
-        "game": "Balatro",
-        "animation": {
-          "artist": "Nosebeggar",
-          "url": "https://cdn2.steamgriddb.com/hero/8dc2c09b481972807b78402a87b518fd.webp"
-        },
-        "cover": {
-          "artist": "NNB",
-          "url": "https://cdn2.steamgriddb.com/grid/704f72562168940fbfa7e9f01e0f84aa.jpg"
+        "name": "ELDEN RING",
+        "original": "9f51bf656a9284bc47fcbf68.source.webp",
+        "processed": "9f51bf656a9284bc47fcbf68.source.webp",
+        "smoothing": "native-fluid",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
         }
       },
       {
-        "game": "Disco Elysium",
-        "animation": {
-          "artist": "TUFKAC",
-          "url": "https://cdn2.steamgriddb.com/hero/282b71a86a960e117b12b24d88aff20e.webp"
-        },
-        "cover": {
-          "artist": "Maxine",
-          "url": "https://cdn2.steamgriddb.com/grid/7e85bfb04eae1af627743dd44b8686bf.png"
+        "name": "Cyberpunk 2077",
+        "original": "31dcf83b91673762ef10cdbf.source.webp",
+        "processed": "31dcf83b91673762ef10cdbf.source.webp",
+        "smoothing": "native-fluid",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
         }
       },
       {
-        "game": "Vampire Crawlers",
-        "animation": {
-          "artist": "Blackdraon12099",
-          "url": "https://cdn2.steamgriddb.com/grid/5686cd3d88525a81d7cf55f74cce72cb.webp"
-        },
-        "cover": {
-          "artist": "Strom",
-          "url": "https://cdn2.steamgriddb.com/grid/d0390da5abdafb939e810c5df4dc4842.png"
+        "name": "HELLDIVERS™ 2",
+        "original": "d01da24ed8b2a96950984bf5.source.webp",
+        "processed": "d01da24ed8b2a96950984bf5.smooth30-blend-v2.webm",
+        "smoothing": "interpolate-30-v2",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
+        }
+      },
+      {
+        "name": "Red Dead Redemption 2",
+        "original": "b633a72dd74ad2442f7f96bf.source.webp",
+        "processed": "b633a72dd74ad2442f7f96bf.source.webp",
+        "smoothing": "native-fluid",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
+        }
+      },
+      {
+        "name": "Disco Elysium",
+        "original": "e5c850fc891752c19de8fe2e.source.webp",
+        "processed": "e5c850fc891752c19de8fe2e.smooth30-blend-v2.webm",
+        "smoothing": "interpolate-30-v2",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
+        }
+      },
+      {
+        "name": "Don't Starve Together",
+        "original": "9c6f71f8e0da53ed1cae12f6.source.webp",
+        "processed": "9c6f71f8e0da53ed1cae12f6.smooth30-blend-v2.webm",
+        "smoothing": "interpolate-30-v2",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
+        }
+      },
+      {
+        "name": "Tom Clancy's Rainbow Six Siege",
+        "original": "abc67e1db6b9d7c141758ac1.source.webp",
+        "processed": "abc67e1db6b9d7c141758ac1.source.webp",
+        "smoothing": "native-fluid",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
+        }
+      },
+      {
+        "name": "Baldur's Gate 3",
+        "original": "e3c5f4ca9e68dcb9a9e670b3.source.webp",
+        "processed": "e3c5f4ca9e68dcb9a9e670b3.smooth30-blend-v2.webm",
+        "smoothing": "interpolate-30-v2",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
+        }
+      },
+      {
+        "name": "Left 4 Dead 2",
+        "original": "8682840d4c2ea226b11824a1.source.webp",
+        "processed": "8682840d4c2ea226b11824a1.smooth30-blend-v2.webm",
+        "smoothing": "interpolate-30-v2",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
+        }
+      },
+      {
+        "name": "ARC Raiders",
+        "original": "d534cd6d1da3e101bcaf9018.source.webp",
+        "processed": "d534cd6d1da3e101bcaf9018.source.webp",
+        "smoothing": "native-fluid",
+        "smoothingConfig": {
+          "fps": 30,
+          "mode": "blend",
+          "codec": "vp8",
+          "version": 2
         }
       }
     ]
   },
+  "showcase": {
+    "result": "passed",
+    "method": "Actual unmodified standalone Player in packaged Mac app, real prepared catalog/media, native ScreenCaptureKit window capture. Capture-only focus/visibility emulation prevents background pauses; scene advance uses the Player public next/settings API.",
+    "settings": {
+      "language": "en",
+      "sceneDuration": 180,
+      "shuffle": false,
+      "transition": "crossfade",
+      "showLogos": true,
+      "showCover": true,
+      "coverPosition": "beside-title",
+      "framing": "original",
+      "smoothMotion": true,
+      "smoothingFps": 30,
+      "smoothingMode": "blend",
+      "maxSmoothingMB": 0,
+      "staticFallback": false,
+      "reducedMotion": false,
+      "maxStorageGB": 10,
+      "pauseOnGame": false
+    },
+    "segments": [
+      {
+        "game": "ELDEN RING",
+        "framing": "original",
+        "start": 0.016,
+        "title": "ELDEN RING",
+        "objectFit": "contain",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 4.817
+      },
+      {
+        "game": "ELDEN RING",
+        "framing": "16:9",
+        "start": 5.671,
+        "title": "ELDEN RING",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 10.473
+      },
+      {
+        "game": "Cyberpunk 2077",
+        "framing": "16:9",
+        "start": 13.232,
+        "title": "Cyberpunk 2077",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 17.934
+      },
+      {
+        "game": "HELLDIVERS™ 2",
+        "framing": "16:9",
+        "start": 19.533,
+        "title": "HELLDIVERS™ 2",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 24.234
+      },
+      {
+        "game": "Red Dead Redemption 2",
+        "framing": "16:9",
+        "start": 28.583,
+        "title": "Red Dead Redemption 2",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 33.284
+      },
+      {
+        "game": "Disco Elysium",
+        "framing": "original",
+        "start": 34.833,
+        "title": "Disco Elysium",
+        "objectFit": "contain",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 39.534
+      },
+      {
+        "game": "Don't Starve Together",
+        "framing": "16:9",
+        "start": 41.102,
+        "title": "Don't Starve Together",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 45.804
+      },
+      {
+        "game": "Tom Clancy's Rainbow Six Siege",
+        "framing": "16:9",
+        "start": 47.367,
+        "title": "Tom Clancy's Rainbow Six Siege",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 52.068
+      },
+      {
+        "game": "Baldur's Gate 3",
+        "framing": "original",
+        "start": 53.616,
+        "title": "Baldur's Gate 3",
+        "objectFit": "contain",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 58.318
+      },
+      {
+        "game": "Left 4 Dead 2",
+        "framing": "16:9",
+        "start": 59.895,
+        "title": "Left 4 Dead 2",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 64.597
+      },
+      {
+        "game": "ARC Raiders",
+        "framing": "16:9",
+        "start": 67.734,
+        "title": "ARC Raiders",
+        "objectFit": "cover",
+        "frame": {
+          "width": 1280,
+          "height": 720
+        },
+        "visibility": "visible",
+        "end": 72.435
+      }
+    ],
+    "errors": [],
+    "allRequestedGamesShown": true,
+    "processing": "Built-in 30 fps blend option for sources below target; native-fluid originals retained by the application."
+  },
+  "cadence": {
+    "scope": "Native capture presentation timestamps, steady scenes only; not unique artwork FPS",
+    "segments": [
+      {
+        "game": "ELDEN RING",
+        "framing": "original",
+        "frames": 239,
+        "maxGapMs": 25,
+        "p95GapMs": 20
+      },
+      {
+        "game": "ELDEN RING",
+        "framing": "16:9",
+        "frames": 239,
+        "maxGapMs": 22,
+        "p95GapMs": 20
+      },
+      {
+        "game": "Cyberpunk 2077",
+        "framing": "16:9",
+        "frames": 233,
+        "maxGapMs": 20,
+        "p95GapMs": 20
+      },
+      {
+        "game": "HELLDIVERS™ 2",
+        "framing": "16:9",
+        "frames": 235,
+        "maxGapMs": 23,
+        "p95GapMs": 20
+      },
+      {
+        "game": "Red Dead Redemption 2",
+        "framing": "16:9",
+        "frames": 230,
+        "maxGapMs": 48,
+        "p95GapMs": 20
+      },
+      {
+        "game": "Disco Elysium",
+        "framing": "original",
+        "frames": 233,
+        "maxGapMs": 35,
+        "p95GapMs": 18
+      },
+      {
+        "game": "Don't Starve Together",
+        "framing": "16:9",
+        "frames": 231,
+        "maxGapMs": 38,
+        "p95GapMs": 20
+      },
+      {
+        "game": "Tom Clancy's Rainbow Six Siege",
+        "framing": "16:9",
+        "frames": 229,
+        "maxGapMs": 38,
+        "p95GapMs": 20
+      },
+      {
+        "game": "Baldur's Gate 3",
+        "framing": "original",
+        "frames": 230,
+        "maxGapMs": 37,
+        "p95GapMs": 20
+      },
+      {
+        "game": "Left 4 Dead 2",
+        "framing": "16:9",
+        "frames": 235,
+        "maxGapMs": 20,
+        "p95GapMs": 18
+      },
+      {
+        "game": "ARC Raiders",
+        "framing": "16:9",
+        "frames": 226,
+        "maxGapMs": 38,
+        "p95GapMs": 20
+      }
+    ]
+  },
+  "alternatives": {
+    "result": "passed",
+    "realProvider": true,
+    "visibleThumbnailsDecoded": true,
+    "loaded": 6
+  },
+  "processingUI": {
+    "result": "passed",
+    "smoothMotion": true,
+    "fps": 30,
+    "mode": "blend",
+    "nativeCapture": true
+  },
   "video": {
     "result": "passed",
-    "sourceVersion": "0.1.9",
-    "duration": 66.034,
-    "bytes": 23450716,
-    "codec": "h264",
-    "pixelFormat": "yuv420p",
-    "width": 1920,
-    "height": 1080,
-    "fps": 30,
-    "audio": false,
-    "fullDecode": "passed",
-    "captureErrors": [],
-    "externalRequests": [],
-    "sourceCatalogUnchanged": true,
-    "limitations": "Recording of actual UI/player in a temporary catalog; no SteamOS/Windows native execution claim. No interpolation applied to shown artwork."
+    "duration": 73,
+    "bytes": 22411665,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": "60/1"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": "48000",
+      "music": "Quiet Scenes - original synthesis, CC0"
+    },
+    "allFramesDecoded": true,
+    "editingInterpolation": false,
+    "chapters": [
+      {
+        "file": "showcase-final.mp4",
+        "start": 0.266,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 0
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 5.921,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 4
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 13.482,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 8
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 19.783,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 12
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 28.833,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 16
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 0.6,
+        "duration": 4.5,
+        "caption": "Select all · prepare 10 games",
+        "speed": 1,
+        "timelineStart": 20
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 5.493,
+        "duration": 81.2,
+        "caption": "Automatic preparation · 10 games · 8× speed",
+        "speed": 8,
+        "timelineStart": 24.5
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 86.8,
+        "duration": 2.2,
+        "caption": "10 games ready",
+        "speed": 1,
+        "timelineStart": 34.65
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 0.3,
+        "duration": 1.8,
+        "caption": "Choose the framing",
+        "speed": 1,
+        "timelineStart": 36.85
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 9.8,
+        "duration": 3.2,
+        "caption": "Position the still artwork",
+        "speed": 1,
+        "timelineStart": 38.65
+      },
+      {
+        "file": "alternatives-loaded.mp4",
+        "start": 0.3,
+        "duration": 2.6,
+        "caption": "Find another animation",
+        "speed": 1,
+        "timelineStart": 41.85
+      },
+      {
+        "file": "processing-enabled.mp4",
+        "start": 0.3,
+        "duration": 4.5,
+        "caption": "Optional 24 / 30 fps processing · shown here: 30 fps, light blend",
+        "speed": 1,
+        "timelineStart": 44.45
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 35.083,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 48.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 41.352,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 52.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 47.617,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 56.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 53.866,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 60.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 60.145,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 64.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 67.984,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 68.95
+      }
+    ]
+  },
+  "audio": {
+    "integratedLUFS": -25.18,
+    "truePeakDBTP": -14.74
+  },
+  "steam": {
+    "result": "installed-and-file-verified",
+    "games": [
+      "ELDEN RING",
+      "Cyberpunk 2077",
+      "HELLDIVERS™ 2",
+      "Red Dead Redemption 2",
+      "Disco Elysium",
+      "Don't Starve Together",
+      "Tom Clancy's Rainbow Six Siege",
+      "Baldur's Gate 3",
+      "Left 4 Dead 2",
+      "ARC Raiders"
+    ],
+    "settings": {
+      "language": "en",
+      "sceneDuration": 8,
+      "shuffle": false,
+      "transition": "crossfade",
+      "showLogos": true,
+      "showCover": true,
+      "coverPosition": "beside-title",
+      "framing": "16:9",
+      "staticFallback": false,
+      "reducedMotion": false
+    },
+    "selectionInSteam": "Observed in Steam Customization UI on 2026-10-16",
+    "idleActivation": "Not verified: Steam MacBook timer UI routes to missing Gamescope-only controls",
+    "note": "File installation is separate from Steam selector/idle acceptance.",
+    "previewPlayback": "User confirms animated games display in Steam Preview on 2026-10-16",
+    "dismissal": "not verified",
+    "timeoutResearch": {
+      "date": "2026-10-16",
+      "officialSource": "https://www.steamdeck.com/en/news?pubDate=20261013",
+      "clientFile": "Steam.AppBundle/Steam/Contents/MacOS/steamui/sp.js",
+      "clientSha256": "5a28c25041d07e69cf591a414519e0cf970b6884c1a0106659dcd9f1fb9586f9",
+      "finding": "Customization timeout routing sends systems with a battery OR IN_GAMESCOPE to Power. Power idle controls render only with IN_GAMESCOPE. On this MacBook the link therefore opens a Power page without the timeout controls.",
+      "evidence": [
+        "js routes with $n(); $n tests Ei.Jy() OR IN_GAMESCOPE",
+        "module 20429 export Jy reads SystemPowerStore.batteryState.bHasBattery",
+        "hn renders idle battery/AC controls only when IN_GAMESCOPE",
+        "non-routed Customization UI has a direct idle-time dropdown"
+      ],
+      "scope": "Local installed Steam client analysis plus observed MacBook UI. Not a claim that every Steam version/platform has this defect.",
+      "steamModified": false,
+      "workaround": "Use Preview for manual playback; no verified automatic-timer workaround applied."
+    }
   }
 }
