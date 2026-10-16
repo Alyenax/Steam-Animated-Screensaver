@@ -9,7 +9,7 @@ Steam Animated Screensaver prepares local artwork and installs a standalone HTML
 | SteamOS  | `*-steamos-x64.tar.gz`     | Desktop Mode for the manager; Linux x64 graphical session            |
 | Linux    | `*-linux-x64.tar.gz`       | Linux x64 with Electron's GTK/NSS/GBM/audio and sandbox dependencies |
 | Windows  | `*-windows-x64.zip`        | Windows 10/11 x64, current Steam client                              |
-| macOS    | `*-macos-arm64.dmg` or ZIP | Apple Silicon, macOS 13+                                             |
+| macOS    | `*-macos-arm64.dmg`        | Apple Silicon, macOS 13+                                             |
 
 SteamOS and Linux packages contain the same Linux x64 application. Separate downloads identify the intended installation instructions; they do not represent different engines. Intel Mac and Windows ARM64 packages are not supplied. Package inspection is separate from native runtime acceptance: see [VALIDATION.md](VALIDATION.md).
 
@@ -17,7 +17,7 @@ Verify the downloaded file against `SHA256SUMS` from the same release. No person
 
 ## macOS
 
-Open the DMG, drag **Steam Animated Screensaver.app** to Applications and launch it. Alternatively, extract the ZIP and open the app. Native media tools are bundled; Node, Homebrew, Rosetta and a server are not needed.
+Open the DMG, drag **Steam Animated Screensaver.app** to Applications and launch it. Native media tools are bundled; Node, Homebrew, Rosetta and a server are not needed.
 
 The macOS app has an ad-hoc signature, without Apple notarization. If macOS blocks it, use Apple's per-app [Open Anyway](https://support.apple.com/en-us/102445) action. Close the app before replacing it. Removing the `.app` preserves the library and logs.
 

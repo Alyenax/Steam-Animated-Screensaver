@@ -12,6 +12,8 @@ This release changes licensing and support links. It retains the original MIT no
 
 ## Public 1.0.0 checks
 
+The original release reports are grouped in [Steam-Animated-Screensaver-1.0.0-validation.zip](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-1.0.0-validation.zip). References below to release JSON files mean files inside this archive. The reports retain their original contents, including references to the optional Mac ZIP and presentation files that are no longer separate public downloads. The current `SHA256SUMS` covers the files still offered on the release page.
+
 The public release reruns the 127 unit and integration tests and the browser and packaged Mac checks. Linux and Windows media tools are now built locally with the pinned complete sources and recipes included in each package. Their ELF or PE architecture, static dependencies, source checksums and required media configuration are inspected. These checks do not substitute for running those executables on their target platforms. Exact results accompany the release.
 
 ## Previous 0.1.9 baseline

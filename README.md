@@ -41,10 +41,10 @@ Maintained by [Alyenax](https://github.com/Alyenax).
 
 | Platform | Package | Launch |
 | --- | --- | --- |
-| SteamOS / Steam Deck / Steam Machine | x64 `.tar.gz` | In Desktop Mode, extract and run `./install.sh` |
-| Linux desktop | x64 `.tar.gz` | Extract and run `./install.sh` |
-| Windows | x64 portable `.zip` | Extract the whole folder and run `Steam Animated Screensaver.exe` |
-| macOS 13+ | Apple Silicon `.dmg` or `.zip` | Drag the app to Applications |
+| SteamOS / Steam Deck / Steam Machine | [Download for SteamOS](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-1.0.0-steamos-x64.tar.gz) | In Desktop Mode, extract and run `./install.sh` |
+| Linux desktop | [Download for Linux](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-1.0.0-linux-x64.tar.gz) | Extract and run `./install.sh` |
+| Windows | [Download for Windows](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-1.0.0-windows-x64.zip) | Extract the whole folder and run `Steam Animated Screensaver.exe` |
+| macOS 13+ | [Download for Mac (Apple Silicon)](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-1.0.0-macos-arm64.dmg) | Open the DMG and drag the app to Applications |
 
 The app starts in English; French can be selected in Settings. Saved language choices are retained.
 
