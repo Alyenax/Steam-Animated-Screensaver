@@ -2,17 +2,25 @@
 
 [Back to the README](../README.md)
 
+Watch the smaller versions below, or download the original exports with no additional compression.
+
 ## Full demo
 
-[![Elden Ring and Cyberpunk 2077 animated preview](../screenshots/public/screensaver-demo.gif)](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-demo.mp4)
+https://github.com/user-attachments/assets/f62bff01-aada-40e7-9652-aa0f95f78d85
 
-[Watch or download the full demo](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-demo.mp4) · 89 seconds
+Playback: 720p at 60 fps, 9.52 MB.
+
+[Download the original 1080p video, 25.45 MB](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-demo.mp4) · 89 seconds
 
 Ten games, original and 16:9 framing, preparing several games at once, choosing an animation and setting Steam's delay. The final section shows the screensaver running inside Steam Big Picture on a Mac.
 
 ## SteamOS overview
 
-[Watch or download the SteamOS overview](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-SteamOS-overview.mp4) · 79 seconds
+https://github.com/user-attachments/assets/e76ae4fc-57e7-4334-a1e4-a17a6caf4dbd
+
+Playback: 720p at 60 fps, 9.54 MB.
+
+[Download the original 1080p video, 22.33 MB](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/Steam-Animated-Screensaver-SteamOS-overview.mp4) · 79 seconds
 
 A shorter overview focused on the SteamOS setup. The app footage was captured on macOS; this is not a recording of SteamOS Gaming Mode.
 
