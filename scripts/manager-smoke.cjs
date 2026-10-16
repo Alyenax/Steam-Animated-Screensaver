@@ -5,7 +5,7 @@ const fs = require('node:fs/promises');
 const { chromium } = require('playwright');
 const { createServer } = require('../scripts/dev-server.cjs');
 (async () => {
-  const dir = await fs.mkdtemp('/tmp/cinema-manager-qa-');
+  const dir = await fs.mkdtemp('/tmp/screensaver-manager-qa-');
   let server, browser;
   try {
     await fs.mkdir(dir + '/media');
@@ -120,7 +120,7 @@ const { createServer } = require('../scripts/dev-server.cjs');
     };
     server = await createServer({ dataDir: dir, core: mock });
     browser = await chromium.launch({
-      channel: process.env.CINEMA_BROWSER_CHANNEL || 'chrome',
+      channel: process.env.SAS_BROWSER_CHANNEL || 'chrome',
       headless: true
     });
     const page = await browser.newPage({ viewport: { width: 1280, height: 800 } });

@@ -358,7 +358,7 @@ svg {
 .hero-orbit:after {
   inset: 110px;
 }
-.cinema-window {
+.screensaver-window {
   position: absolute;
   right: 56px;
   top: 76px;
@@ -375,18 +375,18 @@ svg {
   place-items: center;
   color: #9ce9ee;
 }
-.cinema-window:before {
+.screensaver-window:before {
   content: '';
   position: absolute;
   inset: 12px;
   border: 1px solid #8ce6ee18;
 }
-.cinema-window svg {
+.screensaver-window svg {
   height: 40px;
   width: 40px;
   stroke-width: 0.8;
 }
-.cinema-window:after {
+.screensaver-window:after {
   content: '';
   width: 80px;
   height: 2px;
@@ -1372,7 +1372,7 @@ dialog::backdrop {
   .hero-copy {
     max-width: 700px;
   }
-  .cinema-window {
+  .screensaver-window {
     right: 130px;
     width: 280px;
     height: 165px;
@@ -1406,7 +1406,7 @@ dialog::backdrop {
   .hero h2 {
     font-size: 31px;
   }
-  .cinema-window {
+  .screensaver-window {
     right: 30px;
     opacity: 0.55;
     width: 190px;
@@ -1438,7 +1438,7 @@ dialog::backdrop {
   .hero-copy {
     max-width: 440px;
   }
-  .cinema-window {
+  .screensaver-window {
     right: -45px;
     opacity: 0.27;
   }
@@ -1631,7 +1631,7 @@ dialog::backdrop {
   .hero-orbit {
     opacity: 0.4;
   }
-  .cinema-window {
+  .screensaver-window {
     display: none;
   }
   .stats {
@@ -1905,7 +1905,7 @@ body.reduced-motion *:after {
 .hero-copy {
   max-width: 650px;
 }
-.cinema-window {
+.screensaver-window {
   opacity: 0.55;
 }
 .game-status {
@@ -2469,3 +2469,16 @@ body.reduced-motion *:after {
     grid-column: 1 / -1;
   }
 }
+
+.selection-panel { padding: 20px; margin: 0 0 24px; border: 1px solid var(--line); border-radius: 10px; background: #0f1928; }
+.selection-panel h2 { margin: 0 0 10px; font-size: 17px; }
+.selection-panel p { font-size: 12px; color: var(--muted); line-height: 1.7; margin: 12px 0; }
+.selection-panel .button { white-space: normal; text-align: left; max-width: 100%; }
+.selection-global { margin-top: 16px; padding-top: 16px; border-top: 1px solid var(--line); }
+.selection-progress { display: grid; gap: 10px; margin-top: 16px; font-size: 12px; }
+.selection-progress progress { width: 100%; accent-color: var(--cyan); }
+.selection-progress .button { justify-self: start; }
+.selection-panel .selection-result.error { color: #f6a6a6; }
+@media (max-width: 680px) { .selection-panel { padding: 16px; } .selection-panel .button-row { display: grid; grid-template-columns: minmax(0, 1fr); } }
+
+.log-path { overflow-wrap:anywhere; font-family:monospace; font-size:11px; }

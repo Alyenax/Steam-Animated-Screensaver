@@ -31,3 +31,7 @@ Electron's bundled license/Chromium notices are retained in the `.app`. Its loca
 ## Artworks
 
 SteamGridDB artists and game rights holders retain rights in their assets. Users download artwork locally under the service's terms; creator names and source attribution are retained. API access is not interpreted as a blanket redistribution license. No third-party game artwork appears in the released archive. QA captures use original labelled test animations and mocked search results; they do not prove a live authenticated API session.
+
+## Windows x64 media tools (0.1.8)
+
+The Windows package contains separate LGPL executables from the dated [BtbN FFmpeg build](https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-10-15-13-03), `ffmpeg-n8.1.3-18-g46d899d7a0-win64-lgpl-8.1.zip`. Archive SHA-256 is pinned in `scripts/windows-media.cjs`; LGPL notices, exact upstream/source/build links and executable hashes are included in `binaries/PROVENANCE.json`. PE machine headers must be x64. No Wine runtime or nonfree development binary is bundled. Native Windows execution and complete redistribution/source review remain distinct release acceptance items. SteamOS uses the Linux binary and its existing notices.

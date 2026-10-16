@@ -19,19 +19,22 @@ if test "$#" -gt 1; then echo 'Usage: remove-screensaver-tagline.sh [Steam-root]
 default_installation=0
 if test "$#" -eq 0; then
   default_installation=1
-  set -- "${STEAM_ROOT:-$HOME/.steam/root}" "$HOME/.steam/steam" "$HOME/.local/share/Steam" "$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam"
+  set -- "${STEAM_ROOT:-$HOME/.steam/root}" "$HOME/.steam/steam" "$HOME/.local/share/Steam" "$HOME/.var/app/com.valvesoftware.Steam/.local/share/Steam" "$HOME/Library/Application Support/Steam"
 fi
 for root in "$@"; do
-  for name in steamos-animated-screensaver 'SteamOS Animated Screensaver'; do
+  for name in steam-animated-screensaver steamos-animated-screensaver 'SteamOS Animated Screensaver'; do
     folder="$root/config/uioverrides/screensavers/$name"
-    marker="$folder/.steamos-animated-screensaver.json"
-    if test ! -L "$marker" && test -f "$marker" && grep -Eq '"owner"[[:space:]]*:[[:space:]]*"steamos-animated-screensaver"' "$marker"; then
+    for owner in steam-animated-screensaver steamos-animated-screensaver; do
+    marker="$folder/.$owner.json"
+    if test ! -L "$marker" && test -f "$marker" && grep -Eq '"owner"[[:space:]]*:[[:space:]]*"'"$owner"'"' "$marker"; then
       patch_player "$folder"
+      break
     fi
+    done
   done
 done
-application="$HOME/.local/opt/steamos-animated-screensaver"
-if test "$default_installation" -eq 1 && test ! -L "$application" && test ! -L "$application/.cinema-application" && test -f "$application/.cinema-application" && grep -Fq 'steamos-animated-screensaver-v1' "$application/.cinema-application"; then
+application="$HOME/.local/opt/steam-animated-screensaver"
+if test "$default_installation" -eq 1 && test ! -L "$application" && test ! -L "$application/.screensaver-application" && test -f "$application/.screensaver-application" && grep -Fq 'steam-animated-screensaver-v1' "$application/.screensaver-application"; then
   patch_player "$application/resources/app/player"
 fi
 if test "$changed" -eq 0; then echo 'No owned player found. Pass your Steam root as an argument.' >&2; exit 1; fi

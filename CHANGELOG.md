@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.8 — Platform packages, library selection and diagnostics
+
+- Rename app, repository, branch, package identifiers and downloads to Steam Animated Screensaver; migrate existing data and owned exports. Replace promotional copy with functional labels in EN/FR.
+- Add filtered select/deselect all, owned top 100 by concurrent Steam players or personal playtime, and current Steam top-100 discovery. Progress/cancellation and provider failures preserve previous inclusion choices.
+- Package SteamOS/Linux x64, portable Windows x64 and macOS Apple Silicon DMG/ZIP; detect platform Steam roots, including the Windows registry, and install the same Big Picture/Gaming Mode player.
+- Save local diagnostic JSON with atomic commits, rotation, secret redaction, action/preparation errors, renderer exceptions and crash details. Add a Settings shortcut; keep native dumps local with uploads disabled.
+- Add migration, ranking, logging, fault-injection, restart/recovery and packaged-app regression checks. Record native macOS execution separately from cross-platform package checks.
+
 ## 0.1.7 — Native macOS preview app
 
 - Package the same Manager/Core/Player as an Apple Silicon `.app`, ZIP and drag-to-Applications DMG for macOS 13+. No Node, Homebrew, Rosetta or local server is required.
@@ -36,7 +44,7 @@
 - Load missing game previews on demand beyond the first eight search results. Recover broken thumbnails from their source; Home/detail moving-preview failures fall back to a still image.
 - Choose and replace fixed artwork independently of the animation, retain the manual choice through preparation/restart, and restore automatic selection.
 - Add a manual output-size limit in MB; 0 defaults to no per-video limit. Remove hidden 160 MiB output/temporary-frame caps and interpolation deadline. Stream large-file headers/hashes and validate processed video above the former ceiling.
-- Use SteamOS Animated Screensaver as the full product name in all visible UI and remove the Local-first badge.
+- Use Steam Animated Screensaver as the full product name in all visible UI and remove the Local-first badge.
 - Validate actual live search/alternative/cover previews and offline playback of independently selected assets; keep secrets and downloaded artwork out of releases.
 
 ## 0.1.2 — Still covers and optional motion interpolation
@@ -61,7 +69,7 @@
 
 - Independent Steam library scanner, unified installed/manual catalog and personal-key SteamGridDB integration.
 - Recoverable, incremental media preparation with offline cache and explicit artwork selection.
-- Bilingual cinematic manager, same-engine preview and local Steam screensaver export.
+- Bilingual animated manager, same-engine preview and local Steam screensaver export.
 - User-space Linux x64 portable package, owned installation and removal scripts.
 
 Target-device acceptance and outstanding limitations are tracked in docs/VALIDATION.md. This version is not advertised as physically validated on SteamOS.

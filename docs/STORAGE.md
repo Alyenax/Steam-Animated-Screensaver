@@ -2,14 +2,14 @@
 
 ## Local data
 
-On Linux, the default application data directory is `~/.config/steamos-animated-screensaver` (Electron's app-data root respects the platform configuration). The macOS app uses `~/Library/Application Support/steamos-animated-screensaver`. `CINEMA_DATA_DIR` selects an absolute isolated directory for development/QA; `npm run dev` otherwise uses the repository's ignored `.data` directory.
+On Linux, the default application data directory is `~/.config/steam-animated-screensaver` (Electron's app-data root respects the platform configuration). The macOS app uses `~/Library/Application Support/steam-animated-screensaver`. Windows uses `%APPDATA%\steam-animated-screensaver`. `SAS_DATA_DIR` selects an absolute isolated directory for development/QA; `npm run dev` otherwise uses the repository's ignored `.data` directory.
 
 - `catalog.json`: versioned game identities, settings, preparation queue and measured media metadata. Atomic temporary-write/rename; user-only permissions.
 - `steamgriddb.key`: personal key, user-only permissions. Never exported to the player.
 - `.manager.lock`: exclusive writer lock with process identity.
 - `media/`: content-named originals, any necessary compatible output, generated thumbnails and lazily cached `preview-*.jpg` Manager previews. Partial work is not marked ready.
 
-The catalog stores Steam AppIDs separately from SteamGridDB IDs, source provenance, installed status, inclusion, explicit artwork selection, credits and processing status. Scanning never deletes a manual game or completed media. Artist metadata is escaped at render time. Removal from SteamOS Animated Screensaver does not remove the Steam installation; unused local media can subsequently be cleared explicitly.
+The catalog stores Steam AppIDs separately from SteamGridDB IDs, source provenance, installed status, inclusion, explicit artwork selection, credits and processing status. Scanning never deletes a manual game or completed media. Artist metadata is escaped at render time. Removal from Steam Animated Screensaver does not remove the Steam installation; unused local media can subsequently be cleared explicitly.
 
 No media is redistributed by the source repository or release. The installed Steam snapshot copies only ready included playback files and thumbnails, with credits and playback settings; it does not copy keys, original download URLs, queue state or management APIs.
 
@@ -37,9 +37,7 @@ One preparation worker runs at a time. Finished files are reused after validatio
 
 During playback the manager is unnecessary. The player has one active media scene and at most two decoders during transitions. See PLAYER.md for the exact measured formats and unverified Steam CEF behavior.
 
-
 `steam-api.key` stores the optional personal Steam Web API key with mode 0600, independently of `steamgriddb.key`. Neither is serialized in catalog/public state or exported playback. `steamAccount` stores only profile, SteamID, key-presence and import metadata. Games can have source `account`; importing never implies installation. `job.history` retains at most 250 dated phase/milestone events; current detailed progress remains in memory until the next normal checkpoint.
-
 
 ## Complete media purge (0.1.5)
 
@@ -49,9 +47,16 @@ The catalog's media/cover/smoothed references, errors and preparation queue are 
 
 `previewsPaused` persists after purge. The renderer invalidates pending image promises/generations, and core rejects automatic preview requests until explicit discovery (`search`, `artworks`, `covers`) or preparation. Navigation and automatic Steam scans do not resume downloads. The Steam export must be prepared and installed again.
 
-
 ## Components and display framing (0.1.6)
 
 Compatibility-component filtering removes matching catalog entries and queue references, including previously persisted entries. It never changes Steam manifests or installed files. Their old cached media becomes unreferenced and can be cleared with unused-media cleanup. Other manual games and similarly named real games are preserved.
 
 The optional per-game `crop` stores a mode and two focal coordinates, separately from media metadata; general `settings.framing` defaults to original. These choices survive merge, restart and complete media purge. Changing them never regenerates or invalidates downloaded/processed media. The offline export includes display settings, so Update / repair is sufficient after editing.
+
+## Selection cache, migration and logs (0.1.8)
+
+`playtimeMinutes` records imported Steam total playtime. `sources:popular` and `popularRank` describe the last current-Steam discovery import, not ownership. Inclusion and existing artwork/crop preferences survive all ranking operations. `steam-popularity.json` stores bounded public concurrent-player counts for 30 minutes; it has no credentials.
+
+The old product data directory is renamed atomically when the canonical directory is absent. Both-present directories are preserved without merging. Active old-manager locks and unsafe links block migration. Chromium uses a separate `steam-animated-screensaver-electron` profile to avoid creating a destination before migration. `SAS_APP_DATA_ROOT` can isolate the platform app-data root for native lifecycle QA; production needs no override.
+
+`logs/diagnostics.json` and four previous JSON segments retain structured local diagnostics (4 MiB per segment). API keys are redacted, files are private, and commits are synced and atomic. Full media purge intentionally preserves logs. Native Electron dumps under `logs/crashes` are separate, local-only binary crash data. No upload endpoint is configured. Abrupt termination is detectable on next startup; uncatchable crashes cannot always provide a final JavaScript event.

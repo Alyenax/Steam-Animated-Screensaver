@@ -4,7 +4,7 @@ const path = require('node:path');
 const os = require('node:os');
 const assert = require('node:assert/strict');
 async function run({ appPath, reportPath } = {}) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-electron-qa-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-electron-qa-'));
   let browser, app;
   try {
     const { chromium, _electron } = require('playwright');
@@ -40,7 +40,7 @@ async function run({ appPath, reportPath } = {}) {
     app = await _electron.launch({
       executablePath,
       args: appPath ? [] : [path.resolve(__dirname, '..')],
-      env: { ...process.env, CINEMA_DATA_DIR: fixture.dataDir, STEAM_ROOT: fixture.steamRoot },
+      env: { ...process.env, SAS_DATA_DIR: fixture.dataDir, STEAM_ROOT: fixture.steamRoot },
       timeout: 20000
     });
     const page = await app.firstWindow();
@@ -59,23 +59,23 @@ async function run({ appPath, reportPath } = {}) {
     const errors = [];
     page.on('pageerror', (error) => errors.push(error.message));
     await page.locator('[data-route="preview"]').first().waitFor();
-    assert.equal(await page.title(), 'SteamOS Animated Screensaver');
+    assert.equal(await page.title(), 'Steam Animated Screensaver');
     assert.equal(await page.locator('.local-badge').count(), 0);
     const accountCheck = await page.evaluate(async () => {
-      await window.cinema.invoke('setSteamAccount', {
+      await window.screensaver.invoke('setSteamAccount', {
         profile: '76561198000000000',
         key: '0123456789abcdef'.repeat(2)
       });
-      const saved = await window.cinema.invoke('state');
-      await window.cinema.invoke('setSteamAccount', { key: '' });
-      const removed = await window.cinema.invoke('state');
-      await window.cinema.invoke('settings', { smoothingFps: 24, smoothingMode: 'blend' });
-      await window.cinema.invoke('settings', { framing: '16:9' });
-      await window.cinema.invoke('updateGame', {
+      const saved = await window.screensaver.invoke('state');
+      await window.screensaver.invoke('setSteamAccount', { key: '' });
+      const removed = await window.screensaver.invoke('state');
+      await window.screensaver.invoke('settings', { smoothingFps: 24, smoothingMode: 'blend' });
+      await window.screensaver.invoke('settings', { framing: '16:9' });
+      await window.screensaver.invoke('updateGame', {
         id: 'steam:7000901',
         crop: { mode: '16:10', x: 20, y: 80 }
       });
-      const configured = await window.cinema.invoke('state');
+      const configured = await window.screensaver.invoke('state');
       return {
         saved: saved.steamAccount.hasKey,
         removed: removed.steamAccount.hasKey,
@@ -86,8 +86,11 @@ async function run({ appPath, reportPath } = {}) {
     assert.deepEqual(accountCheck, { saved: true, removed: false, fps: 24, mode: 'blend' });
     await assert.rejects(fs.stat(path.join(fixture.dataDir, 'steam-api.key')), { code: 'ENOENT' });
     const normalizedImage = await page.evaluate(async () => {
-      const state = await window.cinema.invoke('state');
-      return window.cinema.invoke('previewImage', { file: state.games[0].media.file, force: true });
+      const state = await window.screensaver.invoke('state');
+      return window.screensaver.invoke('previewImage', {
+        file: state.games[0].media.file,
+        force: true
+      });
     });
     const decoded = await page.evaluate(
       (file) =>
@@ -109,7 +112,7 @@ async function run({ appPath, reportPath } = {}) {
 
     const isolation = await page.evaluate(() => ({
       node: typeof require,
-      bridge: typeof window.cinema?.invoke
+      bridge: typeof window.screensaver?.invoke
     }));
     assert.deepEqual(isolation, { node: 'undefined', bridge: 'function' });
     const preferences = await app.evaluate(({ BrowserWindow }) => {
@@ -126,12 +129,12 @@ async function run({ appPath, reportPath } = {}) {
       nodeIntegration: false
     });
     assert.equal(
-      await page.evaluate(() => fetch('app://cinema/core/index.cjs').then((r) => r.status)),
+      await page.evaluate(() => fetch('app://screensaver/core/index.cjs').then((r) => r.status)),
       404
     );
     assert.equal(
       await page.evaluate(() =>
-        window.cinema.invoke('unsafeAction').then(
+        window.screensaver.invoke('unsafeAction').then(
           () => false,
           () => true
         )
@@ -140,7 +143,7 @@ async function run({ appPath, reportPath } = {}) {
     );
     assert.equal(
       await page.evaluate(() =>
-        window.cinema.invoke('purgeMedia').then(
+        window.screensaver.invoke('purgeMedia').then(
           () => false,
           (error) => error.message.includes('Confirm')
         )
@@ -150,23 +153,23 @@ async function run({ appPath, reportPath } = {}) {
     let preparedVideo = null;
     if (appPath) {
       await page.evaluate(async () => {
-        await window.cinema.invoke('settings', {
+        await window.screensaver.invoke('settings', {
           smoothMotion: true,
           smoothingFps: 24,
           smoothingMode: 'fast'
         });
-        await window.cinema.invoke('prepare', { ids: ['steam:7000901'] });
+        await window.screensaver.invoke('prepare', { ids: ['steam:7000901'] });
       });
       let preparedState;
       const deadline = Date.now() + 60000;
       do {
-        preparedState = await page.evaluate(() => window.cinema.invoke('state'));
+        preparedState = await page.evaluate(() => window.screensaver.invoke('state'));
         if (preparedState.job.status === 'completed') break;
         await page.waitForTimeout(50);
       } while (Date.now() < deadline);
       assert.equal(preparedState.job.status, 'completed');
       const processed = await page.evaluate(async () =>
-        (await window.cinema.invoke('state')).games.find((g) => g.id === 'steam:7000901')
+        (await window.screensaver.invoke('state')).games.find((g) => g.id === 'steam:7000901')
       );
       assert.equal(processed.smoothingError, undefined);
       assert.ok(processed.smoothed);
@@ -241,8 +244,73 @@ async function run({ appPath, reportPath } = {}) {
     });
     await page.locator('[data-action="toggle-play"]').click();
     await frame.waitForFunction(() => document.querySelector('.scene.visible video')?.paused);
+    assert.deepEqual(errors, []);
+    await app.evaluate(({ shell }) => {
+      global.__sasShowLog = null;
+      global.__sasOriginalShow = shell.showItemInFolder;
+      shell.showItemInFolder = (file) => {
+        global.__sasShowLog = file;
+      };
+    });
+    await page.locator('[data-route="settings"]').first().click();
+    await page.locator('[data-action="open-logs"]').click();
+    const shownLog = await app.evaluate(() => global.__sasShowLog);
+    assert.equal(shownLog, path.join(fixture.dataDir, 'logs', 'diagnostics.json'));
+    await app.evaluate(({ shell }) => {
+      shell.showItemInFolder = global.__sasOriginalShow;
+    });
+    await page.evaluate(() => {
+      console.error('SAS_QA_CONSOLE_FAILURE');
+      setTimeout(() => {
+        throw new Error('SAS_QA_RENDERER_FAILURE');
+      }, 0);
+      setTimeout(() => Promise.reject(new Error('SAS_QA_REJECTION')), 20);
+    });
+    const logFile = path.join(fixture.dataDir, 'logs', 'diagnostics.json');
+    for (let i = 0; i < 100; i++) {
+      const report = JSON.parse(await fs.readFile(logFile, 'utf8'));
+      if (
+        ['renderer.error', 'renderer.rejection', 'renderer.console'].every((event) =>
+          report.events.some(
+            (e) => e.event === event && JSON.stringify(e.detail).includes('SAS_QA_')
+          )
+        )
+      )
+        break;
+      await new Promise((r) => setTimeout(r, 30));
+    }
+    const logged = JSON.parse(await fs.readFile(logFile, 'utf8'));
+    for (const event of ['renderer.error', 'renderer.rejection', 'renderer.console'])
+      assert(
+        logged.events.some(
+          (e) => e.event === event && JSON.stringify(e.detail).includes('SAS_QA_')
+        ),
+        event
+      );
+    const expectedInjectedErrors = errors.splice(0);
+    assert(expectedInjectedErrors.every((e) => /SAS_QA_(RENDERER_FAILURE|REJECTION)/.test(e)));
+    await app.evaluate(({ BrowserWindow }) => {
+      BrowserWindow.getAllWindows()[0].webContents.forcefullyCrashRenderer();
+    });
+    for (let i = 0; i < 100; i++) {
+      if (
+        JSON.parse(await fs.readFile(logFile, 'utf8')).events.some(
+          (e) => e.event === 'renderer.process_gone'
+        )
+      )
+        break;
+      await new Promise((r) => setTimeout(r, 30));
+    }
+    const rendererCrash = JSON.parse(await fs.readFile(logFile, 'utf8')).events.find(
+      (e) => e.event === 'renderer.process_gone'
+    );
+    assert(
+      rendererCrash && ['crashed', 'killed', 'abnormal-exit'].includes(rendererCrash.detail.reason),
+      JSON.stringify(rendererCrash)
+    );
     await app.close();
     app = null;
+    assert.equal(JSON.parse(await fs.readFile(logFile, 'utf8')).cleanExit, true);
     assert.equal(
       await fs.stat(path.join(fixture.dataDir, '.manager.lock')).catch(() => null),
       null
@@ -250,6 +318,7 @@ async function run({ appPath, reportPath } = {}) {
     assert.deepEqual(errors, []);
     const report = {
       bundle,
+      rendererCrash,
       preparedVideo,
       result: 'passed',
       isolation,
@@ -272,7 +341,10 @@ async function run({ appPath, reportPath } = {}) {
         'Native purge action requires confirmation before any filesystem change',
         'No Node in renderer',
         'Sandbox enabled',
-        'Library lock released on close'
+        'Library lock released on close',
+        'Settings opens exactly the local diagnostic JSON',
+        'Injected JavaScript error, unhandled rejection and console error persist in JSON',
+        'Forced renderer crash persists its reason; orderly app close leaves valid JSON'
       ],
       pageErrors: errors
     };

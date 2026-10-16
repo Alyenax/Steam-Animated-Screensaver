@@ -17,7 +17,7 @@
     if (typeof value !== 'string' || value.length > 240 || /[\\\u0000-\u001f?#]/.test(value))
       return false;
     return (
-      /^(?:(?:\/?media\/)|(?:app:\/\/cinema\/media\/))[a-zA-Z0-9][a-zA-Z0-9._-]{0,180}$/.test(
+      /^(?:(?:\/?media\/)|(?:app:\/\/screensaver\/media\/))[a-zA-Z0-9][a-zA-Z0-9._-]{0,180}$/.test(
         value
       ) && !value.includes('..')
     );
@@ -105,7 +105,10 @@
   const french = () => options.language === 'fr';
   function notify(status, game) {
     if (global.parent !== global)
-      global.parent.postMessage({ type: 'cinema-player', status, gameId: game?.id || null }, '*');
+      global.parent.postMessage(
+        { type: 'screensaver-player', status, gameId: game?.id || null },
+        '*'
+      );
   }
   function emptyState(failed = false) {
     empty.hidden = false;
@@ -114,15 +117,15 @@
         ? 'Ces médias sont indisponibles.'
         : 'These artworks are unavailable.'
       : french()
-        ? 'Donnez vie à votre bibliothèque.'
-        : 'Bring your library to life.';
+        ? 'Aucune animation préparée.'
+        : 'No prepared animations.';
     empty.querySelector('p').textContent = failed
       ? french()
         ? 'Réparez la bibliothèque depuis le gestionnaire.'
         : 'Repair your library in the Manager, then preview again.'
       : french()
-        ? 'Préparez vos animations favorites dans le gestionnaire.'
-        : 'Prepare your favorite game animations in the Manager.';
+        ? 'Préparez les animations dans le gestionnaire.'
+        : 'Prepare animations in the Manager.';
   }
   function release(scene) {
     if (!scene) return;
@@ -132,9 +135,9 @@
       media.load();
     }
     for (const image of scene.querySelectorAll('img')) {
-      image._cinemaReleased = true;
-      image._cinemaSuspended = true;
-      if (image._cinemaRestore) image.removeEventListener('load', image._cinemaRestore);
+      image._sasReleased = true;
+      image._sasSuspended = true;
+      if (image._sasRestore) image.removeEventListener('load', image._sasRestore);
       image.removeAttribute('src');
     }
     for (const canvas of scene.querySelectorAll('canvas')) canvas.width = canvas.height = 0;
@@ -144,10 +147,10 @@
     if (!scene) return;
     scene.classList.add('paused');
     const art = scene.querySelector('img.artwork');
-    if (!art || !scene.game.media.animated || art._cinemaReleased) return;
+    if (!art || !scene.game.media.animated || art._sasReleased) return;
     // Canvas image sources expose the browser's default animation frame. Freeze that
     // local frame and unload the native animation rather than pretending a timer pauses it.
-    if (!art._cinemaSnapshot) {
+    if (!art._sasSnapshot) {
       if (!art.complete || !art.naturalWidth) return;
       const canvas = doc.createElement('canvas');
       canvas.className = 'artwork frozen-artwork';
@@ -161,13 +164,13 @@
         return;
       }
       art.insertAdjacentElement('afterend', canvas);
-      art._cinemaSnapshot = canvas;
+      art._sasSnapshot = canvas;
     }
-    if (art._cinemaRestore) {
-      art.removeEventListener('load', art._cinemaRestore);
-      art._cinemaRestore = null;
+    if (art._sasRestore) {
+      art.removeEventListener('load', art._sasRestore);
+      art._sasRestore = null;
     }
-    art._cinemaSuspended = true;
+    art._sasSuspended = true;
     art.hidden = true;
     art.removeAttribute('src');
   }
@@ -175,24 +178,24 @@
     if (!scene) return;
     scene.classList.remove('paused');
     const art = scene.querySelector('img.artwork');
-    if (!art?._cinemaSnapshot || !art._cinemaSuspended || art._cinemaReleased) return;
-    art._cinemaSuspended = false;
+    if (!art?._sasSnapshot || !art._sasSuspended || art._sasReleased) return;
+    art._sasSuspended = false;
     const restored = () => {
-      art._cinemaRestore = null;
-      if (art._cinemaReleased) return;
+      art._sasRestore = null;
+      if (art._sasReleased) return;
       if (!playing) {
         freezeScene(scene);
         return;
       }
-      const canvas = art._cinemaSnapshot;
-      art._cinemaSnapshot = null;
+      const canvas = art._sasSnapshot;
+      art._sasSnapshot = null;
       art.hidden = false;
       if (canvas) {
         canvas.width = canvas.height = 0;
         canvas.remove();
       }
     };
-    art._cinemaRestore = restored;
+    art._sasRestore = restored;
     art.addEventListener('load', restored, { once: true });
     art.src = scene.game.media.file;
   }
@@ -308,7 +311,7 @@
     cover.dataset.fallback = String(!hasCover);
     cover.src = hasCover ? game.cover.file : game.media.thumbnail;
     cover.addEventListener('error', () => {
-      if (cover._cinemaReleased) return;
+      if (cover._sasReleased) return;
       if (cover.dataset.fallback !== 'true') {
         cover.dataset.fallback = 'true';
         cover.src = game.media.thumbnail;
@@ -355,13 +358,7 @@
     pending = scene;
     let complete = false;
     function fail() {
-      if (
-        complete ||
-        token !== generation ||
-        destroyed ||
-        art._cinemaSuspended ||
-        art._cinemaReleased
-      )
+      if (complete || token !== generation || destroyed || art._sasSuspended || art._sasReleased)
         return;
       complete = true;
       clearTimeout(loadTimer);
@@ -431,7 +428,7 @@
     if (isVideo) art.load();
     // Decoder failures after startup also skip the failed scene.
     function runtimeFailure() {
-      if (art._cinemaSuspended || art._cinemaReleased) return;
+      if (art._sasSuspended || art._sasReleased) return;
       if (current === scene) {
         failures.add(game.id);
         notify('media-error', game);
@@ -512,7 +509,7 @@
     )
       return;
     const data = event.data;
-    if (!data || data.type !== 'cinema') return;
+    if (!data || data.type !== 'screensaver') return;
     if (data.action === 'catalog') loadCatalog(data.catalog);
     else if (data.action === 'settings') setSettings(data.settings || data.partial || {});
     else if (data.action === 'play') setPaused(false);
@@ -544,9 +541,9 @@
     games = [];
     order = [];
     history = [];
-    global.CinemaPlayer = null;
+    global.SteamAnimatedScreensaverPlayer = null;
   }
-  global.CinemaPlayer = {
+  global.SteamAnimatedScreensaverPlayer = {
     play: () => setPaused(false),
     pause: () => setPaused(true),
     next,
@@ -558,5 +555,5 @@
   global.addEventListener('resize', resizeFrames);
   global.addEventListener('pagehide', destroy, { once: true });
   doc.addEventListener('visibilitychange', visibility);
-  loadCatalog(global.CINEMA_CATALOG);
+  loadCatalog(global.SAS_CATALOG);
 })(typeof window !== 'undefined' ? window : globalThis);

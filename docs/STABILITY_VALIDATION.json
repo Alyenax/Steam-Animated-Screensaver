@@ -1,0 +1,64 @@
+{
+  "version": "0.1.8",
+  "host": "macOS arm64",
+  "unitAndIntegration": {
+    "tests": 115,
+    "passed": 115,
+    "failed": 0,
+    "skipped": 0
+  },
+  "browserEndToEnd": {
+    "checks": 31,
+    "uncaughtErrors": 0
+  },
+  "selectionEndToEnd": {
+    "checks": 6,
+    "uncaughtErrors": 0
+  },
+  "nativePackagedMac": {
+    "checks": 17,
+    "rendererCrashRecorded": {
+      "reason": "killed",
+      "exitCode": 2
+    },
+    "unexpectedErrors": []
+  },
+  "nativeLifecycle": {
+    "version": "0.1.8",
+    "platform": "darwin",
+    "arch": "arm64",
+    "packaged": true,
+    "checks": [
+      "Actual Electron startup migrates old catalog before creating Chromium profile or library locks",
+      "Three native app open/change/close cycles preserve queued changes, valid catalog/log JSON and release locks",
+      "Injected fatal main-process exception exits and leaves durable JSON with stack and unclean-exit status",
+      "Restart after fatal exit detects interruption, recovers stale library lock and preserves the library"
+    ],
+    "result": "passed",
+    "scope": "Short native lifecycle/fault-injection regression; not a long-duration soak or target Steam CEF acceptance."
+  },
+  "nativeMedia": {
+    "checks": 8,
+    "result": "passed"
+  },
+  "publicValveProvider": {
+    "result": "passed",
+    "upstreamEntries": 100,
+    "gamesAfterFiltering": 93
+  },
+  "faultsCovered": [
+    "Corrupt media and cached thumbnail",
+    "Unavailable/rate-limited/invalid provider responses",
+    "Cancelled selection leaves prior inclusion unchanged",
+    "Interrupted preparation with restart/resume",
+    "Simulated disk-full diagnostic commit preserves previous JSON",
+    "Immediate process exit preserves last fatal JSON entry",
+    "Native renderer error/rejection/console and forced termination",
+    "Native main-process fatal exception and stale-lock recovery"
+  ],
+  "largeCatalog": "5000 games: bulk inclusion, both rankings, restart and exact persisted inclusion verified",
+  "scope": [
+    "Short lifecycle/fault-injection suite, not a long-duration soak",
+    "Native Windows/Linux/SteamOS runtime and actual Steam idle/wake require target-client acceptance"
+  ]
+}

@@ -6,10 +6,11 @@ const { isSteamComponent } = require('./steam-components.cjs');
 const { smoothingMatches } = require('./smoothing.cjs');
 // Steam maps installed screensaver directories to virtual HTTPS host names.
 // Keep this filesystem identifier a valid lower-case DNS label; the UI title is separate.
-const NAME = 'steamos-animated-screensaver';
-const LEGACY_NAME = 'SteamOS Animated Screensaver';
-const MARKER = '.steamos-animated-screensaver.json';
-const OWNER = 'steamos-animated-screensaver';
+const NAME = 'steam-animated-screensaver';
+const { LEGACY_NAME, LEGACY_SLUG } = require('./branding.cjs');
+const LEGACY_NAMES = [LEGACY_SLUG, LEGACY_NAME];
+const MARKER = '.steam-animated-screensaver.json';
+const OWNER = 'steam-animated-screensaver';
 async function directory(steamRoot, create = false) {
   const root = await fs.realpath(steamRoot);
   if (!(await fs.stat(root)).isDirectory()) throw new Error('Steam root is not a directory.');
@@ -35,10 +36,18 @@ async function owned(target) {
   try {
     const s = await fs.lstat(target);
     if (!s.isDirectory() || s.isSymbolicLink()) return false;
-    const marker = path.join(target, MARKER),
-      m = await fs.lstat(marker);
-    if (!m.isFile() || m.isSymbolicLink() || m.size > 1024) return false;
-    return JSON.parse(await fs.readFile(marker, 'utf8')).owner === OWNER;
+    for (const [name, owner] of [
+      [MARKER, OWNER],
+      ['.steamos-animated-screensaver.json', LEGACY_SLUG]
+    ]) {
+      const marker = path.join(target, name),
+        m = await fs.lstat(marker).catch(() => null);
+      if (!m?.isFile() || m.isSymbolicLink() || m.size > 1024) continue;
+      try {
+        if (JSON.parse(await fs.readFile(marker, 'utf8')).owner === owner) return true;
+      } catch {}
+    }
+    return false;
   } catch {
     return false;
   }
@@ -62,29 +71,35 @@ async function copyMedia(dataDir, name, destination) {
   await fs.copyFile(source, path.join(destination, name));
 }
 async function lock(parent, fn) {
-  const target = path.join(parent, '.steamos-animated-screensaver.lock');
+  // Hold both identifiers so an older Manager cannot update its export concurrently.
+  const acquired = [];
   try {
-    await fs.mkdir(target);
-  } catch (e) {
-    if (e.code === 'EEXIST')
-      throw new Error(
-        'Another screensaver installation is in progress. If no Manager is running, remove the stale .steamos-animated-screensaver.lock folder.'
-      );
-    throw e;
-  }
-  try {
+    for (const name of [NAME, LEGACY_SLUG]) {
+      const target = path.join(parent, `.${name}.lock`);
+      try {
+        await fs.mkdir(target);
+      } catch (e) {
+        if (e.code === 'EEXIST')
+          throw new Error(
+            `Another screensaver installation is in progress. Close the other Manager; if none is running, remove the stale .${name}.lock folder.`
+          );
+        throw e;
+      }
+      acquired.push(target);
+    }
     return await fn();
   } finally {
-    await fs.rmdir(target).catch(() => {});
+    for (const target of acquired.reverse()) await fs.rmdir(target).catch(() => {});
   }
 }
+
 async function install({ dataDir, steamRoot, games, settings = {} }) {
   const parent = await directory(steamRoot, true);
   return lock(parent, async () => {
     const target = path.join(parent, NAME),
       token = crypto.randomUUID(),
-      staging = path.join(parent, `.cinema-stage-${token}`),
-      backup = path.join(parent, `.cinema-backup-${token}`);
+      staging = path.join(parent, `.screensaver-stage-${token}`),
+      backup = path.join(parent, `.screensaver-backup-${token}`);
     let moved = false;
     try {
       const exists = await fs.lstat(target).then(
@@ -183,7 +198,7 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
         .replace(/</g, '\\u003c')
         .replace(/\u2028/g, '\\u2028')
         .replace(/\u2029/g, '\\u2029');
-      await fs.writeFile(path.join(staging, 'catalog.js'), `window.CINEMA_CATALOG=${catalog};\n`, {
+      await fs.writeFile(path.join(staging, 'catalog.js'), `window.SAS_CATALOG=${catalog};\n`, {
         mode: 0o600
       });
       await fs.writeFile(
@@ -204,11 +219,13 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
       if (moved) await fs.rm(backup, { recursive: true, force: true });
       // Retire the old, space-containing identifier only after the new installation commits.
       // A failed preparation/staging step therefore preserves the previous playable files.
-      const legacy = path.join(parent, LEGACY_NAME);
-      if (await owned(legacy)) {
-        const retired = path.join(parent, `.cinema-retired-${token}`);
-        await fs.rename(legacy, retired);
-        await fs.rm(retired, { recursive: true, force: true });
+      for (const legacyName of LEGACY_NAMES) {
+        const legacy = path.join(parent, legacyName);
+        if (await owned(legacy)) {
+          const retired = path.join(parent, `.screensaver-retired-${token}`);
+          await fs.rename(legacy, retired);
+          await fs.rm(retired, { recursive: true, force: true });
+        }
       }
       return { installed: true, path: target, games: catalogGames.length };
     } finally {
@@ -246,9 +263,9 @@ async function uninstall({ steamRoot }) {
       throw new Error(
         'The screensaver destination is not owned by this app. It was left untouched.'
       );
-    for (const folder of [target, path.join(parent, LEGACY_NAME)]) {
+    for (const folder of [target, ...LEGACY_NAMES.map((name) => path.join(parent, name))]) {
       if (!(await owned(folder))) continue;
-      const tomb = path.join(parent, `.cinema-remove-${crypto.randomUUID()}`);
+      const tomb = path.join(parent, `.screensaver-remove-${crypto.randomUUID()}`);
       await fs.rename(folder, tomb);
       await fs.rm(tomb, { recursive: true, force: true });
     }
@@ -260,10 +277,21 @@ async function isInstalled(steamRoot) {
     const parent = await directory(steamRoot);
     return (
       !!parent &&
-      ((await owned(path.join(parent, NAME))) || (await owned(path.join(parent, LEGACY_NAME))))
+      (
+        await Promise.all([NAME, ...LEGACY_NAMES].map((name) => owned(path.join(parent, name))))
+      ).some(Boolean)
     );
   } catch {
     return false;
   }
 }
-module.exports = { install, uninstall, isInstalled, assertCanUninstall, NAME, LEGACY_NAME, MARKER };
+module.exports = {
+  install,
+  uninstall,
+  isInstalled,
+  assertCanUninstall,
+  NAME,
+  LEGACY_NAME,
+  LEGACY_NAMES,
+  MARKER
+};

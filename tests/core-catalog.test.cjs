@@ -18,7 +18,7 @@ const asset = {
   author: { name: 'Artist' }
 };
 async function setup(t, { prepareHook, validateHook, gameRunning = async () => false } = {}) {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-core-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-core-'));
   const steam = path.join(dir, 'steam');
   await fs.mkdir(path.join(steam, 'steamapps'), { recursive: true });
   const dataDir = path.join(dir, 'data');
@@ -296,7 +296,7 @@ test('changing active artwork or removing current game requires pausing; aborted
   assert.equal(s.job.processed, 0);
 });
 test('damaged on-disk catalog is preserved and recovery is visible', async (t) => {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-broken-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-broken-'));
   await fs.writeFile(path.join(dir, 'catalog.json'), '{broken');
   const core = createCore({ dataDir: dir, media: {}, sgdb: {}, isGameRunning: async () => false });
   t.after(async () => {
@@ -501,7 +501,10 @@ test('unused cleanup removes only owned abandoned interpolation folders', async 
   const foreign = path.join(mediaDir, '22222222-2222-4222-8222-222222222222.frames');
   await fs.mkdir(owned, { recursive: true });
   await fs.mkdir(foreign);
-  await fs.writeFile(path.join(owned, '.cinema-smoothing-work'), 'steamos-animated-screensaver-v1');
+  await fs.writeFile(
+    path.join(owned, '.screensaver-smoothing-work'),
+    'steam-animated-screensaver-v1'
+  );
   await fs.writeFile(path.join(owned, 'frame-0.png'), 'unfinished');
   await fs.writeFile(path.join(foreign, 'keep'), 'unrelated');
   await x.core.invoke('clearUnused');
@@ -710,15 +713,15 @@ test('complete media purge preserves games, artwork choices, settings and separa
   const frames = path.join(x.dataDir, 'media', '00000000-0000-0000-0000-000000000000.frames');
   await fs.mkdir(frames);
   await fs.writeFile(
-    path.join(frames, '.cinema-smoothing-work'),
-    'steamos-animated-screensaver-v1'
+    path.join(frames, '.screensaver-smoothing-work'),
+    'steam-animated-screensaver-v1'
   );
   await fs.writeFile(path.join(frames, 'frame-0.png'), 'temporary frame');
   const core = x.create();
   await core.invoke('scan');
   await core.invoke('install');
   const parent = path.join(x.steam, 'config/uioverrides/screensavers'),
-    installed = path.join(parent, 'steamos-animated-screensaver');
+    installed = path.join(parent, 'steam-animated-screensaver');
   await fs.cp(installed, path.join(parent, 'SteamOS Animated Screensaver'), { recursive: true });
   await fs.mkdir(path.join(parent, 'other-screensaver'));
   await fs.writeFile(path.join(parent, 'other-screensaver', 'keep'), 'unrelated');
@@ -746,7 +749,7 @@ test('complete media purge preserves games, artwork choices, settings and separa
   assert.equal(state.job.pending, 0);
   assert.equal(state.previewsPaused, true);
   assert(state.lastMediaPurge.files >= 10);
-  for (const folder of ['steamos-animated-screensaver', 'SteamOS Animated Screensaver'])
+  for (const folder of ['steam-animated-screensaver', 'SteamOS Animated Screensaver'])
     await assert.rejects(fs.stat(path.join(parent, folder)), { code: 'ENOENT' });
   assert.equal(
     await fs.readFile(path.join(parent, 'other-screensaver', 'keep'), 'utf8'),
@@ -840,7 +843,7 @@ test('purge rejects linked caches, unowned work folders and foreign Steam destin
   await fs.symlink(outside, path.join(x.dataDir, 'sources'));
   await assert.rejects(x.core.invoke('purgeMedia', { confirm: true }), /Unsafe media directory/);
   await fs.unlink(path.join(x.dataDir, 'sources'));
-  const target = path.join(x.steam, 'config/uioverrides/screensavers/steamos-animated-screensaver');
+  const target = path.join(x.steam, 'config/uioverrides/screensavers/steam-animated-screensaver');
   await fs.mkdir(target, { recursive: true });
   await fs.writeFile(path.join(target, 'mine'), 'foreign');
   await assert.rejects(x.core.invoke('purgeMedia', { confirm: true }), /not owned/);

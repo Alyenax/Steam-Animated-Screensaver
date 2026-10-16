@@ -68,19 +68,49 @@ function parseVdf(text) {
   }
   return object();
 }
-function defaultRoots(home = os.homedir()) {
-  return [
-    ...new Set(
-      [
-        process.env.STEAM_ROOT,
-        path.join(home, '.steam/root'),
-        path.join(home, '.steam/steam'),
-        path.join(home, '.local/share/Steam'),
-        path.join(home, '.var/app/com.valvesoftware.Steam/.local/share/Steam'),
-        path.join(home, 'Library/Application Support/Steam')
-      ].filter(Boolean)
-    )
-  ];
+function defaultRoots(
+  home = os.homedir(),
+  { platform = process.platform, env = process.env, registry } = {}
+) {
+  const paths = [env.STEAM_ROOT];
+  if (platform === 'win32') {
+    let registered = registry;
+    if (registered === undefined && process.platform === 'win32') {
+      try {
+        const output = require('node:child_process').execFileSync(
+          'reg.exe',
+          ['query', 'HKCU\\Software\\Valve\\Steam', '/v', 'SteamPath'],
+          { encoding: 'utf8', windowsHide: true, timeout: 5000 }
+        );
+        registered = /SteamPath\s+REG_SZ\s+([^\r\n]+)/i.exec(output)?.[1].trim();
+      } catch {}
+    }
+    paths.push(registered);
+    for (const parent of [
+      env['ProgramFiles(x86)'],
+      env.ProgramFiles,
+      'C:\\Program Files (x86)',
+      'C:\\Program Files'
+    ])
+      if (parent) paths.push(path.win32.join(parent, 'Steam'));
+    if (env.LOCALAPPDATA) paths.push(path.win32.join(env.LOCALAPPDATA, 'Steam'));
+    return [
+      ...new Map(
+        paths
+          .filter(Boolean)
+          .map((p) => [path.win32.normalize(p).toLowerCase(), path.win32.normalize(p)])
+      ).values()
+    ];
+  }
+  if (platform === 'darwin') paths.push(path.join(home, 'Library/Application Support/Steam'));
+  else
+    paths.push(
+      path.join(home, '.steam/root'),
+      path.join(home, '.steam/steam'),
+      path.join(home, '.local/share/Steam'),
+      path.join(home, '.var/app/com.valvesoftware.Steam/.local/share/Steam')
+    );
+  return [...new Set(paths.filter(Boolean))];
 }
 const utility =
   /\b(redistributables?|dedicated server|sdk|soundtrack|benchmark|wallpaper engine)\b/i;

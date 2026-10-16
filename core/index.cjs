@@ -4,6 +4,7 @@ const constants = require('node:fs').constants;
 const path = require('node:path');
 const { smoothingMatches, smoothingConfig } = require('./smoothing.cjs');
 const { isSteamComponent } = require('./steam-components.cjs');
+const selection = require('../manager/selection.js');
 const { planPurge, applyPurge } = require('./purge.cjs');
 const { createSteamAccount, parseProfile } = require('./steam-account.cjs');
 const { scanSteam, isSteamGameRunning } = require('./scanner.cjs');
@@ -121,7 +122,9 @@ function cleanGame(g) {
     sgdbId: Number.isSafeInteger(g.sgdbId) && g.sgdbId > 0 ? g.sgdbId : null,
     name: g.name.slice(0, 300),
     sources: [
-      ...new Set((g.sources || []).filter((s) => ['installed', 'manual', 'account'].includes(s)))
+      ...new Set(
+        (g.sources || []).filter((s) => ['installed', 'manual', 'account', 'popular'].includes(s))
+      )
     ],
     installed: !!g.installed,
     included: g.included !== false,
@@ -144,6 +147,9 @@ function cleanGame(g) {
     if (result[kind] && (!safeFilename(result[kind].file) || !safeFilename(result[kind].thumbnail)))
       result[kind] = null;
   }
+  if (Number.isSafeInteger(g.playtimeMinutes) && g.playtimeMinutes >= 0)
+    result.playtimeMinutes = g.playtimeMinutes;
+  if (Number.isSafeInteger(g.popularRank) && g.popularRank > 0) result.popularRank = g.popularRank;
   if (g.crop) {
     try {
       result.crop = validateCrop(g.crop);
@@ -159,6 +165,7 @@ function createCore(options = {}) {
   if (!options.dataDir || !path.isAbsolute(options.dataDir))
     throw new Error('An absolute library data directory is required.');
   const dataDir = path.resolve(options.dataDir);
+  let diagnostics = options.diagnostics;
   const catalogFile = path.join(dataDir, 'catalog.json');
   const keyFile = path.join(dataDir, 'steamgriddb.key');
   const steamKeyFile = path.join(dataDir, 'steam-api.key');
@@ -173,6 +180,11 @@ function createCore(options = {}) {
     hasKey: false,
     previewsPaused: false
   };
+  let selectionJob = { status: 'idle' },
+    selectionTask = null,
+    selectionController = null;
+  const popularity =
+    options.popularity || require('./steam-popularity.cjs').createPopularity({ dataDir });
   let key = '',
     steamKey = '',
     pending = [],
@@ -196,6 +208,12 @@ function createCore(options = {}) {
   const runningCheck = options.isGameRunning || isSteamGameRunning;
   function publicState() {
     const s = clone(state);
+    s.selectionJob = clone(selectionJob);
+    s.diagnostics = {
+      available: !!diagnostics,
+      file: diagnostics?.file || null,
+      error: diagnostics?.failure || null
+    };
     s.job.pending = pending.length;
     if (s.job.status === 'running' && s.job.stageStartedAt)
       s.job.stageElapsed = Math.floor((Date.now() - s.job.stageStartedAt) / 1000);
@@ -225,6 +243,11 @@ function createCore(options = {}) {
     state.job.detail = { ...p, stage: undefined, progress: undefined };
     if (changed || force || (progress !== null && Math.floor(progress * 10) > previousBucket)) {
       const game = state.games.find((g) => g.id === state.job.current);
+      diagnostics?.record(
+        p.message || /error/.test(stage) ? 'error' : 'info',
+        'preparation.progress',
+        { gameId: game?.id, stage, progress, detail: p }
+      );
       state.job.history = [
         ...(state.job.history || []),
         {
@@ -248,10 +271,17 @@ function createCore(options = {}) {
   const init = (async () => {
     releaseLock = await acquireLock(dataDir);
     try {
+      diagnostics ||= require('./diagnostics.cjs').createDiagnostics({
+        dataDir,
+        secrets: () => [key, steamKey]
+      });
       let recovered = false;
       const saved = await readJSON(catalogFile, null, {
         onCorrupt: () => {
           recovered = true;
+          diagnostics?.record('warn', 'catalog.recovered', {
+            message: 'Malformed catalog preserved as a corrupt backup.'
+          });
         }
       });
       if (recovered)
@@ -323,6 +353,8 @@ function createCore(options = {}) {
       } catch (error) {
         if (error.code !== 'ENOENT') throw new Error('The Steam API key could not be read safely.');
       }
+      diagnostics?.addSecret(key);
+      diagnostics?.addSecret(steamKey);
       state.steamAccount.hasKey = !!steamKey;
       state.hasKey = !!key;
       await refreshStorage();
@@ -358,6 +390,13 @@ function createCore(options = {}) {
         g.status = preferred.status;
         g.included = preferred.included;
       }
+      if (g.playtimeMinutes === undefined)
+        g.playtimeMinutes =
+          preferred?.playtimeMinutes ??
+          duplicates.find((old) => old.playtimeMinutes !== undefined)?.playtimeMinutes;
+      if (g.popularRank === undefined)
+        g.popularRank =
+          preferred?.popularRank ?? duplicates.find((old) => old.popularRank)?.popularRank;
       g.crop = g.crop || preferred?.crop || duplicates.find((old) => old.crop)?.crop;
       g.sources = [...new Set([...g.sources, ...duplicates.flatMap((old) => old.sources)])];
       const removed = new Set(duplicates.map((old) => old.id));
@@ -430,6 +469,7 @@ function createCore(options = {}) {
       } catch (error) {
         if (signal.aborted) throw error;
         g.coverError = safeError(error);
+        diagnostics?.record('warn', 'preparation.cover_failed', { gameId: g.id, error });
       }
     }
     if (state.settings.smoothMotion && g.media.animated && media.smooth) {
@@ -467,6 +507,7 @@ function createCore(options = {}) {
       } catch (error) {
         if (signal.aborted) throw error;
         g.smoothingError = safeError(error);
+        diagnostics?.record('error', 'preparation.smoothing_failed', { gameId: g.id, error });
         jobProgress({ stage: 'smoothing-error', message: g.smoothingError }, true);
       }
     }
@@ -583,6 +624,11 @@ function createCore(options = {}) {
                   break;
                 } catch (error) {
                   if (signal.aborted) throw error;
+                  diagnostics?.record('warn', 'preparation.candidate_rejected', {
+                    gameId: id,
+                    assetId: asset.id,
+                    error
+                  });
                   const rejection = {
                     id,
                     assetId: asset.id,
@@ -617,6 +663,7 @@ function createCore(options = {}) {
           }
           g.status = 'error';
           g.error = safeError(e);
+          diagnostics?.record('error', 'preparation.game_failed', { gameId: g.id, error: e });
           state.job.errors.push({ id, message: g.error });
           jobProgress({ stage: 'game-error', message: g.error }, true);
           pending.shift();
@@ -688,11 +735,207 @@ function createCore(options = {}) {
     }
   }, 5000);
   monitor.unref?.();
+  function selectionWritable() {
+    if (runner || pending.length)
+      throw new Error('Finish or cancel preparation before changing a group of games.');
+  }
+  function selectionScope(p) {
+    const scope = selection.scope(p);
+    return state.games.filter((g) => selection.matches(g, scope));
+  }
+  function applyTop(scope, ids) {
+    for (const game of state.games) if (scope.has(game.id)) game.included = ids.has(game.id);
+  }
+  function startSelection(kind, work) {
+    selectionController = new AbortController();
+    const signal = selectionController.signal;
+    selectionJob = { status: 'running', kind, processed: 0, total: 0, startedAt: Date.now() };
+    const progress = (p) => {
+      if (!signal.aborted) Object.assign(selectionJob, p);
+    };
+    selectionTask = Promise.resolve()
+      .then(() => work(signal, progress))
+      .then((result) => {
+        selectionJob = {
+          ...selectionJob,
+          ...result,
+          status: 'completed',
+          finishedAt: Date.now(),
+          current: null
+        };
+      })
+      .catch((error) => {
+        diagnostics?.record(signal.aborted ? 'info' : 'error', 'selection.failed', { kind, error });
+        selectionJob = {
+          ...selectionJob,
+          status: signal.aborted ? 'cancelled' : 'error',
+          error: safeError(error),
+          finishedAt: Date.now(),
+          current: null
+        };
+      })
+      .finally(() => {
+        selectionTask = null;
+        selectionController = null;
+      });
+  }
   async function dispatch(action, p = {}) {
     await init;
     if (closed) throw new Error('Screensaver Manager is closed.');
     if (!p || typeof p !== 'object' || Array.isArray(p)) throw new Error('Invalid action payload.');
     if (action === 'state') return publicState();
+    if (action === 'diagnosticsEvent') {
+      const event = [
+        'renderer.error',
+        'renderer.rejection',
+        'player.media_error',
+        'image.preview_error'
+      ].includes(p.event)
+        ? p.event
+        : 'renderer.error';
+      diagnostics?.record('error', event, {
+        message: String(p.message || '').slice(0, 24000),
+        stack: String(p.stack || '').slice(0, 24000),
+        source: String(p.source || '').slice(0, 2000),
+        line: Number(p.line) || null,
+        gameId: String(p.gameId || '').slice(0, 100)
+      });
+      return { saved: !diagnostics?.failure };
+    }
+    if (action === 'cancelSelection') {
+      selectionController?.abort(new Error('Selection cancelled. Previous choices preserved.'));
+      if (selectionTask) await selectionTask;
+      return publicState();
+    }
+    if (
+      selectionTask &&
+      [
+        'scan',
+        'importSteamLibrary',
+        'add',
+        'remove',
+        'updateGame',
+        'setIncluded',
+        'selectLibraryTop',
+        'importPopular',
+        'prepare',
+        'retry',
+        'purgeMedia',
+        'setCover',
+        'repair',
+        'clearUnused',
+        'install',
+        'uninstall'
+      ].includes(action)
+    )
+      throw new Error('Wait for the Steam selection or cancel it first.');
+    if (action === 'setIncluded') {
+      selectionWritable();
+      if (typeof p.included !== 'boolean') throw new Error('Invalid inclusion value.');
+      const games = selectionScope(p);
+      selectionJob = { status: 'idle' };
+      for (const game of games) game.included = p.included;
+      await save();
+      return publicState();
+    }
+    if (action === 'selectLibraryTop') {
+      selectionWritable();
+      if (!['steam', 'playtime'].includes(p.criterion))
+        throw new Error('Invalid popularity criterion.');
+      const games = selectionScope(p).filter(selection.ownedGame);
+      if (!games.length) throw new Error('No owned Steam games in this filtered list.');
+      const scope = new Set(games.map((g) => g.id));
+      if (p.criterion === 'playtime') {
+        if (games.some((g) => !Number.isSafeInteger(g.playtimeMinutes)))
+          throw new Error(
+            'Import your Steam library again to retrieve playtimes for this selection.'
+          );
+        const chosen = selection.personal(games);
+        applyTop(scope, new Set(chosen.map((g) => g.id)));
+        selectionJob = {
+          status: 'completed',
+          kind: 'playtime',
+          selected: chosen.length,
+          finishedAt: Date.now()
+        };
+        await save();
+      } else {
+        startSelection('library', async (signal, onProgress) => {
+          const ranks = await popularity.rank(games, { signal, onProgress });
+          signal.throwIfAborted();
+          const gameIds = new Set(games.map((g) => g.steamAppId));
+          if (
+            ranks.length !== games.length ||
+            ranks.some((r) => !Number.isSafeInteger(r.players) || r.players < 0) ||
+            new Set(ranks.map((r) => r.steamAppId)).size !== games.length ||
+            ranks.some((r) => !gameIds.has(r.steamAppId))
+          )
+            throw new Error('Incomplete Steam popularity data. Previous choices preserved.');
+          const ordered = [...ranks]
+            .sort((a, b) => b.players - a.players || a.steamAppId - b.steamAppId)
+            .slice(0, 100);
+          applyTop(
+            scope,
+            new Set(
+              games
+                .filter((g) => ordered.some((r) => r.steamAppId === g.steamAppId))
+                .map((g) => g.id)
+            )
+          );
+          await save();
+          return { selected: ordered.length };
+        });
+      }
+      return publicState();
+    }
+    if (action === 'importPopular') {
+      selectionWritable();
+      startSelection('steam', async (signal, onProgress) => {
+        const result = await popularity.top({ signal, onProgress });
+        signal.throwIfAborted();
+        if (
+          !Array.isArray(result.games) ||
+          !result.games.length ||
+          result.games.length > 100 ||
+          result.games.some(
+            (g) =>
+              !Number.isSafeInteger(g.steamAppId) || g.steamAppId < 1 || typeof g.name !== 'string'
+          ) ||
+          new Set(result.games.map((g) => g.steamAppId)).size !== result.games.length
+        )
+          throw new Error('Invalid Steam ranking. Nothing was imported.');
+        const incoming = result.games.filter((g) => !isSteamComponent(g));
+        if (!incoming.length) throw new Error('No games available in the Steam ranking.');
+        for (const game of state.games) {
+          game.sources = game.sources.filter((s) => s !== 'popular');
+          delete game.popularRank;
+        }
+        let added = 0;
+        for (const item of incoming) {
+          const existing = state.games.find((g) => g.steamAppId === item.steamAppId);
+          if (existing) {
+            existing.sources = [...new Set([...existing.sources, 'popular'])];
+            existing.popularRank = item.rank;
+          } else {
+            state.games.push(
+              cleanGame({
+                id: `steam:${item.steamAppId}`,
+                steamAppId: item.steamAppId,
+                name: item.name,
+                popularRank: item.rank,
+                sources: ['popular'],
+                installed: false,
+                included: false
+              })
+            );
+            added++;
+          }
+        }
+        await save();
+        return { added, selected: incoming.length, rankedAt: result.rankedAt };
+      });
+      return publicState();
+    }
     if (runner && state.job.status === 'completed') await runner;
     if (action === 'setSteamAccount') {
       const profile = String(p.profile ?? state.steamAccount.profile).trim();
@@ -724,8 +967,11 @@ function createCore(options = {}) {
       );
       for (const game of result.games.filter((g) => !isSteamComponent(g))) {
         const existing = byAppId.get(game.steamAppId);
-        if (existing) existing.sources = [...new Set([...existing.sources, 'account'])];
-        else {
+        if (existing) {
+          existing.sources = [...new Set([...existing.sources, 'account'])];
+          if (Number.isSafeInteger(game.playtimeMinutes) && game.playtimeMinutes >= 0)
+            existing.playtimeMinutes = game.playtimeMinutes;
+        } else {
           state.games.push(
             cleanGame({
               ...game,
@@ -862,6 +1108,10 @@ function createCore(options = {}) {
         g.sources = [...new Set([...matches.flatMap((m) => m.sources), 'manual'])];
         g.installed = matches.some((m) => m.installed);
         g.cover = g.cover || matches.find((m) => m.cover)?.cover || null;
+        if (g.playtimeMinutes === undefined)
+          g.playtimeMinutes = matches.find((m) => m.playtimeMinutes !== undefined)?.playtimeMinutes;
+        if (g.popularRank === undefined)
+          g.popularRank = matches.find((m) => m.popularRank)?.popularRank;
         g.crop = g.crop || matches.find((m) => m.crop)?.crop;
         state.games = state.games.filter((old) => !matches.includes(old) || old === g);
       } else {
@@ -959,7 +1209,10 @@ function createCore(options = {}) {
       }
       const crop = 'crop' in p ? validateCrop(p.crop) : undefined;
       if (crop) g.crop = crop;
-      if ('included' in p) g.included = p.included;
+      if ('included' in p) {
+        g.included = p.included;
+        selectionJob = { status: 'idle' };
+      }
       if ('selectedAsset' in p) {
         g.manualSelection = p.selectedAsset !== null;
         g.selectedAsset = chosen || null;
@@ -1122,17 +1375,22 @@ function createCore(options = {}) {
         for (const e of await fs.readdir(folder, { withFileTypes: true })) {
           if (dir === 'media' && e.isDirectory() && /^[0-9a-f-]{36}\.frames$/.test(e.name)) {
             const work = path.join(folder, e.name);
-            const marker = await fs
-              .lstat(path.join(work, '.cinema-smoothing-work'))
-              .catch(() => null);
-            if (
-              marker?.isFile() &&
-              !marker.isSymbolicLink() &&
-              marker.size === 31 &&
-              (await fs.readFile(path.join(work, '.cinema-smoothing-work'), 'utf8')) ===
-                'steamos-animated-screensaver-v1'
-            )
-              await fs.rm(work, { recursive: true });
+            for (const [name, owner] of [
+              ['.screensaver-smoothing-work', 'steam-animated-screensaver-v1'],
+              ['.cinema-smoothing-work', 'steamos-animated-screensaver-v1']
+            ]) {
+              const filename = path.join(work, name);
+              const marker = await fs.lstat(filename).catch(() => null);
+              if (
+                marker?.isFile() &&
+                !marker.isSymbolicLink() &&
+                marker.size === owner.length &&
+                (await fs.readFile(filename, 'utf8')) === owner
+              ) {
+                await fs.rm(work, { recursive: true });
+                break;
+              }
+            }
           }
           if (e.isFile() && !used.has(e.name) && safeFilename(e.name))
             await fs.rm(path.join(folder, e.name));
@@ -1174,9 +1432,17 @@ function createCore(options = {}) {
   }
   return {
     invoke(action, payload = {}) {
-      if (action === 'state') return dispatch(action, payload);
+      if (['setKey', 'setSteamAccount'].includes(action)) diagnostics?.addSecret(payload?.key);
+      const logged = (result) =>
+        result.catch((error) => {
+          diagnostics?.record('error', 'core.action_failed', { action, error });
+          throw error;
+        });
+      if (action === 'state') return logged(dispatch(action, payload));
+      if (action !== 'previewImage' && action !== 'diagnosticsEvent')
+        diagnostics?.record('info', 'core.action', { action, gameId: payload?.id });
       if (action === 'previewImage') {
-        const result = dispatch(action, payload);
+        const result = logged(dispatch(action, payload));
         previewTasks.add(result);
         result.then(
           () => previewTasks.delete(result),
@@ -1184,7 +1450,7 @@ function createCore(options = {}) {
         );
         return result;
       }
-      const result = actions.then(() => dispatch(action, payload));
+      const result = logged(actions.then(() => dispatch(action, payload)));
       actions = result.catch(() => {});
       return result;
     },
@@ -1194,6 +1460,8 @@ function createCore(options = {}) {
       await init;
       closed = true;
       lifetime.abort(new Error('Manager closed.'));
+      selectionController?.abort(new Error('Manager closed.'));
+      if (selectionTask) await selectionTask;
       previewAbort.abort(new Error('Manager closed.'));
       controller?.abort(new Error('Manager closed.'));
       await actions;
@@ -1203,6 +1471,8 @@ function createCore(options = {}) {
       state.job.current = null;
       await save();
       await writes;
+      diagnostics?.record('info', 'core.closed');
+      if (!options.diagnostics) diagnostics?.close();
       await releaseLock?.();
     }
   };

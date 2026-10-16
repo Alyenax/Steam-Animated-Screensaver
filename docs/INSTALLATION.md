@@ -1,68 +1,81 @@
 # Installation, updates and recovery
 
-## macOS Apple Silicon app
+Steam Animated Screensaver prepares local artwork and installs a standalone HTML player into **Steam Big Picture / Gaming Mode**. It is not an operating-system screensaver extension. No hosted server is required.
 
-Requires macOS 13+ on an Apple Silicon Mac. Open the private release's macOS DMG, drag **SteamOS Animated Screensaver.app** to Applications, and open it. Alternatively, extract the ZIP and double-click the app. Media tools are bundled natively; there is no Node, Rosetta, Homebrew or server setup.
+## Packages
 
-In Settings, add a personal SteamGridDB key. Scan the local Mac Steam library, optionally import the account's owned games, or add a game manually. Prepare, then open Preview. Cropping, fixed artwork and 24/30 fps processing are available. No demo games are inserted into the real catalog. The app's data is separate from the bundle in `~/Library/Application Support/steamos-animated-screensaver`.
+| Platform | Package                    | Requirements                                                         |
+| -------- | -------------------------- | -------------------------------------------------------------------- |
+| SteamOS  | `*-steamos-x64.tar.gz`     | Desktop Mode for the manager; Linux x64 graphical session            |
+| Linux    | `*-linux-x64.tar.gz`       | Linux x64 with Electron's GTK/NSS/GBM/audio and sandbox dependencies |
+| Windows  | `*-windows-x64.zip`        | Windows 10/11 x64, current Steam client                              |
+| macOS    | `*-macos-arm64.dmg` or ZIP | Apple Silicon, macOS 13+                                             |
 
-The app is ad-hoc signed, not notarized with an Apple Developer identity. For a blocked downloaded copy, use the per-app **System Settings → Privacy & Security → Open Anyway** action described by [Apple](https://support.apple.com/en-us/102445). Global security settings are not changed.
+SteamOS and Linux packages contain the same Linux x64 application. Separate downloads identify the intended installation instructions; they do not represent different engines. Intel Mac and Windows ARM64 packages are not supplied. Package inspection is separate from native runtime acceptance: see [VALIDATION.md](VALIDATION.md).
 
-Quit the app before replacing it with an updated copy; the catalog and cache remain. Remove the `.app` to uninstall the Manager. The complete cache purge remains in Settings; removing the app does not erase personal data. This Mac build provides the Manager and Preview, not a macOS system `.saver` extension. Automatic Steam screensaver activation still needs SteamOS validation. Intel support is not claimed.
+Verify the downloaded file against `SHA256SUMS` from the same private release. No personal key or game artwork is distributed.
 
-## Linux candidate requirements
+## macOS
 
-- Linux x86_64, graphical Desktop Mode, current Steam client supporting custom screensavers.
-- User-space writable home directory, working Chromium sandbox/user namespaces, and the GTK/NSS/GBM/audio libraries expected by Electron. The package bundles Chromium but does not claim to bundle an entire Linux userspace.
-- Internet and one personal SteamGridDB key for discovery/preparation. An optional separate Steam Web API key imports owned games, including non-installed ones, directly without a hosted service. Playback needs neither.
-- Space for the application, cached source media, thumbnails, and an installed playback copy. Cache defaults to a configurable 10 GB maximum; Steam's installed snapshot occupies additional space.
+Open the DMG, drag **Steam Animated Screensaver.app** to Applications and launch it. Alternatively, extract the ZIP and open the app. Native media tools are bundled; Node, Homebrew, Rosetta and a server are not needed.
 
-The installer does not install system libraries, bypass the sandbox, request root, modify the immutable system partition, or auto-start a daemon. If startup fails, run the executable from a terminal and preserve the diagnostic. Do not add `--no-sandbox` as a routine workaround. Actual SteamOS and Linux runtime testing are still required.
+The private app has an ad-hoc signature, without Apple notarization. If macOS blocks it, use Apple's per-app [Open Anyway](https://support.apple.com/en-us/102445) action. Close the app before replacing it. Removing the `.app` preserves the library and logs.
 
-## Installing
+## Windows
 
-Verify `SHA256SUMS` in the download directory. Extract the archive, enter its directory and run `./install.sh`. This installs an owned copy at `~/.local/opt/steamos-animated-screensaver` and writes one desktop entry at `~/.local/share/applications/steamos-animated-screensaver.desktop`.
+Extract the **entire ZIP** to a user-writable directory and run **Steam Animated Screensaver.exe**. Keep its resources beside the executable. The portable app includes Electron, FFmpeg and FFprobe; no administrator install or Node setup is required. Close the app before replacing the extracted folder. Removing that folder preserves the library and logs in AppData.
 
-The script refuses unowned destination folders and symbolic-link targets. Updates stage a complete copy before replacing the old application. Close the manager before updating. Existing catalog/media are outside the application folder.
+## SteamOS and Linux
 
-For a portable launch without installing a shortcut, run `./steamos-animated-screensaver` from the extracted package.
+Extract the archive, enter its directory and run `./install.sh`. The installer writes an owned copy to `~/.local/opt/steam-animated-screensaver` and a desktop entry to `~/.local/share/applications/steam-animated-screensaver.desktop`. It retires an older owned application only after the replacement succeeds. Portable launch: `./steam-animated-screensaver`.
 
-## Preparing and selecting in Steam
+The script refuses linked or unowned destinations. It does not use `sudo`, change SteamOS read-only mode, install system libraries or create a background service. Startup requires the normal Electron sandbox and host libraries; inspect a terminal error rather than adding `--no-sandbox`.
 
-1. Open Settings, follow **Get API key**, and save your personal SteamGridDB key. Validate the connection.
-2. Rescan installed games or **Add game** by title, Steam AppID, or Store URL. Name matches require an explicit selection. Manually adding a game does not install it or assert ownership.
-3. Include games, optionally choose alternative artwork, and prepare. Animated Heroes take priority. Static fallback is opt-in and visibly identified.
-4. Preview. The same player is used by the Steam export.
-5. Install from Preparation/Settings. In Steam choose **Settings → Customization → Screensavers → steamos-animated-screensaver**. Restart Steam if discovery needs refreshing.
+## Prepare and select in Steam
 
-The target is the first detected Steam installation's `config/uioverrides/screensavers/steamos-animated-screensaver/`. Secondary *libraries* contribute games; they are not separate screen-saver install targets. The default root search handles native Steam symlinks and the documented Flatpak user directory, but Flatpak sandbox/CEF loading is untested. A `STEAM_ROOT` environment variable can prioritize a nonstandard Steam root when launching the manager.
+1. In Settings, save and validate a personal SteamGridDB key.
+2. Scan installed games, import owned games with a separate optional Steam API key, or add games manually. A SteamID alone identifies an account but does not replace Valve's required API key for owned-library import.
+3. In Library, filter/search, then **Select all shown** or **Deselect all shown**. The two library top-100 buttons use current concurrent Steam players or personal total playtime. They replace inclusion only among the owned games in the current filtered list.
+4. **Import current Steam top 100** adds available games from Valve's ranking without asserting ownership. New entries are excluded until selected. The upstream top 100 may include software; it is filtered out, so fewer than 100 games can remain. Ranking requests show progress and can be cancelled without changing the previous selection.
+5. Prepare the selected animations, inspect Preview and choose optional fixed artwork, framing and 24/30 fps processing.
+6. Install from Preparation or Settings. Restart Steam if needed, open **Big Picture → Settings → Customization → Screensavers**, then select **steam-animated-screensaver**. SteamOS Gaming Mode exposes the corresponding Customization settings.
 
-No selector settings are patched and no Steam client restart is forced. Existing screensavers and unrelated Steam files are left alone. Selecting the screensaver, idle entry, controller wake and dismissal must be validated on the device.
+## Steam paths
 
-## Updates and repairs
+The export path is always **`<Steam client root>/config/uioverrides/screensavers/steam-animated-screensaver/`**. A secondary game library contributes games but is not a screensaver installation target.
 
-Download the next archive and its checksum file. Close the manager and run the new archive's `install.sh`. Catalog schema v1 and cached files stay in the data directory. **Repair Library** verifies local media and marks missing/invalid files for preparation; **Update / repair** in Steam Integration republishes the ready included catalog and settings into Steam.
+| Platform        | Detected client roots                                                                                                       |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| macOS           | `~/Library/Application Support/Steam`                                                                                       |
+| Windows         | `HKCU\Software\Valve\Steam` → `SteamPath`, then `%ProgramFiles(x86)%\Steam`, `%ProgramFiles%\Steam`, `%LOCALAPPDATA%\Steam` |
+| Linux / SteamOS | `~/.steam/root`, `~/.steam/steam`, `~/.local/share/Steam`, Flatpak `~/.var/app/com.valvesoftware.Steam/.local/share/Steam`  |
 
-The installed player is a snapshot. Changes in the manager take effect in Preview immediately and in Steam after an explicit update. The snapshot continues offline when the manager is closed or uninstalled.
+A `STEAM_ROOT` environment variable prioritizes a custom client root. Root symlinks are resolved; links inside the configuration override path are refused. Installation copies files only; it never patches the Steam selector or restarts Steam automatically. Idle activation, codecs, wake and controller dismissal require acceptance in each actual Steam client.
 
-If preparation is interrupted, reopen the manager and Resume. The current unfinished download restarts; completed scenes are reused. Media is committed only after validation. Cancel preserves finished scenes. Retry failed repeats failures, not every ready item.
+## Rename migration and updates
 
-If a catalog is malformed it is preserved as a `.corrupt-<timestamp>` file and a recovery message is shown. Back up the data directory before restoring any catalog manually. An exclusive local manager lock avoids simultaneous catalog writers; a stale lock whose process is gone is recovered.
+The first new-name launch moves the previous owned data folder to `steam-animated-screensaver` atomically, preserving keys, catalog and cached bytes. Close the previous manager first. If both folders already exist, they are not merged or overwritten. Chromium uses a separate `steam-animated-screensaver-electron` profile so its early lock cannot mask the data migration.
 
-## Purge media while retaining your library
+Update / Repair writes the ready included player snapshot and then retires owned exports carrying either historical identifier. It preserves unrelated screensavers. The standalone repair script can rename a single owned historical export without preparing its media again.
 
-Use **Settings → Local storage → Purge all media** and confirm. This stops the current preparation, clears all managed local media (originals, processed variants, fixed artwork, thumbnails/previews and unfinished work) and removes this app's installed Steam snapshot. Game identities, inclusion/artwork choices, settings and API keys are retained. Cancellation leaves everything unchanged.
+Changes appear immediately in Preview; **Update / Repair** applies them to Steam. An installed snapshot works offline with the manager closed. Interrupted preparation can resume; completed files are reused. A malformed catalog is preserved as `.corrupt-TIMESTAMP`. The exclusive library lock detects an active manager and recovers a dead process's stale lock.
 
-After purge, automatic image previews remain paused even after restart. An explicit artwork search/gallery or preparation enables downloads again. Choose **Prepare**, then **Install screensaver** to recreate the Steam export. A separate **Remove unused media** button performs a smaller cleanup without resetting prepared scenes.
+## Logs and crashes
 
-## Removal
+Use **Settings → Diagnostic logs → Show JSON log file**. Logs remain local in the data folder's `logs/diagnostics.json`; four older segments are retained. Records include timestamps, version/platform, actions, preparation milestones, errors with stacks and decoder stderr, renderer errors and process-exit details. Writes use a synced temporary file and atomic rename. API keys are redacted from JSON. A failed log write is shown in Settings; the previous valid file is preserved. No log upload is implemented.
 
-Use Manager Settings → Steam Integration → **Uninstall** to remove only the owned screensaver directory. This preserves other custom screensavers, Steam manifests, the manager and its cache.
+Electron crash reporting stores native dumps in `logs/crashes` with upload disabled. A crash event's metadata is also recorded in JSON when the main process can receive it. Native dumps are separate binary diagnostics and can contain process memory. A power loss or uncatchable main-process termination cannot produce a JavaScript stack; the next start identifies the interrupted session instead.
 
-Run the installed `uninstall.sh` to remove the manager and its desktop entry. It preserves the catalog, personal key and installed Steam snapshot. Remove the Steam snapshot first if you do not want it to remain usable.
+## Purge and removal
 
-To erase all application data, close the manager, back up anything needed and explicitly remove `~/.config/steamos-animated-screensaver`. This deletes the local personal key, catalog and prepared media. If you set `XDG_CONFIG_HOME` or use a custom data directory, use that actual path instead. Never remove a Steam library to uninstall this application.
+**Settings → Local storage → Purge all media** stops preparation and previews, removes cached/processed artwork and the owned Steam snapshot, and keeps games, choices, settings, keys and logs. Previews stay paused until an explicit search/gallery or preparation. Prepare and install again afterward. **Remove unused media** performs a smaller cleanup.
 
-## Target-device acceptance
+To remove only the Steam export, use **Settings → Steam integration → Uninstall**. To remove the manager, delete the Mac app / extracted Windows folder or run Linux `uninstall.sh`. Data and the installed snapshot remain unless explicitly removed.
 
-See VALIDATION.md, PLAYER.md and STEAM_ERROR_105.md for the 0.1.0 identifier repair. The macOS Apple Silicon app supports Manager and Preview testing; SteamOS integration acceptance remains separate. Windows and Intel Mac packages are not provided.
+Local data paths:
+
+- macOS: `~/Library/Application Support/steam-animated-screensaver`
+- Windows: `%APPDATA%\steam-animated-screensaver`
+- Linux / SteamOS: `${XDG_CONFIG_HOME:-~/.config}/steam-animated-screensaver`
+
+Close the manager before deleting data. Removing the data folder also removes keys, catalog, media and JSON logs; the separate Chromium profile can be removed independently. Never remove a Steam game library to uninstall this app.

@@ -101,7 +101,7 @@ async function createServer({
 }
 module.exports = { createServer };
 if (require.main === module)
-  createServer({ dataDir: process.env.CINEMA_DATA_DIR }).then((instance) => {
+  createServer({ dataDir: process.env.SAS_DATA_DIR }).then((instance) => {
     console.log(instance.url);
     for (const signal of ['SIGINT', 'SIGTERM'])
       process.on(signal, () => instance.close().then(() => process.exit()));

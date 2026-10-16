@@ -14,7 +14,7 @@ try {
   ffmpeg = require('ffmpeg-static');
 } catch {}
 const browserPath =
-  process.env.CINEMA_TEST_BROWSER ||
+  process.env.SAS_TEST_BROWSER ||
   (chromium && existsSync(chromium.executablePath())
     ? chromium.executablePath()
     : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome');
@@ -29,7 +29,7 @@ test(
     timeout: 25000
   },
   async (t) => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-steam-origin-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-steam-origin-'));
     t.after(() => fs.rm(root, { recursive: true, force: true }));
     const dataDir = path.join(root, 'data'),
       steamRoot = path.join(root, 'steam');

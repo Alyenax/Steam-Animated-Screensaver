@@ -14,7 +14,7 @@ const {
   MARKER
 } = require('../core/installer.cjs');
 async function fixture(t) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-install-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-install-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const dataDir = path.join(root, 'data'),
     steamRoot = path.join(root, 'steam');
@@ -62,7 +62,7 @@ test('offline install copies exactly prepared playback files and uninstall prese
   assert(!script.includes('</script>'));
   const context = { window: {} };
   vm.runInNewContext(script, context);
-  assert.equal(context.window.CINEMA_CATALOG.games[0].media.file, 'media/animation.gif');
+  assert.equal(context.window.SAS_CATALOG.games[0].media.file, 'media/animation.gif');
   const neighbor = path.join(path.dirname(result.path), 'Another screensaver');
   await fs.mkdir(neighbor);
   await fs.writeFile(path.join(neighbor, 'mine'), 'keep');
@@ -81,7 +81,9 @@ test('owned reinstall replaces atomically; invalid input preserves prior install
   f.games[0].name = 'New title';
   await install(f);
   assert.match(await fs.readFile(path.join(result.path, 'catalog.js'), 'utf8'), /New title/);
-  assert((await fs.readdir(path.dirname(result.path))).every((n) => !n.startsWith('.cinema-')));
+  assert(
+    (await fs.readdir(path.dirname(result.path))).every((n) => !n.startsWith('.screensaver-'))
+  );
 });
 test('never replaces or uninstalls an unowned folder', async (t) => {
   const f = await fixture(t),
@@ -185,7 +187,7 @@ test('export retains cover credits and position, chooses smoothing only when ena
     const result = await install(f),
       context = { window: {} };
     vm.runInNewContext(await fs.readFile(path.join(result.path, 'catalog.js'), 'utf8'), context);
-    return context.window.CINEMA_CATALOG;
+    return context.window.SAS_CATALOG;
   };
   let catalog = await read();
   assert.equal(catalog.games[0].media.file, 'media/smooth.webm');
@@ -214,7 +216,7 @@ test('export carries global framing and per-game crop while excluding included r
   const out = await install(f),
     vmContext = { window: {} };
   vm.runInNewContext(await fs.readFile(path.join(out.path, 'catalog.js'), 'utf8'), vmContext);
-  const catalog = JSON.parse(JSON.stringify(vmContext.window.CINEMA_CATALOG));
+  const catalog = JSON.parse(JSON.stringify(vmContext.window.SAS_CATALOG));
   assert.equal(catalog.games.length, 1);
   assert.deepEqual(catalog.games[0].crop, { mode: '16:9', x: 15, y: 70 });
   assert.equal(catalog.settings.framing, '16:10');

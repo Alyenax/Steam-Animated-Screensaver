@@ -1,0 +1,58 @@
+{
+  "version": "0.1.8",
+  "at": "2026-10-16T08:59:37.019Z",
+  "provider": "Valve public APIs, no API key",
+  "upstreamCount": 100,
+  "importedGames": 93,
+  "rankedAt": "2026-10-16T08:52:42.000Z",
+  "firstGames": [
+    {
+      "steamAppId": 730,
+      "name": "Counter-Strike 2",
+      "players": 641564,
+      "rank": 1
+    },
+    {
+      "steamAppId": 570,
+      "name": "Dota 2",
+      "players": 528733,
+      "rank": 2
+    },
+    {
+      "steamAppId": 578080,
+      "name": "PUBG: BATTLEGROUNDS",
+      "players": 358657,
+      "rank": 3
+    },
+    {
+      "steamAppId": 3419430,
+      "name": "Bongo Cat",
+      "players": 182474,
+      "rank": 4
+    },
+    {
+      "steamAppId": 3393110,
+      "name": "AION 2",
+      "players": 179137,
+      "rank": 5
+    }
+  ],
+  "counts": [
+    {
+      "steamAppId": 1091500,
+      "players": 28425,
+      "at": 1792141176787
+    },
+    {
+      "steamAppId": 548430,
+      "players": 3020,
+      "at": 1792141177013
+    },
+    {
+      "steamAppId": 620,
+      "players": 1064,
+      "at": 1792141176914
+    }
+  ],
+  "result": "passed"
+}

@@ -25,11 +25,12 @@ async function download(url, destination, gzip = false) {
 }
 
 async function build(platform = 'linux', arch = 'x64') {
+  const steamOS = platform === 'steamos';
+  if (steamOS) platform = 'linux';
   const macOS = platform === 'darwin' && arch === 'arm64';
-  if (!(platform === 'linux' && arch === 'x64') && !macOS)
-    throw new Error(
-      'Supported distribution targets: Linux x64 and macOS Apple Silicon (darwin arm64).'
-    );
+  const windows = platform === 'win32' && arch === 'x64';
+  if (!(platform === 'linux' && arch === 'x64') && !macOS && !windows)
+    throw new Error('Supported targets: SteamOS/Linux x64, Windows x64, macOS Apple Silicon.');
   if (macOS && process.platform !== 'darwin') throw new Error('Package the macOS app on a Mac.');
   const root = path.resolve(__dirname, '..');
   const pkg = JSON.parse(await fs.readFile(path.join(root, 'package.json'), 'utf8'));
@@ -92,6 +93,15 @@ async function build(platform = 'linux', arch = 'x64') {
         execFileSync('lipo', [target, '-verify_arch', 'arm64']);
       }
       await fs.cp(cache, bin, { recursive: true });
+    } else if (windows) {
+      Object.assign(
+        binaryHashes,
+        await require('./windows-media.cjs').stageWindowsMedia({
+          cache: path.join(dist, '.binary-cache/windows-x64'),
+          destination: bin,
+          download
+        })
+      );
     } else {
       const cache = path.join(dist, '.binary-cache');
       await fs.mkdir(cache, { recursive: true });
@@ -140,8 +150,8 @@ async function build(platform = 'linux', arch = 'x64') {
     const outputs = await packager({
       dir: staging,
       out: dist,
-      name: macOS ? pkg.productName : 'steamos-animated-screensaver',
-      executableName: 'steamos-animated-screensaver',
+      name: macOS || windows ? pkg.productName : 'steam-animated-screensaver',
+      executableName: windows ? pkg.productName : 'steam-animated-screensaver',
       platform,
       arch,
       electronVersion: pkg.devDependencies.electron,
@@ -151,9 +161,20 @@ async function build(platform = 'linux', arch = 'x64') {
       overwrite: true,
       download: { cacheRoot: path.join(os.tmpdir(), 'sas-electron-cache') },
       quiet: false,
+      ...(windows
+        ? {
+            icon: path.join(root, 'manager/icon.ico'),
+            win32metadata: {
+              CompanyName: 'Alyenax',
+              FileDescription: pkg.productName,
+              ProductName: pkg.productName,
+              InternalName: pkg.name
+            }
+          }
+        : {}),
       ...(macOS
         ? {
-            appBundleId: 'io.github.alyenax.steamos-animated-screensaver',
+            appBundleId: 'io.github.alyenax.steam-animated-screensaver',
             appCategoryType: 'public.app-category.entertainment',
             darwinDarkModeSupport: true,
             extendInfo: { LSMinimumSystemVersion: '13.0' },
@@ -172,6 +193,15 @@ async function build(platform = 'linux', arch = 'x64') {
     });
     const output = outputs[0];
     if (macOS) return await finishMac({ root, dist, output, pkg });
+    if (windows) {
+      await fs.writeFile(
+        path.join(output, 'README.txt'),
+        'Steam Animated Screensaver - Windows x64\r\n\r\nExtract the entire ZIP, then run Steam Animated Screensaver.exe. No Node, FFmpeg installation or server is required.\r\nPrepare artwork, preview, then install into Steam from Settings. Restart Steam, open Big Picture > Settings > Customization and select steam-animated-screensaver.\r\nLocal data: %APPDATA%/steam-animated-screensaver. Previous app data and owned exports migrate automatically.\r\nPrivate unsigned installation candidate. Native Windows runtime and Big Picture activation require Windows validation.\r\n'
+      );
+      const filename = `Steam-Animated-Screensaver-${pkg.version}-windows-x64.zip`;
+      execFileSync('ditto', ['-c', '-k', '--keepParent', output, path.join(dist, filename)]);
+      return await manifest(dist, [filename], 'WINDOWS_SHA256SUMS');
+    }
     for (const item of [
       'install.sh',
       'uninstall.sh',
@@ -183,20 +213,23 @@ async function build(platform = 'linux', arch = 'x64') {
     }
     await fs.copyFile(path.join(root, 'manager', 'icon.svg'), path.join(output, 'icon.svg'));
     await fs.writeFile(
-      path.join(output, '.cinema-application'),
-      'steamos-animated-screensaver-v1\n'
+      path.join(output, '.screensaver-application'),
+      'steam-animated-screensaver-v1\n'
     );
     await fs.writeFile(
       path.join(output, 'CANDIDATE.txt'),
       'Private installation candidate. Linux runtime and physical SteamOS Gaming Mode acceptance remain pending. See resources/app/docs/VALIDATION.md.\n'
     );
-    const filename = `SteamOS-Animated-Screensaver-${pkg.version}-${platform}-${arch}.tar.gz`;
+    const filename = `Steam-Animated-Screensaver-${pkg.version}-${steamOS ? 'steamos' : platform}-${arch}.tar.gz`;
     execFileSync('tar', ['-czf', path.join(dist, filename), '-C', dist, path.basename(output)], {
       stdio: 'inherit'
     });
     const content = await fs.readFile(path.join(dist, filename));
     const hash = crypto.createHash('sha256').update(content).digest('hex');
-    await fs.writeFile(path.join(dist, 'SHA256SUMS'), `${hash}  ${filename}\n`);
+    await fs.writeFile(
+      path.join(dist, steamOS ? 'STEAMOS_SHA256SUMS' : 'LINUX_SHA256SUMS'),
+      `${hash}  ${filename}\n`
+    );
     console.log(
       JSON.stringify(
         { file: path.join(dist, filename), size: content.length, sha256: hash, binaryHashes },
@@ -213,7 +246,7 @@ async function finishMac({ dist, output, pkg }) {
   execFileSync('codesign', ['--verify', '--deep', '--strict', '--verbose=2', app], {
     stdio: 'inherit'
   });
-  const base = `SteamOS-Animated-Screensaver-${pkg.version}-macos-arm64`;
+  const base = `Steam-Animated-Screensaver-${pkg.version}-macos-arm64`;
   const zip = path.join(dist, base + '.zip');
   await fs.rm(zip, { force: true });
   execFileSync('ditto', ['-c', '-k', '--sequesterRsrc', '--keepParent', app, zip]);
@@ -224,9 +257,9 @@ async function finishMac({ dist, output, pkg }) {
     await fs.symlink('/Applications', path.join(stage, 'Applications'));
     await fs.writeFile(
       path.join(stage, 'LISEZ-MOI - README.txt'),
-      'SteamOS Animated Screensaver — macOS Apple Silicon, macOS 13+.\n\n' +
-        'FR : Glissez l’application dans Applications, puis ouvrez-la. Ajoutez votre clé SteamGridDB dans Réglages, choisissez un jeu, préparez ses images puis ouvrez Aperçu. Aucun outil à installer et aucun serveur requis. Cette app sert à gérer et prévisualiser ; le screensaver automatique SteamOS se valide sur la machine Steam.\n\n' +
-        'EN: Drag the app into Applications and open it. Add your SteamGridDB key in Settings, choose a game, prepare its artwork, then open Preview. No extra tools or server are required. This app manages and previews; automatic SteamOS screensaver activation is tested on the Steam device.\n\n' +
+      'Steam Animated Screensaver — macOS Apple Silicon, macOS 13+.\n\n' +
+        'FR : Glissez l’application dans Applications, puis ouvrez-la. Ajoutez votre clé SteamGridDB dans Réglages, choisissez un jeu, préparez ses images puis ouvrez Aperçu. Aucun outil à installer et aucun serveur requis. Dans Réglages, installez le lecteur dans Steam, redémarrez Steam, puis sélectionnez steam-animated-screensaver dans Big Picture > Réglages > Personnalisation.\n\n' +
+        'EN: Drag the app into Applications and open it. Add your SteamGridDB key in Settings, choose a game, prepare its artwork, then open Preview. No extra tools or server are required. Install the player from Settings, restart Steam, then select steam-animated-screensaver in Big Picture > Settings > Customization.\n\n' +
         'Private test build with ad-hoc signature, not Apple notarized. If macOS blocks a downloaded copy, use System Settings > Privacy & Security > Open Anyway for this app. No global security setting needs changing.\n' +
         'FFmpeg / libvpx notices, complete source archives and rebuild recipe: app Contents/Resources/app/binaries/.\n'
     );
@@ -254,6 +287,20 @@ async function finishMac({ dist, output, pkg }) {
   } finally {
     await fs.rm(stage, { recursive: true, force: true });
   }
+}
+async function manifest(dist, files, name) {
+  const assets = [];
+  for (const file of files) {
+    const bytes = await fs.readFile(path.join(dist, file));
+    assets.push({
+      file,
+      bytes: bytes.length,
+      sha256: crypto.createHash('sha256').update(bytes).digest('hex')
+    });
+  }
+  await fs.writeFile(path.join(dist, name), assets.map((a) => `${a.sha256}  ${a.file}\n`).join(''));
+  console.log(JSON.stringify({ assets }, null, 2));
+  return { assets };
 }
 module.exports = { build, finishMac };
 if (require.main === module)

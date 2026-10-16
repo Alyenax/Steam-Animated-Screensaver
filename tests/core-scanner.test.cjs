@@ -8,7 +8,7 @@ const { parseVdf, scanSteam, classify, isSteamGameRunning } = require('../core/s
 const manifest = (id, name, flags = 4) =>
   `"AppState" { "appid" "${id}" "name" "${name}" "StateFlags" "${flags}" }`;
 async function fixture(t) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-scan-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-scan-'));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   await fs.mkdir(path.join(root, 'steamapps'));
   return root;
@@ -21,7 +21,7 @@ test('VDF preserves escaped paths, comments, braces in strings; rejects broken n
   assert.throws(() => parseVdf('"x" "broken'));
 });
 test('Steam absent and empty library are successful offline states', async (t) => {
-  assert.equal((await scanSteam(['/definitely-absent-cinema'])).detected, false);
+  assert.equal((await scanSteam(['/definitely-absent-screensaver'])).detected, false);
   const root = await fixture(t);
   const s = await scanSteam([root]);
   assert.equal(s.detected, true);

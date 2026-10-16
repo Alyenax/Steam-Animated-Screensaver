@@ -8,7 +8,7 @@ const { createServer } = require('../scripts/dev-server.cjs');
 const { resolveFile } = require('../scripts/local-files.cjs');
 
 test('development transport blocks cross-origin and DNS rebinding requests; supports same-origin IPC', async (t) => {
-  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-server-'));
+  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-server-'));
   await fs.mkdir(path.join(dataDir, 'media'));
   const calls = [];
   const core = {
@@ -56,7 +56,7 @@ test('development transport blocks cross-origin and DNS rebinding requests; supp
 });
 
 test('media range streaming and sandboxed file resolution', async (t) => {
-  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-ranges-'));
+  const dataDir = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-ranges-'));
   await fs.mkdir(path.join(dataDir, 'media'));
   await fs.writeFile(path.join(dataDir, 'media', 'fixture.webm'), '0123456789');
   await fs.writeFile(path.join(dataDir, 'secrets.json'), 'secret');

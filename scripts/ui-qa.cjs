@@ -6,13 +6,13 @@ const assert = require('node:assert/strict');
 const { pathToFileURL } = require('node:url');
 const { createServer } = require('./dev-server.cjs');
 async function runUI({ capture = false } = {}) {
-  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-ui-qa-'));
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-ui-qa-'));
   const screenshots = path.resolve(__dirname, '..', 'screenshots');
   if (capture) await fs.mkdir(screenshots, { recursive: true });
   const { chromium } = require('playwright');
   const browser = await chromium.launch({
     executablePath:
-      process.env.CINEMA_TEST_BROWSER ||
+      process.env.SAS_TEST_BROWSER ||
       '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
     headless: true,
     args: ['--autoplay-policy=no-user-gesture-required']
@@ -49,7 +49,7 @@ async function runUI({ capture = false } = {}) {
     await page.goto(instance.url + '/manager/index.html');
     await page.locator('[data-action="prepare-home"]').waitFor();
     await page.waitForFunction(() => !document.querySelector('[data-action="scan"]')?.disabled);
-    assert.equal(await page.title(), 'SteamOS Animated Screensaver');
+    assert.equal(await page.title(), 'Steam Animated Screensaver');
     assert(!(await page.locator('body').innerText()).includes('CINEMA'));
     assert.equal(await page.locator('.local-badge').count(), 0);
     await shot('01-home-onboarding');
@@ -380,7 +380,7 @@ async function runUI({ capture = false } = {}) {
       'config',
       'uioverrides',
       'screensavers',
-      'steamos-animated-screensaver'
+      'steam-animated-screensaver'
     );
     for (let i = 0; i < 100; i++) {
       if (

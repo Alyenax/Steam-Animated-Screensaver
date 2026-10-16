@@ -23,7 +23,7 @@ function requestWith(responses, seen = []) {
   };
 }
 async function temporary(t) {
-  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-media-'));
+  const dir = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-media-'));
   t.after(() => fs.rm(dir, { recursive: true, force: true }));
   return dir;
 }
@@ -197,7 +197,10 @@ test('media directory symlinks cannot redirect preparation writes', async (t) =>
 });
 test('cache validation propagates cancellation to the queue', async () => {
   await assert.rejects(
-    createMedia({ dataDir: '/tmp/cinema-no-read' }).validate({}, { signal: AbortSignal.abort() }),
+    createMedia({ dataDir: '/tmp/screensaver-no-read' }).validate(
+      {},
+      { signal: AbortSignal.abort() }
+    ),
     { name: 'AbortError' }
   );
 });
@@ -616,3 +619,28 @@ test(
     assert.equal(await media.validate(original), true);
   }
 );
+
+test('failed decoder retains exit status, tool and stderr for diagnostic JSON', async (t) => {
+  const root = await fs.mkdtemp(path.join(os.tmpdir(), 'sas-decoder-failure-'));
+  t.after(() => fs.rm(root, { recursive: true, force: true }));
+  const media = createMedia({
+    dataDir: root,
+    downloadImpl: (_, dest) => fs.writeFile(dest, Buffer.from('GIF89a invalid decoder fixture'))
+  });
+  await assert.rejects(
+    media.prepare({
+      url: 'https://cdn2.steamgriddb.com/hero/broken.gif',
+      kind: 'hero',
+      animated: true
+    }),
+    (error) => {
+      let detail = error;
+      while (detail && !detail.stderr) detail = detail.cause;
+      assert(detail?.stderr);
+      assert.equal(detail.code, 'MEDIA_PROCESS_FAILED');
+      assert(Number.isInteger(detail.exitCode));
+      assert.match(detail.tool, /^ff(mpeg|probe)(\.exe)?$/);
+      return true;
+    }
+  );
+});

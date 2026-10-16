@@ -2,7 +2,7 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const CACHE_FOLDERS = ['media', 'sources', 'processed', 'thumbnails'];
-const FRAME_OWNER = 'steamos-animated-screensaver-v1';
+const FRAME_OWNER = 'steam-animated-screensaver-v1';
 async function stat(file) {
   try {
     return await fs.lstat(file);
@@ -37,14 +37,22 @@ async function planPurge(dataDir) {
         !item.isSymbolicLink() &&
         /^[0-9a-f-]{36}\.frames$/.test(entry.name)
       ) {
-        const marker = path.join(file, '.cinema-smoothing-work'),
-          owned = await stat(marker);
-        if (
-          owned?.isFile() &&
-          !owned.isSymbolicLink() &&
-          owned.size === FRAME_OWNER.length &&
-          (await fs.readFile(marker, 'utf8')) === FRAME_OWNER
-        ) {
+        let recognized = false;
+        for (const [name, owner] of [
+          ['.screensaver-smoothing-work', FRAME_OWNER],
+          ['.cinema-smoothing-work', 'steamos-animated-screensaver-v1']
+        ]) {
+          const marker = path.join(file, name),
+            info = await stat(marker);
+          if (
+            info?.isFile() &&
+            !info.isSymbolicLink() &&
+            info.size === owner.length &&
+            (await fs.readFile(marker, 'utf8')) === owner
+          )
+            recognized = true;
+        }
+        if (recognized) {
           const members = [];
           for (const child of await fs.readdir(file)) {
             const target = path.join(file, child),

@@ -1,8 +1,8 @@
 'use strict';
 const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld(
-  'cinema',
+  'screensaver',
   Object.freeze({
-    invoke: (action, payload = {}) => ipcRenderer.invoke('cinema:invoke', action, payload)
+    invoke: (action, payload = {}) => ipcRenderer.invoke('screensaver:invoke', action, payload)
   })
 );

@@ -19,7 +19,18 @@ async function buildIcon() {
     header.write('ic10', 8);
     header.writeUInt32BE(png.length + 8, 12);
     await fs.writeFile(path.join(root, 'icon.icns'), Buffer.concat([header, png]));
-    console.log('macOS icon generated from manager/icon.svg');
+    await page.setViewportSize({ width: 256, height: 256 });
+    await page.addStyleTag({ content: 'svg{width:256px;height:256px}' });
+    const small = await page.screenshot({ omitBackground: true });
+    const ico = Buffer.alloc(22);
+    ico.writeUInt16LE(1, 2);
+    ico.writeUInt16LE(1, 4);
+    ico.writeUInt16LE(1, 10);
+    ico.writeUInt16LE(32, 12);
+    ico.writeUInt32LE(small.length, 14);
+    ico.writeUInt32LE(22, 18);
+    await fs.writeFile(path.join(root, 'icon.ico'), Buffer.concat([ico, small]));
+    console.log('macOS and Windows icons generated from manager/icon.svg');
   } finally {
     await browser.close();
   }

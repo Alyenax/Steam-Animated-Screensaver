@@ -70,7 +70,7 @@ async function download(
           {
             signal: controller.signal,
             headers: {
-              'User-Agent': 'SteamOS-Animated-Screensaver/0.1',
+              'User-Agent': 'Steam-Animated-Screensaver/0.1',
               Accept: 'image/*,video/webm'
             }
           },
@@ -193,7 +193,7 @@ function run(
       }
     });
     child.stderr.on('data', (chunk) => {
-      errors = (errors + chunk).slice(-3000);
+      errors = (errors + chunk).slice(-24000);
     });
     child.on('error', (e) =>
       finish(
@@ -204,12 +204,21 @@ function run(
         )
       )
     );
-    child.on('close', (code) =>
+    child.on('close', (code, signal) =>
       finish(
         code === 0
           ? null
-          : new Error(
-              `Media decoding failed (${code}). ${errors.replace(/https?:\/\/\S+/g, '[URL]').slice(-700)}`
+          : Object.assign(
+              new Error(
+                `Media decoding failed (${code}). ${errors.replace(/https?:\/\/\S+/g, '[URL]').slice(-700)}`
+              ),
+              {
+                code: 'MEDIA_PROCESS_FAILED',
+                exitCode: code,
+                signal,
+                stderr: errors,
+                tool: path.basename(binary)
+              }
             )
       )
     );
@@ -302,7 +311,12 @@ function demuxer(buffer) {
   throw new Error('Unsupported media signature. Expected GIF, WebP, WebM, PNG or JPEG.');
 }
 function binaryDefault(name) {
-  const bundled = path.join(__dirname, '..', 'binaries', name);
+  const bundled = path.join(
+    __dirname,
+    '..',
+    'binaries',
+    process.platform === 'win32' ? name + '.exe' : name
+  );
   if (existsSync(bundled)) return bundled;
   try {
     const value = require(name === 'ffmpeg' ? 'ffmpeg-static' : 'ffprobe-static');
@@ -409,7 +423,7 @@ function createMedia({
           )
         );
       } catch (e) {
-        throw new Error(`Media validation failed: ${e.message}`);
+        throw new Error(`Media validation failed: ${e.message}`, { cause: e });
       }
       const stream = probe.streams?.[0];
       if (!stream) throw new Error('No decodable visual stream.');
@@ -835,8 +849,8 @@ function createMedia({
           );
           await fs.mkdir(framesDir);
           await fs.writeFile(
-            path.join(framesDir, '.cinema-smoothing-work'),
-            'steamos-animated-screensaver-v1'
+            path.join(framesDir, '.screensaver-smoothing-work'),
+            'steam-animated-screensaver-v1'
           );
           const list = ['ffconcat version 1.0'];
           report('smoothing-decode', {

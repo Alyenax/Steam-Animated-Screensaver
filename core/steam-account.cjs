@@ -91,7 +91,13 @@ function createSteamAccount({ getKey, fetchImpl = fetch } = {}) {
           typeof game.name === 'string' &&
           game.name.trim()
         )
-          games.set(game.appid, { steamAppId: game.appid, name: game.name.trim().slice(0, 300) });
+          games.set(game.appid, {
+            steamAppId: game.appid,
+            name: game.name.trim().slice(0, 300),
+            ...(Number.isSafeInteger(game.playtime_forever) && game.playtime_forever >= 0
+              ? { playtimeMinutes: game.playtime_forever }
+              : {})
+          });
       }
       if (games.size !== response.game_count)
         throw new Error('Steam returned an incomplete library. Try again later.');

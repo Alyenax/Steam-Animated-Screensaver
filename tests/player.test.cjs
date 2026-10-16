@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { localMedia, settings, catalogGames, shuffle } = require('../player/player.js');
 test('player accepts only local catalog media paths', () => {
-  for (const p of ['media/a.gif', '/media/b.webm', 'app://cinema/media/a.webp'])
+  for (const p of ['media/a.gif', '/media/b.webm', 'app://screensaver/media/a.webp'])
     assert(localMedia(p));
   for (const p of [
     'https://cdn2.steamgriddb.com/a.gif',

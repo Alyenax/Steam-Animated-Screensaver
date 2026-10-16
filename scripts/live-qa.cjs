@@ -6,9 +6,7 @@ const assert = require('node:assert/strict');
 const { pathToFileURL } = require('node:url');
 async function run() {
   const project = path.resolve(__dirname, '..'),
-    keyFile = path.resolve(
-      process.env.CINEMA_LIVE_KEY_FILE || path.join(project, '.qa', 'live.key')
-    );
+    keyFile = path.resolve(process.env.SAS_LIVE_KEY_FILE || path.join(project, '.qa', 'live.key'));
   const root = await fs.mkdtemp(path.join(project, '.qa', 'live-')),
     dataDir = path.join(root, 'data'),
     steamRoot = path.join(root, 'steam');
@@ -109,7 +107,7 @@ async function run() {
       'config',
       'uioverrides',
       'screensavers',
-      'steamos-animated-screensaver'
+      'steam-animated-screensaver'
     );
     await core.close();
     core = null;
@@ -132,13 +130,13 @@ async function run() {
         document.querySelector('.scene.visible .artwork') && document.querySelector('#empty').hidden
     );
     await page.screenshot({ path: path.join(root, 'portal-local-only.png') });
-    await page.evaluate(() => window.CinemaPlayer.pause());
+    await page.evaluate(() => window.SteamAnimatedScreensaverPlayer.pause());
     const first = await page.screenshot();
     await page.waitForTimeout(350);
     const second = await page.screenshot();
     assert(first.equals(second), 'Pause freezes the actual native artwork');
-    await page.evaluate(() => window.CinemaPlayer.play());
-    await page.evaluate(() => window.CinemaPlayer.next());
+    await page.evaluate(() => window.SteamAnimatedScreensaverPlayer.play());
+    await page.evaluate(() => window.SteamAnimatedScreensaverPlayer.next());
     await page.waitForFunction(() =>
       document.querySelector('.scene.visible h1')?.textContent.includes('Cyberpunk')
     );

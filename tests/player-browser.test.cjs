@@ -15,7 +15,7 @@ try {
   ffmpeg = require('ffmpeg-static');
 } catch {}
 const browserPath =
-  process.env.CINEMA_TEST_BROWSER ||
+  process.env.SAS_TEST_BROWSER ||
   (chromium && existsSync(chromium.executablePath())
     ? chromium.executablePath()
     : '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome');
@@ -23,7 +23,7 @@ test(
   'real browser plays offline, skips bad media, bounds decoders, pauses, resizes and destroys',
   { skip: !chromium || !ffmpeg || !existsSync(browserPath), timeout: 90000 },
   async (t) => {
-    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'cinema-player-browser-'));
+    const root = await fs.mkdtemp(path.join(os.tmpdir(), 'screensaver-player-browser-'));
     t.after(() => fs.rm(root, { recursive: true, force: true }));
     for (const [name, args] of [
       [
@@ -73,7 +73,7 @@ test(
         }
         if (p === '/player/catalog.js') {
           res.setHeader('content-type', 'text/javascript');
-          res.end('window.CINEMA_CATALOG={version:1,games:[],settings:{}};');
+          res.end('window.SAS_CATALOG={version:1,games:[],settings:{}};');
           return;
         }
         const files = {
@@ -121,7 +121,7 @@ test(
     page.on('request', (r) => requests.push(r.url()));
     await page.goto(`${origin}/preview.html`);
     const frame = page.frames().find((f) => f.url().includes('/player/index.html'));
-    await frame.waitForFunction(() => !!window.CinemaPlayer);
+    await frame.waitForFunction(() => !!window.SteamAnimatedScreensaverPlayer);
     assert.equal(await frame.locator('#empty').isVisible(), true);
     const makeGame = (id, media = '/media/scene.webm') => ({
       id,
@@ -143,7 +143,7 @@ test(
         (data) =>
           document
             .querySelector('iframe')
-            .contentWindow.postMessage({ type: 'cinema', ...data }, location.origin),
+            .contentWindow.postMessage({ type: 'screensaver', ...data }, location.origin),
         data
       );
     await send({
@@ -468,7 +468,7 @@ test(
       !topCrop.equals(bottomCrop),
       'changing focal position must change the actual visible pixels of a static portrait source'
     );
-    await frame.evaluate(() => window.CinemaPlayer.destroy());
+    await frame.evaluate(() => window.SteamAnimatedScreensaverPlayer.destroy());
     assert.equal(await frame.locator('video').count(), 0);
     assert.equal(await frame.locator('.scene').count(), 0);
     assert.equal(await frame.locator('canvas').count(), 0);

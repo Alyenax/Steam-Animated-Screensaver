@@ -6,13 +6,13 @@ This project is a clean-room implementation. No private GabeCubeAura code, media
 
 The manager ships a pinned Chromium renderer and Node backend. Tauri 2 would reduce download size, but uses Linux's system WebKitGTK: availability, version, video codecs and installation on an immutable SteamOS image would need a separate dependency solution. Electron trades a larger package for a predictable renderer and a package containing its preparation executables. This is an architectural choice, not proof that the resulting binary has run on a Steam Deck. Linux runtime acceptance remains pending.
 
-The renderer has no Node access. Context isolation and Chromium sandboxing are enabled. A narrow, sender-validated IPC method calls the independently testable core. A local `app://cinema` protocol serves only manager/player assets and media filenames contained by real paths. All preparation happens in the backend. There is no listening HTTP service in the packaged application. The loopback HTTP server is a development/test tool with strict origin and Host checks.
+The renderer has no Node access. Context isolation and Chromium sandboxing are enabled. A narrow, sender-validated IPC method calls the independently testable core. A local `app://screensaver` protocol serves only manager/player assets and media filenames contained by real paths. All preparation happens in the backend. There is no listening HTTP service in the packaged application. The loopback HTTP server is a development/test tool with strict origin and Host checks.
 
 The dependency lockfile pins development tools. Player and manager use native JavaScript modules and CSS; they require no frontend bundler. FFmpeg and FFprobe are separate bounded child processes, not linked into the JavaScript application. The packaged player has no dependency on Electron, Node, FFmpeg, the manager, a daemon, or an API key.
 
 ## Runtime evidence
 
-Valve's stable [Steam Client Update, October 13, 2026](https://www.steamdeck.com/en/news?pubDate=20260808) explicitly documents `~/.steam/root/config/uioverrides/screensavers/` and points to the built-in bouncing-logo example. The public [tabs-screensavers repository](https://github.com/Acerocks22/tabs-screensavers) demonstrates a named directory with `index.html`, local scripts and images. This project recreates that structure independently. No local Steam installation containing the actual built-in screensaver was available during initial research.
+Valve's stable [Steam Client Update, October 13, 2026](https://www.steamdeck.com/en/news?pubDate=20260808) explicitly documents `~/.steam/root/config/uioverrides/screensavers/` and points to the built-in bouncing-logo example. The public [tabs-screensavers repository](https://github.com/Acerocks22/tabs-screensavers) demonstrates a named directory with `index.html`, local scripts and images. This project recreates that structure independently. On 2026-10-16 the Mac client’s built-in example was inspected read-only at `~/Library/Application Support/Steam/Steam.AppBundle/Steam/Contents/MacOS/steamui/screensavers/bouncinglogo/index.html`; no Valve code or artwork was copied. The custom export remains rooted in the client’s `config/uioverrides/screensavers/`, not inside that app bundle.
 
 These sources establish the installation layout. A subsequent 0.1.0 Steam Machine report exposed a virtual-host assumption: Steam loads the returned screensaver path as an HTTPS hostname. The 0.1.1 correction uses a DNS-safe installation identifier and adds a mapped-HTTPS playback test; see STEAM_ERROR_105.md. Only target-device testing can establish this player's behavior in Steam's CEF runtime, especially codec playback, idle entry and activity dismissal. See PLAYER.md and VALIDATION.md.
 
@@ -27,7 +27,6 @@ Optional owned-library import calls Valve's [IPlayerService GetOwnedGames](https
 The manager owns one core and one sequential preparation worker. Catalog and queue mutations are persisted atomically. Closing the manager pauses recoverably; finished files remain reusable. The player reads an exported local catalog. The installed snapshot continues working if the manager is removed. Editing the manager's catalog does not silently modify Steam's active installation; Install/Repair republishes it.
 
 See CONTRACTS.md for versioned component interfaces, STORAGE.md for local paths, and PLAYER.md for media and playback behavior.
-
 
 ## Smoothing and telemetry
 

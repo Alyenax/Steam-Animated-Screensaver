@@ -1,11 +1,27 @@
 'use strict';
-const { app, BrowserWindow, ipcMain, protocol, net, session, shell } = require('electron');
+const {
+  app,
+  BrowserWindow,
+  ipcMain,
+  protocol,
+  net,
+  session,
+  shell,
+  crashReporter
+} = require('electron');
 const path = require('node:path');
 const { pathToFileURL } = require('node:url');
 const { resolveFile, CSP } = require('./scripts/local-files.cjs');
 
-if (process.env.CINEMA_DATA_DIR) {
-  const profile = path.join(path.resolve(process.env.CINEMA_DATA_DIR), 'electron-profile');
+// Preserve explicit development-directory overrides from older builds.
+const explicitDataDir = process.env.SAS_DATA_DIR || process.env.CINEMA_DATA_DIR;
+if (process.env.SAS_APP_DATA_ROOT)
+  app.setPath('appData', path.resolve(process.env.SAS_APP_DATA_ROOT));
+{
+  // Keep Chromium's early single-instance lock from creating the new catalog folder before migration.
+  const profile = explicitDataDir
+    ? path.join(path.resolve(explicitDataDir), 'electron-profile')
+    : path.join(app.getPath('appData'), 'steam-animated-screensaver-electron');
   require('node:fs').mkdirSync(profile, { recursive: true });
   app.setPath('userData', profile);
   app.setPath('logs', path.join(profile, 'logs'));
@@ -19,18 +35,49 @@ protocol.registerSchemesAsPrivileged([
   }
 ]);
 app.enableSandbox();
+if (process.platform === 'win32')
+  app.setAppUserModelId('io.github.alyenax.steam-animated-screensaver');
 const lock = app.requestSingleInstanceLock();
 if (!lock) app.quit();
+let diagnostics;
+const earlyEvents = [];
+function report(level, event, detail) {
+  if (!diagnostics && level === 'fatal') {
+    try {
+      diagnostics = require('./core/diagnostics.cjs').createDiagnostics({
+        dataDir: path.join(app.getPath('appData'), 'steam-animated-screensaver-diagnostics')
+      });
+    } catch {}
+  }
+  if (diagnostics) diagnostics.record(level, event, detail);
+  else earlyEvents.push({ level, event, detail });
+}
+process.on('uncaughtException', (error) => {
+  report('fatal', 'main.uncaught_exception', { error });
+  app.exit(1);
+});
+process.on('unhandledRejection', (reason) =>
+  report('error', 'main.unhandled_rejection', { error: reason })
+);
+app.on('child-process-gone', (_event, detail) =>
+  report('error', 'electron.child_process_gone', detail)
+);
 let core,
   win,
   quitting = false,
   quitReady = false;
 const actions = new Set([
   'state',
+  'diagnosticsEvent',
+  'openLogs',
   'scan',
   'search',
   'add',
   'updateGame',
+  'setIncluded',
+  'selectLibraryTop',
+  'importPopular',
+  'cancelSelection',
   'remove',
   'artworks',
   'covers',
@@ -60,7 +107,7 @@ function createWindow() {
     minWidth: 680,
     minHeight: 520,
     backgroundColor: '#0b1018',
-    title: 'SteamOS Animated Screensaver',
+    title: 'Steam Animated Screensaver',
     autoHideMenuBar: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
@@ -70,6 +117,22 @@ function createWindow() {
       webSecurity: true,
       spellcheck: false
     }
+  });
+  win.on('unresponsive', () => report('error', 'window.unresponsive', {}));
+  win.on('responsive', () => report('info', 'window.responsive', {}));
+  win.webContents.on('render-process-gone', (_event, detail) =>
+    report('fatal', 'renderer.process_gone', detail)
+  );
+  win.webContents.on('did-fail-load', (_event, code, description, url, isMainFrame) =>
+    report('error', 'renderer.load_failed', { code, description, url, isMainFrame })
+  );
+  win.webContents.on('console-message', (details) => {
+    if (details.level === 'error' || details.level === 'warning')
+      report(details.level === 'error' ? 'error' : 'warn', 'renderer.console', {
+        message: details.message,
+        source: details.sourceId,
+        line: details.lineNumber
+      });
   });
   win.webContents.setWindowOpenHandler(({ url }) => {
     try {
@@ -83,7 +146,8 @@ function createWindow() {
           'www.steamgriddb.com',
           'cdn.steamgriddb.com',
           'cdn2.steamgriddb.com',
-          'steamcommunity.com'
+          'steamcommunity.com',
+          'store.steampowered.com'
         ].includes(target.hostname)
       )
         shell.openExternal(target.href);
@@ -91,18 +155,18 @@ function createWindow() {
     return { action: 'deny' };
   });
   win.webContents.on('will-navigate', (event, url) => {
-    if (url !== 'app://cinema/manager/index.html') event.preventDefault();
+    if (url !== 'app://screensaver/manager/index.html') event.preventDefault();
   });
   win.webContents.on('will-attach-webview', (event) => event.preventDefault());
-  win.loadURL('app://cinema/manager/index.html');
-  if (process.env.CINEMA_SMOKE_TEST) {
+  win.loadURL('app://screensaver/manager/index.html');
+  if (process.env.SAS_SMOKE_TEST) {
     win.webContents.once('did-finish-load', async () => {
       try {
         const result = await win.webContents.executeJavaScript(
-          `Promise.all([window.cinema.invoke('state'),Promise.resolve({title:document.title,node:typeof require,bridge:typeof window.cinema.invoke})])`
+          `Promise.all([window.screensaver.invoke('state'),Promise.resolve({title:document.title,node:typeof require,bridge:typeof window.screensaver.invoke})])`
         );
         console.log(
-          'CINEMA_SMOKE_OK',
+          'SAS_SMOKE_OK',
           JSON.stringify({
             games: result[0].games.length,
             hasKey: result[0].hasKey,
@@ -110,7 +174,7 @@ function createWindow() {
           })
         );
       } catch {
-        console.error('CINEMA_SMOKE_FAILED');
+        console.error('SAS_SMOKE_FAILED');
         process.exitCode = 1;
       }
       app.quit();
@@ -122,12 +186,23 @@ app
   .whenReady()
   .then(async () => {
     const dataDir =
-      process.env.CINEMA_DATA_DIR ||
-      path.join(app.getPath('appData'), 'steamos-animated-screensaver');
+      explicitDataDir ||
+      (await require('./core/branding.cjs').dataDirectory(app.getPath('appData')));
+    diagnostics = require('./core/diagnostics.cjs').createDiagnostics({ dataDir });
+    for (const event of earlyEvents.splice(0))
+      diagnostics.record(event.level, event.event, event.detail);
+    app.setPath('crashDumps', path.join(dataDir, 'logs', 'crashes'));
+    crashReporter.start({ uploadToServer: false, compress: true, ignoreSystemCrashHandler: false });
+    report('info', 'application.started', {
+      packaged: app.isPackaged,
+      version: app.getVersion(),
+      steamOverride: !!process.env.STEAM_ROOT
+    });
     const { createCore } = require('./core/index.cjs');
-    core = await createCore({ dataDir });
+    core = await createCore({ dataDir, diagnostics });
     protocol.handle('app', async (request) => {
-      if (new URL(request.url).host !== 'cinema') return new Response('Not found', { status: 404 });
+      if (new URL(request.url).host !== 'screensaver')
+        return new Response('Not found', { status: 404 });
       const target = await resolveFile(request.url, { root: __dirname, dataDir });
       if (!target) return new Response('Not found', { status: 404 });
       const response = await net.fetch(pathToFileURL(target.file).href, {
@@ -145,10 +220,10 @@ app
     session.defaultSession.setPermissionCheckHandler(
       (_wc, permission) => permission === 'fullscreen'
     );
-    ipcMain.handle('cinema:invoke', async (event, action, payload = {}) => {
+    ipcMain.handle('screensaver:invoke', async (event, action, payload = {}) => {
       if (
         event.senderFrame !== win?.webContents.mainFrame ||
-        event.senderFrame.url !== 'app://cinema/manager/index.html' ||
+        event.senderFrame.url !== 'app://screensaver/manager/index.html' ||
         !actions.has(action)
       )
         throw new Error('Action unavailable.');
@@ -160,6 +235,10 @@ app
       )
         throw new Error('Invalid request.');
       try {
+        if (action === 'openLogs') {
+          shell.showItemInFolder(diagnostics.file);
+          return { opened: true };
+        }
         return await core.invoke(action, payload);
       } catch (error) {
         throw new Error(error.message || 'The operation could not be completed.');
@@ -170,9 +249,17 @@ app
       if (BrowserWindow.getAllWindows().length === 0) createWindow();
     });
   })
-  .catch(() => {
+  .catch((error) => {
+    if (!diagnostics) {
+      try {
+        diagnostics = require('./core/diagnostics.cjs').createDiagnostics({
+          dataDir: path.join(app.getPath('appData'), 'steam-animated-screensaver-diagnostics')
+        });
+      } catch {}
+    }
+    report('fatal', 'application.start_failed', { error });
     console.error(
-      'Could not start SteamOS Animated Screensaver. Check write permissions for the application data directory.'
+      'Could not start Steam Animated Screensaver. Check write permissions for the application data directory.'
     );
     app.exit(1);
   });
@@ -192,6 +279,8 @@ app.on('before-quit', (event) => {
   quitting = true;
   if (win && !win.isDestroyed()) win.destroy();
   Promise.resolve(core.close()).finally(() => {
+    report('info', 'application.closed', {});
+    diagnostics?.close();
     quitReady = true;
     app.quit();
   });

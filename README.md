@@ -1,16 +1,14 @@
-# SteamOS Animated Screensaver
+# Steam Animated Screensaver
 
-**Bring Your Steam Library to Life.**
+Create and install a Steam screensaver from animated SteamGridDB artwork. Scan installed games, import owned games, or add titles manually; choose artwork, prepare it locally, and preview the result.
 
-Turn your Steam games into an animated screensaver powered by SteamGridDB. Scan installed games, optionally import owned games from Steam, add any title manually, choose an artist's animation, prepare it once, and enjoy it entirely offline.
-
-**0.1.7 provides a macOS Apple Silicon test app and a private Linux installation candidate.** The manager, media pipeline and player are exercised locally. Physical SteamOS/Gaming Mode and Steam Machine acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
+**0.1.8 provides SteamOS, Linux, Windows x64 and macOS Apple Silicon packages.** The native macOS manager and automated software checks are exercised locally. Native Windows/Linux execution and Steam Big Picture/Gaming Mode acceptance remain pending. See [validation evidence](docs/VALIDATION.md) before installing on your main device.
 
 ![Actual first-run manager, with no fabricated library](screenshots/01-home-onboarding.png)
 
-The application uses its full name, **SteamOS Animated Screensaver**, throughout the interface. No GabeCubeAura, Decky Loader, account password, or permanent background service is required.
+The application uses its full name, **Steam Animated Screensaver**, throughout the interface. No GabeCubeAura, Decky Loader, account password, or permanent background service is required.
 
-## Your library, your intermission
+## Features
 
 - Automatically scan Steam manifests, including secondary libraries, entirely offline. Hide Proton, Steam Linux Runtime and Steamworks redistributables from the catalog, including previously saved entries.
 - Add games by name, Steam AppID or Steam Store URL using one personal SteamGridDB key. Select the exact result when names overlap.
@@ -27,30 +25,40 @@ The application uses its full name, **SteamOS Animated Screensaver**, throughout
 
 ## Steam Machine error -105 on 0.1.0
 
-The initial space-containing export identifier has been replaced with `steamos-animated-screensaver`. [Repair instructions](docs/STEAM_ERROR_105.md) include a small script that preserves existing media. Restart Steam and select the new identifier afterward. The affected device still needs to confirm the correction.
+The initial space-containing export identifier has been replaced with `steam-animated-screensaver`. [Repair instructions](docs/STEAM_ERROR_105.md) include a small script that preserves existing media. Restart Steam and select the new identifier afterward. The affected device still needs to confirm the correction.
+
+## Windows and cross-platform Steam integration
+
+Extract the entire Windows ZIP and run **Steam Animated Screensaver.exe**. macOS, Windows, Linux and SteamOS install the same offline player into `<Steam client root>/config/uioverrides/screensavers/steam-animated-screensaver`. On desktop platforms, select it in Steam **Big Picture → Settings → Customization**. Platform roots and update/migration instructions are in [INSTALLATION.md](docs/INSTALLATION.md).
+
+## Library selection and diagnostic logs
+
+Use **Select all shown / Deselect all shown** after filtering or searching. Choose your library's **100 most popular on Steam** (concurrent players) or **100 most played by you** (imported total playtime). Import the **current Steam top 100** separately to discover games; software is filtered out and new entries start excluded. No hosted server is required. Steam popularity uses Valve's public endpoints, with progress, cancellation and a 30-minute count cache. Personal playtime requires an owned-library import.
+
+**Settings → Diagnostic logs → Show JSON log file** opens the local journal. Errors, preparation milestones, JavaScript stacks and process-crash details are persisted atomically; keys are redacted and nothing is uploaded. See [installation and logging details](docs/INSTALLATION.md#logs-and-crashes).
 
 ## Open the macOS app
 
-On an **Apple Silicon Mac with macOS 13 or newer**, download the macOS `.dmg` from the private release, open it and drag **SteamOS Animated Screensaver.app** into Applications. You can also unzip the macOS `.zip` and open the app directly. Node, Homebrew and a local server are not required.
+On an **Apple Silicon Mac with macOS 13 or newer**, download the macOS `.dmg` from the private release, open it and drag **Steam Animated Screensaver.app** into Applications. You can also unzip the macOS `.zip` and open the app directly. Node, Homebrew and a local server are not required.
 
-Add your SteamGridDB key in **Settings**, scan/import/add games, prepare their artwork, then use **Preview**. Image previews, fixed artwork, smoothing and framing use the same Manager/Core/Player as SteamOS. Your Mac keeps its own library and cache in `~/Library/Application Support/steamos-animated-screensaver`; the application bundle contains no personal key or fabricated library.
+Add your SteamGridDB key in **Settings**, scan/import/add games, prepare their artwork, then use **Preview**. Image previews, fixed artwork, smoothing and framing use the same Manager/Core/Player as SteamOS. Your Mac keeps its own library and cache in `~/Library/Application Support/steam-animated-screensaver`; the application bundle contains no personal key or fabricated library.
 
-The private app has an ad-hoc signature and is not Apple notarized. If macOS blocks a downloaded copy, follow [Apple's per-app Open Anyway instructions](https://support.apple.com/en-us/102445). The Mac app manages and previews artwork; SteamOS idle activation and controller wake remain target-device tests. Intel Mac builds are not provided.
+The private app has an ad-hoc signature and is not Apple notarized. If macOS blocks a downloaded copy, follow [Apple's per-app Open Anyway instructions](https://support.apple.com/en-us/102445). The Mac app can install the player into Steam for Big Picture; idle activation and controller wake remain target-device tests. Intel Mac builds are not provided.
 
-## Install the Linux x64 candidate
+## Install the SteamOS / Linux x64 candidate
 
-Download the `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Steam Machine are the intended hardware; the binary has not yet been executed on those devices. In Desktop Mode:
+Download the platform `.tar.gz` and `SHA256SUMS` from the private release. Steam Deck/Steam Machine are the intended hardware; the binary has not yet been executed on those devices. In Desktop Mode:
 
 ```sh
 sha256sum -c SHA256SUMS
-tar -xzf SteamOS-Animated-Screensaver-0.1.7-linux-x64.tar.gz
-cd steamos-animated-screensaver-linux-x64
+tar -xzf Steam-Animated-Screensaver-0.1.8-steamos-x64.tar.gz
+cd steam-animated-screensaver-linux-x64
 ./install.sh
 ```
 
-Open **SteamOS Animated Screensaver** from the application launcher. Add your personal API key in Settings, rescan or add games, then choose **Prepare My Screensaver**. Preview the result and use **Install screensaver**. In Steam, select **steamos-animated-screensaver** in **Settings → Customization → Screensavers**. Restart Steam if its selector has not refreshed.
+Open **Steam Animated Screensaver** from the application launcher. Add your personal API key in Settings, rescan or add games, then choose **Prepare My Screensaver**. Preview the result and use **Install screensaver**. In Steam, select **steam-animated-screensaver** in **Settings → Customization → Screensavers**. Restart Steam if its selector has not refreshed.
 
-The application installs to `~/.local/opt/steamos-animated-screensaver`; it does not disable SteamOS read-only mode, use `sudo`, install global dependencies, or change Steam manifests. The package contains Electron and separate FFmpeg/FFprobe tools. It expects a Linux x64 graphical desktop with the system libraries Electron needs; see [installation](docs/INSTALLATION.md).
+The application installs to `~/.local/opt/steam-animated-screensaver`; it does not disable SteamOS read-only mode, use `sudo`, install global dependencies, or change Steam manifests. The package contains Electron and separate FFmpeg/FFprobe tools. It expects a Linux x64 graphical desktop with the system libraries Electron needs; see [installation](docs/INSTALLATION.md).
 
 ## Original framing or a true 16:9 / 16:10 crop
 
@@ -66,11 +74,11 @@ In **Settings → Playback**, enable **Show a still cover** and choose **Cover p
 
 **Smooth animations** is off by default. Choose **24 or 30 fps** and a processing method:
 
-| Method | Processing | Output |
-| --- | --- | --- |
-| Fast (default for new settings) | Motion interpolation with a smaller search and lower processing resolution | Up to 720p, VP8 |
-| Quality | Detailed motion interpolation, the previous processing method | Up to 1080p, VP9 |
-| Very light | Blend neighboring frames without motion estimation; may show double edges | Up to 720p, VP8 |
+| Method                          | Processing                                                                 | Output           |
+| ------------------------------- | -------------------------------------------------------------------------- | ---------------- |
+| Fast (default for new settings) | Motion interpolation with a smaller search and lower processing resolution | Up to 720p, VP8  |
+| Quality                         | Detailed motion interpolation, the previous processing method              | Up to 1080p, VP9 |
+| Very light                      | Blend neighboring frames without motion estimation; may show double edges  | Up to 720p, VP8  |
 
 Existing enabled smoothing settings migrate to Quality / 30 fps. No profile upscales the source. Already fluid animations keep their original frame rate. Enable smoothing, choose a profile, prepare again, preview, then **Update / repair** to apply to Steam. Changes to the profile or target fps regenerate only the derivative from the locally retained original. **Maximum size per processed video (MB)** defaults to **0** (no per-video limit); your total library limit and free disk space still apply. Disable smoothing and update to restore original playback. Optional failures keep the original playable.
 
@@ -102,7 +110,7 @@ Deletion is limited to the application's cache folders and owned Steam exports. 
 
 Close the manager, download and verify the next candidate, and run its `install.sh`. Your catalog, key and prepared media are preserved. After catalog or playback changes, use **Update / repair** to republish the installed Steam snapshot.
 
-To remove the screensaver, use **Settings → Uninstall**. To remove the manager, run `~/.local/opt/steamos-animated-screensaver/uninstall.sh`. Local media and settings remain until you explicitly erase them. See the [full uninstall and recovery guide](docs/INSTALLATION.md).
+To remove the screensaver, use **Settings → Uninstall**. To remove the manager, run `~/.local/opt/steam-animated-screensaver/uninstall.sh`. Local media and settings remain until you explicitly erase them. See the [full uninstall and recovery guide](docs/INSTALLATION.md).
 
 ## Build and develop
 

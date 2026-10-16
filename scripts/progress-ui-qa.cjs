@@ -59,7 +59,7 @@ const { createServer } = require('./dev-server.cjs');
     });
     browser = await require('playwright').chromium.launch({
       executablePath:
-        process.env.CINEMA_TEST_BROWSER ||
+        process.env.SAS_TEST_BROWSER ||
         '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
       headless: true
     });

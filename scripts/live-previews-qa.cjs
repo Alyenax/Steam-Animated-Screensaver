@@ -7,7 +7,7 @@ const { pathToFileURL } = require('node:url');
 async function run() {
   const project = path.resolve(__dirname, '..'),
     keyFile = path.resolve(
-      process.env.CINEMA_LIVE_KEY_FILE || path.join(project, '.qa', 'live-current.key')
+      process.env.SAS_LIVE_KEY_FILE || path.join(project, '.qa', 'live-current.key')
     );
   await fs.mkdir(path.join(project, '.qa'), { recursive: true });
   const root = await fs.mkdtemp(path.join(project, '.qa', 'live-previews-'));
@@ -191,7 +191,7 @@ async function run() {
           'config',
           'uioverrides',
           'screensavers',
-          'steamos-animated-screensaver',
+          'steam-animated-screensaver',
           'index.html'
         )
       ).href
@@ -222,17 +222,15 @@ async function run() {
     if (page) {
       console.log(
         JSON.stringify(
-          await page
-            .locator('.search-results .result')
-            .evaluateAll((rows) =>
-              rows.map((row) => ({
-                name: row.querySelector('.result-name')?.textContent,
-                image: row.querySelector('img')?.getAttribute('src'),
-                candidates: row.querySelector('img')?.dataset.previewCandidates,
-                decoded: row.querySelector('img')?.naturalWidth,
-                failed: row.querySelector('.managed-image')?.className
-              }))
-            ),
+          await page.locator('.search-results .result').evaluateAll((rows) =>
+            rows.map((row) => ({
+              name: row.querySelector('.result-name')?.textContent,
+              image: row.querySelector('img')?.getAttribute('src'),
+              candidates: row.querySelector('img')?.dataset.previewCandidates,
+              decoded: row.querySelector('img')?.naturalWidth,
+              failed: row.querySelector('.managed-image')?.className
+            }))
+          ),
           null,
           2
         )

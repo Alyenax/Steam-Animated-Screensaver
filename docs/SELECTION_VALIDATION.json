@@ -1,0 +1,13 @@
+{
+  "version": "0.1.8",
+  "fixture": "Isolated 125-game catalog and deterministic ranking provider; no personal credentials.",
+  "checks": [
+    "Select/deselect all respects the non-installed filter and search, through actual UI",
+    "Personal top selects exactly the 100 most played owned games",
+    "Popularity displays live percent, disables competing actions, and cancels without changing choices",
+    "Steam popularity selects a different correct set of 100 through the UI",
+    "Global Steam discovery deduplicates, starts new games excluded, and supports select all",
+    "All five views use functional copy in EN/FR and fit 1280/800/390 px"
+  ],
+  "pageErrors": []
+}

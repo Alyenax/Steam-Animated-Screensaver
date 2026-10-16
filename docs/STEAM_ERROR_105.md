@@ -8,7 +8,7 @@ Chromium defines [-105 as NAME_NOT_RESOLVED](https://chromium.googlesource.com/c
 
 The extracted Steam frontend at [SteamTracking commit 7d81b2c](https://github.com/SteamDatabase/SteamTracking/blob/7d81b2cb9cdbf4f803ec7d2726922e71766a8dd8/ClientExtracted/steamui/sp.js) obtains custom screensavers from `Screensaver.GetLocalScreensavers`, uses the returned `path` as a virtual hostname, then loads `https://<returned-host>/index.html` in a domain-mapped BrowserView. Built-ins use `steamscreensavers.host` hostnames. This is more specific than the earlier file:// browser tests.
 
-The 0.1.0 installer incorrectly used the product display name, including spaces and capitals, as its directory identifier: `SteamOS Animated Screensaver`. The referenced [tabs-screensavers example](https://github.com/Acerocks22/tabs-screensavers) uses a simple `windowspipes` identifier. Spaces are invalid in a DNS label and can interfere with Steam's domain mapping. The new identifier is the lowercase DNS-safe `steamos-animated-screensaver`; the product title inside the player and manager is unchanged.
+The 0.1.0 installer incorrectly used the product display name, including spaces and capitals, as its directory identifier: `Steam Animated Screensaver`. The referenced [tabs-screensavers example](https://github.com/Acerocks22/tabs-screensavers) uses a simple `windowspipes` identifier. Spaces are invalid in a DNS label and can interfere with Steam's domain mapping. The new identifier is the lowercase DNS-safe `steam-animated-screensaver`; the product title inside the player and manager is unchanged.
 
 This corrects an actual identifier assumption. It is a plausible explanation for the reported DNS error, but the exact failing hostname has not been collected from the affected Steam client. A successful physical re-test is required before identifying it conclusively as the cause of that user's -105.
 
@@ -22,7 +22,7 @@ sh repair-steam-screensaver.sh
 
 For a nonstandard Steam location, pass that root as its sole argument. The script only renames an owned legacy export and leaves its files intact. It refuses conflicting targets, unowned folders and unsafe configuration symlinks. It does not read the personal API key, alter Steam's selector settings, restart Steam, or install anything globally.
 
-Fully restart Steam afterward and select **steamos-animated-screensaver** in **Settings → Customization**. Test the Preview button, then allow the configured one-minute idle timeout to elapse. The previous selection may refer to the old identifier and must be selected again.
+Fully restart Steam afterward and select **steam-animated-screensaver** in **Settings → Customization**. Test the Preview button, then allow the configured one-minute idle timeout to elapse. The previous selection may refer to the old identifier and must be selected again.
 
 Update the Manager to 0.1.1 before its next Install/Update operation; version 0.1.0 would recreate the old directory name. Manager 0.1.1 automatically stages and commits the corrected export before removing an owned legacy export. Failed staging preserves the old files. Uninstall recognizes both owned identifiers, preserving unrelated screensavers.
 

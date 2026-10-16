@@ -9,12 +9,12 @@ The public [Acerocks22/tabs-screensavers tree](https://github.com/Acerocks22/tab
 The installer creates:
 
 ```
-<Steam root>/config/uioverrides/screensavers/steamos-animated-screensaver/
+<Steam root>/config/uioverrides/screensavers/steam-animated-screensaver/
   index.html
   player.js
   player.css
   catalog.js
-  .steamos-animated-screensaver.json
+  .steam-animated-screensaver.json
   media/<prepared playback and thumbnail files>
 ```
 
@@ -22,9 +22,9 @@ Steam opens installed players through a mapped HTTPS hostname. The directory ide
 
 ## One engine, two hosts
 
-The Manager iframe and installed screensaver use the same `player/index.html`, `player.js` and `player.css`. The installed catalog is a local script, so loading requires no fetch, server, API key, account session or network. Its content security policy blocks connections and remote assets. Local relative URLs are used in the installation; preview supports same-origin `/media/` URLs and the Electron application's `app://cinema/media/` URLs.
+The Manager iframe and installed screensaver use the same `player/index.html`, `player.js` and `player.css`. The installed catalog is a local script, so loading requires no fetch, server, API key, account session or network. Its content security policy blocks connections and remote assets. Local relative URLs are used in the installation; preview supports same-origin `/media/` URLs and the Electron application's `app://screensaver/media/` URLs.
 
-The preview accepts catalog and control messages only from its parent window, with a matching origin. Steam's standalone host needs no message bridge. The global `CinemaPlayer` API exposes play, pause, previous, next, settings and destroy. Preview fullscreen is owned by the Manager; this iframe does not acquire input or fullscreen itself.
+The preview accepts catalog and control messages only from its parent window, with a matching origin. Steam's standalone host needs no message bridge. The global `SteamAnimatedScreensaverPlayer` API exposes play, pause, previous, next, settings and destroy. Preview fullscreen is owned by the Manager; this iframe does not acquire input or fullscreen itself.
 
 There is one moving artwork decoder in steady state, and at most two while crossfading or preparing a transition. The blurred ambient layer uses the thumbnail, so it never duplicates a video decoder. Rapid navigation cancels and unloads pending scenes as well as retired scenes. Original framing uses `object-fit: contain`; the separate blurred background fills the display without stretching the artwork. Crossfade and fade-to-black are supported. Reduced motion removes scene fades and the optional static-image camera drift; genuine artwork animation continues.
 
@@ -72,13 +72,13 @@ The installer copies only included, ready playback files and their thumbnails. I
 
 Installation stages all files beside the destination, validates ownership, renames the previous owned folder aside, and commits the new directory. Failed staging leaves the old installation untouched. A failed commit restores it. Uninstall refuses to touch a folder without the application ownership marker and leaves neighboring screensavers intact. Installation and uninstall share a per-Steam-root lock.
 
-Normal cancellation removes temporary downloads, encodes and thumbnails. A forced process kill can leave unreferenced UUID `.partial`, `.webm` or `.jpg` files; the Manager's unused-media cleanup can remove these. If a process is killed while holding the install lock, the next attempt reports the exact `.steamos-animated-screensaver.lock` folder to remove after confirming that no Manager is installing. A crash precisely between the backup rename and new-folder rename can leave `.cinema-backup-<UUID>` beside the destination; rename that owned backup to `steamos-animated-screensaver` to recover it. Never remove unrelated override folders.
+Normal cancellation removes temporary downloads, encodes and thumbnails. A forced process kill can leave unreferenced UUID `.partial`, `.webm` or `.jpg` files; the Manager's unused-media cleanup can remove these. If a process is killed while holding the install lock, the next attempt reports the exact `.steam-animated-screensaver.lock` folder to remove after confirming that no Manager is installing. A crash precisely between the backup rename and new-folder rename can leave `.screensaver-backup-<UUID>` beside the destination; rename that owned backup to `steam-animated-screensaver` to recover it. Never remove unrelated override folders.
 
 ## Verified locally
 
 Node tests cover CDN URL and redirect restrictions, oversize/truncated downloads, cancellation, hostile manifest signatures, symlink escapes, retained-source integrity, corrupted thumbnails, real FFmpeg preparation of GIF/animated WebP/VP9 WebM, static-artwork rejection, installer ownership/rollback/uninstall and catalog filtering.
 
-`tests/player-browser.test.cjs` generates an original synthetic VP9 fixture, runs this exact player in isolated headless Chrome and verifies real video time advancement, video pause, identical paused GIF/WebP screenshots and resumed moving frames, paused static camera drift, repeated canvas cleanup, parent controls, rapid navigation decoder bounds, undistorted resizing, missing-file skipping, all-failed recovery, local-only requests and teardown. It also invokes the real installer and verifies the exported player directly over `file://`, checking that every playback request remains a local file and real video time advances. It uses a configured `CINEMA_TEST_BROWSER`, Playwright Chromium when available, or installed macOS Chrome. Environments without a browser skip this explicitly; that skip does not count as playback validation.
+`tests/player-browser.test.cjs` generates an original synthetic VP9 fixture, runs this exact player in isolated headless Chrome and verifies real video time advancement, video pause, identical paused GIF/WebP screenshots and resumed moving frames, paused static camera drift, repeated canvas cleanup, parent controls, rapid navigation decoder bounds, undistorted resizing, missing-file skipping, all-failed recovery, local-only requests and teardown. It also invokes the real installer and verifies the exported player directly over `file://`, checking that every playback request remains a local file and real video time advances. It uses a configured `SAS_TEST_BROWSER`, Playwright Chromium when available, or installed macOS Chrome. Environments without a browser skip this explicitly; that skip does not count as playback validation.
 
 ## Target SteamOS acceptance still required
 

@@ -175,7 +175,7 @@ async function buildMedia({ output, sourceDir } = {}) {
       path.join(output, 'REBUILD.txt'),
       'FFmpeg runs as separate LGPL executables with BSD libvpx and dav1d libraries. Their complete unmodified sources and exact build recipe are in sources/. No GPL or nonfree configuration is enabled.\n' +
         'Rebuild on macOS Apple Silicon with Xcode Command Line Tools, Python 3.9+ and Node.js 22+: node sources/build-media-macos.cjs --sources sources --output rebuilt\n' +
-        'Replace binaries/ffmpeg and binaries/ffprobe with rebuilt tools in your own copy of the app, then re-sign that copy: codesign --force --deep --sign - "SteamOS Animated Screensaver.app". Changes to the media executables are permitted under their licenses.\n'
+        'Replace binaries/ffmpeg and binaries/ffprobe with rebuilt tools in your own copy of the app, then re-sign that copy: codesign --force --deep --sign - "Steam Animated Screensaver.app". Changes to the media executables are permitted under their licenses.\n'
     );
     console.log('Native macOS media tools ready:', output);
     return output;

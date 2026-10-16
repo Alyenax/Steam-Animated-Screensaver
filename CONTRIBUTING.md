@@ -1,9 +1,17 @@
 # Contributing
 
-Use Node 22.12 or later. Run `npm ci`, `npx install-electron`, `npm test`, and `npm run check`. `npm run dev` prints a loopback URL for browser UI development. `npm start` launches the sandboxed Electron application.
+Use Node 22.12 or later. Run `npm ci`, `npm test`, and `npm run check`. `npm run dev` prints a loopback URL for browser UI development. `npm start` launches the sandboxed Electron application.
 
-Preserve the three component contracts in docs/CONTRACTS.md. Test security and lifecycle behavior at real boundaries: filesystem scanning, catalog recovery, downloads, decoder failures, installation and offline playback. Keep private fixtures, API keys and third-party artworks out of Git. Use original test media or documented test fixtures.
+Preserve the component contracts in docs/CONTRACTS.md. Test real boundaries: filesystem scanning, catalog recovery, provider errors, downloads, decoder failures, cancellation, installation and offline playback. Keep API keys and third-party artwork out of Git; use original labelled test media. User-facing descriptions must explain functionality without promotional slogans. Exercise English/French, keyboard controls and narrow layouts.
 
-Do not add GitHub Actions workflows or trigger remote builds. All checks and packaging for this candidate run locally. Update docs/VALIDATION.md with the evidence actually collected; distinguish Linux execution, Steam CEF/Gaming Mode and physical hardware results.
+Use the `codex/` prefix for implementation branches. Product name: **Steam Animated Screensaver**; slug: `steam-animated-screensaver`. Historical identifiers are permitted only for safe migration.
 
-Use a `codex/` prefix for implementation branches. Keep UI strings in the central translation dictionary and exercise both English and French at narrow and Steam Deck resolutions.
+## Release requirement
+
+Every published version must provide **SteamOS x64, Linux x64, Windows x64 and macOS Apple Silicon** downloads together. macOS includes both DMG and ZIP. SteamOS and Linux use the same Linux x64 application. Never silently publish only the development host's package.
+
+Run `package:mac`, `package:windows`, `package:linux` and `package:steamos`, then execute the packaged Mac, media, archive and lifecycle QA scripts listed in docs/VALIDATION.md. Run `npm run release:check` against the final artifacts; it rejects missing packages, stale source/docs, bad archive integrity and invalid Windows x64 headers. Publish the source archive, checksums and validation reports with the private prerelease. Download the published assets and byte-compare them against the local originals.
+
+Keep native execution results separate from cross-packaging and file inspection. Actual Steam Big Picture/Gaming Mode activation, wake, decoder performance and long-duration stability require target-client evidence. Do not describe an unexecuted platform as native-tested.
+
+Do not add GitHub Actions workflows, enable Actions or trigger remote builds. Checks and packaging run locally. Update docs/VALIDATION.md and the machine-readable stability report with the evidence actually collected. Preserve unrelated local data and use temporary profiles/Steam roots for destructive or crash tests.

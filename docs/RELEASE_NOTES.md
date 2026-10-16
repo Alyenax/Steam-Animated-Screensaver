@@ -1,17 +1,11 @@
-# 0.1.3-rc.1 — Preview repairs, chosen fixed artwork and configurable 30 fps sizes
+# 0.1.8-rc.1 — Steam Animated Screensaver
 
-SteamGridDB sometimes supplies WebM videos as thumbnails. Search results, alternative galleries, library cards and preparation rows now display real locally generated JPEG previews. Missing thumbnails fall back to available source artwork; search results beyond the first eight resolve thumbnails on demand. Failed Home and detail media previews fall back to still images. These paths are verified in the actual UI, including live SteamGridDB results.
+The app, repository, branch and download names now use **Steam Animated Screensaver**. The interface uses functional labels in French and English. Existing catalog, API keys and prepared files migrate to the new data folder; close the previous manager before upgrading.
 
-Choose a separate fixed artwork in **Library → Game details → Fixed artwork → Choose / change fixed artwork**. The choice is prepared immediately, credited separately, preserved through restart/preparation and exported without replacing the animation. **Use automatic artwork** restores automatic selection.
+Library now supports select/deselect all within the current search/filter, top 100 owned games by concurrent Steam players, and top 100 by personal imported playtime. A separate Steam top-100 import adds games without asserting ownership. New discovery entries start excluded. Popularity requests show progress, support cancellation and retain previous choices on failure. Software in Valve's ranking is filtered out, so the result may contain fewer than 100 games.
 
-**Settings → Playback → Maximum size per 30 fps video (MB)** sets your own output ceiling. **0 means no per-video limit**, and is the default. The total library storage setting and available disk space still apply. Hidden 160 MiB output/temporary-frame limits and the interpolation timeout are removed. Originals remain available, and processing can still be paused/cancelled. A valid processed WebM above the former size ceiling is covered by regression testing.
+Each release provides SteamOS x64, Linux x64, Windows x64 ZIP and macOS Apple Silicon DMG/ZIP. The manager installs the same player into Steam's local override directory on all platforms. Steam Big Picture/Gaming Mode activation and wake remain target-client acceptance checks; native Mac app tests do not establish native Windows/Linux compatibility.
 
-The visible product name is now **SteamOS Animated Screensaver** everywhere. The unapproved Cinema brand and Local-first badge are removed.
+Settings now exposes a local diagnostic JSON containing action/preparation errors, stacks, decoder details and renderer/process failures. Five rotating JSON files are retained, API keys are masked, and there is no automatic upload. Crash dumps stay local. Tests include forced renderer/main-process failures and restart recovery in an isolated app profile.
 
-## Update on the Steam Machine
-
-1. In Desktop Mode, close the Manager, extract the Linux x64 package and run `./install.sh`. Existing catalog, key and media are preserved.
-2. Choose your fixed artwork and desired size limit. Prepare again if you change the 30 fps processing settings, then inspect Preview.
-3. Use **Update / repair** to republish the chosen artwork, player and settings to Steam. Restart Steam if it retains the old page.
-
-This is a private installation candidate. Local browser/native Electron/decoder checks and live provider checks are recorded in VALIDATION.md and LIVE_PREVIEWS_VALIDATION.json. Physical Steam Machine/Gamescope behavior, including the previously reported error -105, still requires target-device confirmation. GitHub Actions remains disabled. No personal key or downloaded game artwork is included.
+See [INSTALLATION.md](INSTALLATION.md) for paths and migration, and [VALIDATION.md](VALIDATION.md) for executed checks and their limits. GitHub Actions stays disabled. This is a private installation candidate, with no personal credentials or downloaded game artwork included.
