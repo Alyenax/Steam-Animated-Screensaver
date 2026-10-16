@@ -52,7 +52,7 @@
   "video": {
     "result": "passed",
     "duration": 88.984,
-    "bytes": 25563557,
+    "bytes": 25489120,
     "video": {
       "codec": "h264",
       "width": 1920,
@@ -62,9 +62,10 @@
     "audio": {
       "codec": "aac",
       "sampleRate": "48000",
-      "music": "Bright Scenes - original synthesis, CC0",
-      "bpm": 104,
-      "targetLUFS": -24
+      "music": "Virtual Rush - vitalezzz (CC0)",
+      "source": "https://opengameart.org/content/virtual-rush",
+      "excerptStartSeconds": 30,
+      "targetLUFS": -23
     },
     "allFramesDecoded": true,
     "editingInterpolation": false,
@@ -342,13 +343,26 @@
     "Library/artwork/batch video captures are 0.1.9; the new delay panel uses 0.1.11; final Steam footage is the separate native Mac automatic activation test"
   ],
   "musicRevision": {
-    "music": "Bright Scenes",
-    "bpm": 104,
+    "result": "passed",
+    "music": "Virtual Rush",
+    "artist": "vitalezzz",
     "license": "CC0-1.0",
-    "measuredLUFS": -23.73,
-    "truePeakDbFS": -9.21,
-    "generalVideoStreamUnchanged": true,
-    "videoStreamSha256": "4c8a5b3f202a55224796646aa314a3010d4854dae45054e94b62c37d8606de98"
+    "source": "https://opengameart.org/content/virtual-rush",
+    "excerptStartSeconds": 30,
+    "measuredLUFS": -23.51,
+    "truePeakDbFS": -12.25,
+    "videoStreams": [
+      {
+        "file": "Steam-Animated-Screensaver-demo.mp4",
+        "videoStreamUnchanged": true,
+        "hash": "SHA256=4c8a5b3f202a55224796646aa314a3010d4854dae45054e94b62c37d8606de98"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-SteamOS-overview.mp4",
+        "videoStreamUnchanged": true,
+        "hash": "SHA256=72f0fa3aff0b1b7cd62231885c675b28cd5fe39a9b6e5f25024ed991811ccd46"
+      }
+    ]
   },
   "steamosPresentation": {
     "result": "passed",
@@ -359,7 +373,7 @@
     "appCapturePlatform": "macOS",
     "disclosureInVideo": true,
     "nativeSteamOSRecording": false,
-    "music": "Bright Scenes, 104 BPM, original CC0",
+    "music": "Virtual Rush - vitalezzz (CC0)",
     "chapters": [
       {
         "file": "showcase-final.mp4",

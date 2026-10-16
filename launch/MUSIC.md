@@ -1,12 +1,16 @@
-# Demo soundtrack — Bright Scenes
+# Demo soundtrack — Virtual Rush
 
-An original instrumental composed and synthesized for this presentation: a light **104 BPM** electronic groove, rounded bass, soft kick/snare/hi-hat percussion, warm chords and short plucked-key phrases. No vocals. It replaces the earlier slow ambient mix while keeping the music in the background.
+**Virtual Rush — vitalezzz**, released under **CC0 1.0** on the artist's [OpenGameArt page](https://opengameart.org/content/virtual-rush).
 
-No third-party recordings, samples, loops, melodies or impulse responses were used. The composition and generated recording are dedicated to the public domain under [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/), to the extent applicable rights exist. Reuse, editing and redistribution, including commercial use, do not require attribution or royalties. This dedication covers the soundtrack only, not the game artwork.
+The current general and SteamOS videos use the energetic section starting 30 seconds into this electronic track, mixed at a moderate level with a short opening fade and a five-second ending fade. It replaces the earlier synthesized Quiet Scenes / Bright Scenes arrangements. The video edits and images are unchanged by this revision.
 
-- Reproduce: `node scripts/create-demo-music.cjs`
-- Original stereo WAV: `dist/public-launch-v2/Bright-Scenes-original.wav`
-- Demo mix: approximately −24 LUFS, with a short opening fade and a five-second closing fade.
-- The video stream and edit are unchanged by this music revision.
+- Artist/source: [vitalezzz — Virtual Rush](https://opengameart.org/content/virtual-rush)
+- Declared license: [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/)
+- Reproduce the excerpt: `node scripts/prepare-demo-music.cjs`
+- Exact source URL, checksum and excerpt: [MUSIC_SOURCE.json](MUSIC_SOURCE.json)
+- Source recording and prepared WAV stay in ignored `dist/public-launch-v2`; they are not application dependencies.
+- General mix: approximately −23 LUFS; SteamOS cut uses the same treatment.
 
-The synthesis script remains available with the project's original code. No external music service or account is needed.
+Credit retained: **Music: Virtual Rush by vitalezzz — CC0, via OpenGameArt.org.** The music license does not cover any game artwork shown in the videos. The app's MIT license does not replace the artist's music license.
+
+Earlier synthesized arrangements remain reproducible from Git history with `create-demo-music.cjs`; they are not used in the current video mix.

@@ -138,7 +138,7 @@ async function main() {
     '-i',
     'Steam-Animated-Screensaver-demo-clean.mp4',
     '-i',
-    'Bright-Scenes-original.wav',
+    'Virtual-Rush-demo.wav',
     '-map',
     '0:v:0',
     '-map',
@@ -146,7 +146,7 @@ async function main() {
     '-c:v',
     'copy',
     '-af',
-    `loudnorm=I=-24:TP=-9:LRA=8,afade=t=in:d=2.5,afade=t=out:st=${total - 5}:d=5`,
+    `loudnorm=I=-23:TP=-3:LRA=10,afade=t=in:d=0.6,afade=t=out:st=${total - 5}:d=5`,
     '-c:a',
     'aac',
     '-b:a',
@@ -192,9 +192,10 @@ async function main() {
         audio: {
           codec: a.codec_name,
           sampleRate: a.sample_rate,
-          music: 'Bright Scenes - original synthesis, CC0',
-          bpm: 104,
-          targetLUFS: -24
+          music: 'Virtual Rush - vitalezzz (CC0)',
+          source: 'https://opengameart.org/content/virtual-rush',
+          excerptStartSeconds: 30,
+          targetLUFS: -23
         },
         allFramesDecoded: true,
         editingInterpolation: false,
