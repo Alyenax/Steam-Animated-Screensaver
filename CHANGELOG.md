@@ -1,8 +1,8 @@
 # Changelog
 
-## 1.0.0 — In preparation
+## 1.0.0 - October 16, 2026
 
-First public release. Current downloads are still private test versions.
+First public release by Alyenax.
 
 - Turn animated SteamGridDB artwork into an offline screensaver for SteamOS Gaming Mode and desktop Big Picture.
 - Add installed or uninstalled games, search manually, select all, or choose a top 100. Steam runtime components are filtered out.
@@ -21,4 +21,4 @@ First public release. Current downloads are still private test versions.
 
 Steam's timer is separate from your operating system's screensaver, display sleep and lock settings.
 
-[Installation guide](docs/INSTALLATION.md) · [Known testing limits](docs/VALIDATION.md) · [Earlier development versions](docs/DEVELOPMENT_CHANGELOG.md) · [1.0 release checklist](launch/READINESS.md).
+[Installation guide](docs/INSTALLATION.md) · [Known testing limits](docs/VALIDATION.md) · [Earlier development versions](docs/DEVELOPMENT_CHANGELOG.md) · [Release details](launch/READINESS.md).

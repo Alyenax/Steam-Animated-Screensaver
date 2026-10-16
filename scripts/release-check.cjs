@@ -39,6 +39,7 @@ async function check() {
     'macos-arm64.dmg',
     'macos-arm64.zip'
   ];
+  await require('./media-distribution-qa.cjs').check();
   const assets = [];
   for (const suffix of suffixes) {
     const file = `${prefix}-${suffix}`,

@@ -1,7 +1,7 @@
 {
   "name": "steam-animated-screensaver",
   "productName": "Steam Animated Screensaver",
-  "version": "0.1.11",
+  "version": "1.0.0",
   "description": "Prepare, preview and install animated SteamGridDB artwork as a Steam screensaver.",
   "main": "main.cjs",
   "license": "MIT",
@@ -30,5 +30,9 @@
     "electron": "44.7.2",
     "playwright": "1.61.1",
     "prettier": "3.9.10"
+  },
+  "author": {
+    "name": "Alyenax",
+    "url": "https://github.com/Alyenax"
   }
 }

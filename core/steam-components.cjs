@@ -13,7 +13,7 @@ function isSteamComponent(item = {}) {
   const name = String(item.name || '')
     .slice(0, 500)
     .normalize('NFKC')
-    .replace(/[–—]/g, '-')
+    .replace(/[\u2013\u2014]/g, '-')
     .replace(/\s+/g, ' ')
     .trim();
   return (

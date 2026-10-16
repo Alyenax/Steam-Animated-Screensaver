@@ -25,7 +25,17 @@ async function run() {
       steamRoots: [steam],
       isSteamRunning: async () => running
     });
-    server = await createServer({ core });
+    let idleGate;
+    const originalInvoke = core.invoke.bind(core);
+    server = await createServer({
+      core: {
+        ...core,
+        invoke: async (action, payload) => {
+          if (action === 'steamIdleState' && idleGate) await idleGate;
+          return originalInvoke(action, payload);
+        }
+      }
+    });
     browser = await require('playwright').chromium.launch({ channel: 'chrome', headless: true });
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     page.on('pageerror', (e) => errors.push(e.message));
@@ -114,6 +124,27 @@ async function run() {
       'Explicit French choice persists after reload; English default does not overwrite it'
     );
     checks.push('Disabled saves zero explicitly and survives page reload');
+    let finishIdle;
+    idleGate = new Promise((resolve) => {
+      finishIdle = resolve;
+    });
+    await page.locator('[data-action="refresh-steam-idle"]').click();
+    await page.locator('#steam-profile').fill('76561198000000000');
+    await page.locator('#steam-api-key').fill('0123456789abcdef'.repeat(2));
+    await page.locator('#api-key').fill('unsaved-fixture-key');
+    finishIdle();
+    await page.waitForFunction(
+      () => !document.querySelector('[data-action="refresh-steam-idle"]')?.disabled
+    );
+    assert.equal(await page.locator('#steam-profile').inputValue(), '76561198000000000');
+    assert.equal(await page.locator('#steam-api-key').inputValue(), '0123456789abcdef'.repeat(2));
+    assert.equal(await page.locator('#api-key').inputValue(), 'unsaved-fixture-key');
+    await page.locator('#steam-account-form').evaluate((form) => form.requestSubmit());
+    await page.locator('[data-action="import-steam"]:not(:disabled)').waitFor();
+    assert.equal((await core.invoke('state')).steamAccount.hasKey, true);
+    checks.push(
+      'Delayed Steam idle refresh preserves unsaved account and API-key fields; saving still works'
+    );
     assert.deepEqual(errors, []);
     const result = { passed: true, checks, pageErrors: errors, nativeWindowsLinux: false };
     await fs.mkdir(path.resolve(__dirname, '../dist'), { recursive: true });

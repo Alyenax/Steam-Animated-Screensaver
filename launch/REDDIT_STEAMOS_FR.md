@@ -1,6 +1,6 @@
-# Brouillon SteamOS — à publier après l’ouverture du dépôt et des téléchargements
+# Brouillon SteamOS - à publier après l’ouverture du dépôt et des téléchargements
 
-**Titre :** Des artworks animés SteamGridDB comme screensaver SteamOS — je cherche des testeurs
+**Titre :** Des artworks animés SteamGridDB comme screensaver SteamOS - je cherche des testeurs
 
 Après la [mise à jour stable de Steam du 13 octobre](https://www.steamdeck.com/en/news?pubDate=20261013), qui ajoute les screensavers personnalisés, j’ai fait Steam Animated Screensaver pour utiliser les artworks animés de ma bibliothèque dans le mode Jeu.
 

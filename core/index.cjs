@@ -319,7 +319,7 @@ function createCore(options = {}) {
         );
         if (state.job.status === 'running') {
           state.job.status = 'paused';
-          state.job.stage = 'Interrupted preparation — ready to resume.';
+          state.job.stage = 'Interrupted preparation - ready to resume.';
         }
         state.job.current = null;
         if (Array.isArray(saved.games) && saved.games.some(isSteamComponent)) {

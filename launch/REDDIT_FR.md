@@ -1,6 +1,6 @@
-# Brouillon — à publier après l’ouverture du dépôt et la disponibilité de la 1.0.0
+# Brouillon - à publier après l’ouverture du dépôt et la disponibilité de la 1.0.0
 
-**Titre :** J’ai fait une app de screensaver Steam avec les artworks animés de SteamGridDB — je cherche des testeurs
+**Titre :** J’ai fait une app de screensaver Steam avec les artworks animés de SteamGridDB - je cherche des testeurs
 
 Après la [mise à jour stable de Steam du 13 octobre](https://www.steamdeck.com/en/news?pubDate=20261013), qui ajoute les screensavers personnalisés sur SteamOS et dans Big Picture sur ordinateur, j’ai eu envie d’en faire un avec les artworks animés de ma bibliothèque.
 

@@ -850,7 +850,7 @@ Object.assign(translations.fr, {
     'Importez à nouveau votre bibliothèque Steam pour récupérer les temps de jeu manquants.'
 });
 function durationText(seconds) {
-  if (!Number.isFinite(seconds)) return '—';
+  if (!Number.isFinite(seconds)) return '-';
   const n = Math.max(0, Math.round(seconds));
   return n >= 60 ? `${Math.floor(n / 60)} min ${n % 60} s` : `${n} s`;
 }
@@ -894,7 +894,7 @@ function jobActivity(job) {
       ? t(d.mode === 'blend' ? 'modeBlend' : d.mode === 'quality' ? 'modeQuality' : 'modeFast')
       : '';
   const elapsed = job.stageElapsed ?? null;
-  return `<div class="job-detail"><p>${esc(explanation)}</p><div class="job-metrics">${Number.isFinite(d.frames) ? `<span>${Number(d.frames)} / ${Number(d.totalFrames) || '—'} ${esc(t('frames'))}</span>` : ''}${Number.isFinite(d.seconds) ? `<span>${d.seconds.toFixed(1)} / ${Number(d.duration).toFixed(1)} s</span>` : ''}${elapsed !== null && job.current ? `<span>${esc(t('elapsed'))} : ${durationText(elapsed)}</span>` : ''}${Number.isFinite(d.speed) ? `<span>×${d.speed.toFixed(2)}</span>` : ''}${Number.isFinite(d.eta) ? `<span>${esc(t('remainingTime'))} : ${durationText(d.eta)}</span>` : ''}</div></div><section class="job-history" aria-label="${esc(t('liveHistory'))}"><h3>${esc(t('liveHistory'))}</h3>${
+  return `<div class="job-detail"><p>${esc(explanation)}</p><div class="job-metrics">${Number.isFinite(d.frames) ? `<span>${Number(d.frames)} / ${Number(d.totalFrames) || '-'} ${esc(t('frames'))}</span>` : ''}${Number.isFinite(d.seconds) ? `<span>${d.seconds.toFixed(1)} / ${Number(d.duration).toFixed(1)} s</span>` : ''}${elapsed !== null && job.current ? `<span>${esc(t('elapsed'))} : ${durationText(elapsed)}</span>` : ''}${Number.isFinite(d.speed) ? `<span>×${d.speed.toFixed(2)}</span>` : ''}${Number.isFinite(d.eta) ? `<span>${esc(t('remainingTime'))} : ${durationText(d.eta)}</span>` : ''}</div></div><section class="job-history" aria-label="${esc(t('liveHistory'))}"><h3>${esc(t('liveHistory'))}</h3>${
     job.history?.length
       ? `<ol>${job.history
           .slice(-100)
@@ -1263,7 +1263,7 @@ async function run(action, payload = {}, message, options = {}) {
   }
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 0.1.11</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 1.0.0</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -1523,6 +1523,14 @@ function settingsView() {
   )}${panel('storage', 'drive', `<div class="storage-label"><span>${esc(bytes(used))}</span><span>${max} GB</span></div><div class="storage-meter"><span style="width:${Math.min(100, (used / (max * 1073741824)) * 100)}%"></span></div><label class="setting-row"><span><span class="setting-row-label">${esc(t('storageLimit'))}</span><small>${esc(t('storageHint'))}</small></span><input class="field" data-setting="maxStorageGB" type="number" min="0.1" max="1000" step="0.1" value="${max}" aria-label="${esc(t('storageLimit'))}"></label><div style="margin-top:20px">${button(t('clearUnused'), 'clearUnused', 'trash') + button(t('repairLibrary'), 'repair', 'refresh')}</div><div class="purge-section"><p>${esc(t('purgeMediaHint'))}</p>${button(t(purgingMedia ? 'purgingMedia' : 'purgeMedia'), 'purge-media', 'trash', false, purgingMedia ? 'disabled' : '')}${state.lastMediaPurge ? `<p class="purge-result">${esc(t('lastMediaPurge'))} : ${esc(new Date(state.lastMediaPurge.at).toLocaleString(lang()))} · ${esc(bytes(state.lastMediaPurge.bytes))}</p>` : ''}</div>`)}${panel('steamIntegration', 'film', `<p>${esc(t('steamInstallBody'))}</p><div class="steam-status" style="margin:0 0 17px"><span class="status-dot ${state.steam.installed ? 'on' : ''}"></span>${esc(t(state.steam.installed ? 'integrationInstalled' : 'integrationNotInstalled'))}</div>${!state.steam.detected ? `<p>${esc(t('integrationNoSteam'))}</p>` : ''}<div class="button-row">${state.steam.installed ? button(t('repair'), 'update-install', 'refresh', true) + button(t('uninstall'), 'uninstall', 'trash', false) : button(t('install'), 'install', 'prepare', true, !state.steam.detected || !readyGames().length ? 'disabled' : '')}${button(t('scanAgain'), 'scan', 'scan')}</div><p style="margin:16px 0 0;font-size:9px">${esc(t('runtimeNote'))}</p>`)}${steamIdlePanel()}${panel('diagnosticsTitle', 'info', `<p>${esc(t('logsHint'))}</p>${state.diagnostics?.available ? `<p class="log-path">${esc(state.diagnostics.file)}</p>${button(t('openLogs'), 'open-logs', 'drive')}${state.diagnostics.error ? `<p role="alert">${esc(state.diagnostics.error)}</p>` : ''}` : `<p>${esc(t('logsUnavailable'))}</p>`}`)}</div><aside class="settings-note">${icon('shield')}<strong>${esc(t('privacyTitle'))}</strong>${esc(t('privacyBody'))}</aside></div><p class="footnote">${esc(t('credit'))}</p>`;
 }
 function render() {
+  // Steam idle status can finish loading while another settings form is being edited.
+  const settingsFields =
+    route === 'settings'
+      ? ['api-key', 'steam-profile', 'steam-api-key'].flatMap((id) => {
+          const field = document.getElementById(id);
+          return field ? [[id, field.value]] : [];
+        })
+      : [];
   const active = document.activeElement;
   const focusAttribute = [
     'data-route',
@@ -1544,6 +1552,10 @@ function render() {
   const selection = focused === 'library-filter' ? document.activeElement.selectionStart : null;
   const scrollY = window.scrollY;
   app.innerHTML = shell();
+  for (const [id, value] of settingsFields) {
+    const field = document.getElementById(id);
+    if (field) field.value = value;
+  }
   if (route === 'preview') {
     previewSignature = '';
     document.querySelector('#player-frame')?.addEventListener('load', () => sendCatalog(true));

@@ -127,7 +127,7 @@ async function main() {
         body: 'window.SAS_CATALOG=' + JSON.stringify(await playerCatalog()) + ';'
       })
     );
-    mark('Full-screen player — original size, full image');
+    mark('Full-screen player - original size, full image');
     await page.goto(server.url + '/player/index.html');
     await page
       .locator('.scene.visible')
@@ -136,7 +136,7 @@ async function main() {
     await hold(1800);
     await page.screenshot({ path: path.join(images, 'screensaver.png') });
     await hold(7800);
-    mark('Full-screen player — 16:9 crop, same animation');
+    mark('Full-screen player - 16:9 crop, same animation');
     await core.invoke('settings', { framing: '16:9' });
     await page.evaluate(() =>
       window.SteamAnimatedScreensaverPlayer.setSettings({ framing: '16:9' })
@@ -152,7 +152,7 @@ async function main() {
     await page.screenshot({ path: path.join(images, 'library.png'), fullPage: true });
     await page.locator('.game-grid').scrollIntoViewIfNeeded();
     await hold(2000);
-    mark('Game details — animation selection and crop');
+    mark('Game details - animation selection and crop');
     await page.locator('.game-visual[data-detail="' + games[0].id + '"]').click();
     await hold(1900);
     await page.screenshot({ path: path.join(images, 'game-settings.png') });
@@ -165,7 +165,7 @@ async function main() {
     await page.locator('.fixed-artwork').scrollIntoViewIfNeeded();
     await hold(2300);
     await page.locator('[data-action="close-detail"]').click();
-    mark('Preview — move the still artwork');
+    mark('Preview - move the still artwork');
     await page.locator('[data-route="preview"]').first().click();
     await hold(2000);
     await page.locator('[data-setting="coverPosition"]').scrollIntoViewIfNeeded();
@@ -178,7 +178,7 @@ async function main() {
     await page.locator('[data-setting="framing"]').selectOption('16:9');
     await hold(5100);
     await page.screenshot({ path: path.join(images, 'preview.png'), fullPage: true });
-    mark('Settings — optional 24/30 fps processing');
+    mark('Settings - optional 24/30 fps processing');
     await page.locator('[data-route="settings"]').first().click();
     await page.locator('[data-setting="smoothMotion"]').scrollIntoViewIfNeeded();
     await hold(2200);
@@ -189,7 +189,7 @@ async function main() {
     await page.screenshot({ path: path.join(images, 'processing.png') });
     await page.locator('[data-setting="smoothingFps"]').selectOption('30');
     await hold(1800);
-    mark('Full-screen player — final result');
+    mark('Full-screen player - final result');
     await core.invoke('settings', { framing: 'original' });
     await page.goto(server.url + '/player/index.html');
     await hold(900);

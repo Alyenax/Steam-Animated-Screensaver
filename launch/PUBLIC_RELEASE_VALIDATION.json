@@ -1,0 +1,741 @@
+{
+  "version": "1.0.0",
+  "result": "passed",
+  "author": "Alyenax",
+  "date": "2026-10-16",
+  "unitAndIntegration": {
+    "passed": 127,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ui": {
+    "fixture": "Original self-authored QA media. Mocked SGDB search/artwork responses. No personal key or third-party artwork.",
+    "checks": [
+      "First-run onboarding and automatic Steam scan, no fake library",
+      "A corrupted library thumbnail falls back to a freshly decoded frame from the local animation",
+      "A failed Home moving preview falls back to a valid local image",
+      "A failed detail moving preview falls back to a valid local image",
+      "Alternative previews normalize WebM thumbnails and recover from a broken thumbnail using its original artwork",
+      "A different fixed artwork is prepared and saved without altering the animation",
+      "Per-game crop editor saves focal position without changing prepared media; ineffective axes are disabled",
+      "Manual search previews decode actual WebM thumbnails as local images",
+      "Manual search disambiguates two mocked homonyms; explicit Add updates unified catalog",
+      "Live preparation, real progress, pause persisted",
+      "Resume completes media preparation with real FFmpeg",
+      "General Original/16:9/16:10 framing changes the actual player immediately without preparing media",
+      "Four cover positions selected through Manager, persisted and rendered with genuine local static media",
+      "Manager preview uses real offline media and pauses",
+      "Fullscreen entry and immediate Escape exit",
+      "Manual video-size limit saves and accepts zero for no per-video size limit",
+      "Optional interpolation from Settings prepares a separate real VP9 file while preserving its original",
+      "Screensaver install from actual Settings into isolated Steam fixture",
+      "Update/Repair publishes changed settings and catalog",
+      "Chosen fixed artwork and its own creator credit are exported and displayed offline",
+      "Export plays actual interpolated VP9 directly over file:// with zero HTTP requests and no manager dependency",
+      "Disabling smoothing and updating restores original playback without downloading again",
+      "Optional owned-library import with local key, deduplication, uninstalled filter, and key removal",
+      "French handheld crop editor fits 390 px, preserves a true 16:9 frame and disables axes with no clipping",
+      "All five spaces at 1280, 800, 390 px in English and French without horizontal overflow",
+      "Cancelling complete purge keeps prepared media and Steam export intact",
+      "Confirmed complete purge resets all variants and uninstalls the Steam copy while preserving user selections and settings",
+      "Purged previews stay empty across navigation and reload without background re-downloads",
+      "Explicit search restores image previews and preparation rebuilds chosen artwork for reinstall after purge",
+      "No uncaught browser errors",
+      "Screensaver removal leaves catalog/media intact"
+    ],
+    "consoleErrors": [],
+    "preparedFiles": 19
+  },
+  "selection": {
+    "version": "1.0.0",
+    "fixture": "Isolated 125-game catalog and deterministic ranking provider; no personal credentials.",
+    "checks": [
+      "Select/deselect all respects the non-installed filter and search, through actual UI",
+      "Personal top selects exactly the 100 most played owned games",
+      "Popularity displays live percent, disables competing actions, and cancels without changing choices",
+      "Steam popularity selects a different correct set of 100 through the UI",
+      "Global Steam discovery deduplicates, starts new games excluded, and supports select all",
+      "All five views use functional copy in EN/FR and fit 1280/800/390 px"
+    ],
+    "pageErrors": []
+  },
+  "animationPicker": {
+    "version": "1.0.0",
+    "result": "passed",
+    "fixture": "Isolated real Core/Manager/media/export with original generated animations and injected provider faults; no personal key or downloaded game artwork.",
+    "checks": [
+      "Unprepared game exposes Find animations immediately, with a clear key requirement",
+      "Ready games expose Change animation above the preview in EN desktop and FR handheld; the gallery opens visibly with working images",
+      "Provider errors and empty results keep search accessible; retry recovers without changing the current animation",
+      "Choosing and preparing another animation changes actual media and Steam export, preserves fixed artwork/crop/inclusion, and persists the choice"
+    ],
+    "unexpectedErrors": []
+  },
+  "steamIdleUI": {
+    "passed": true,
+    "checks": [
+      "A new profile starts in English without consulting the OS locale",
+      "Fresh Steam config proposes five minutes on AC and battery without writing; actual defaults remain visible",
+      "Running Steam blocks write through the real Apply button; drafts retained",
+      "Real controls apply independent AC and battery delays with a private backup",
+      "Draft survives rerender/language change; instructions translated in French and English",
+      "Refresh rereads Steam; settings have no horizontal overflow at 1440, 800 and 390px",
+      "Explicit French choice persists after reload; English default does not overwrite it",
+      "Disabled saves zero explicitly and survives page reload",
+      "Delayed Steam idle refresh preserves unsaved account and API-key fields; saving still works"
+    ],
+    "pageErrors": [],
+    "nativeWindowsLinux": false
+  },
+  "nativeMac": {
+    "bundle": {
+      "packaged": true,
+      "version": "1.0.0",
+      "arch": "arm64",
+      "executable": "<workspace>/dist/Steam Animated Screensaver-darwin-arm64/Steam Animated Screensaver.app/Contents/MacOS/steam-animated-screensaver",
+      "resources": "<workspace>/dist/Steam Animated Screensaver-darwin-arm64/Steam Animated Screensaver.app/Contents/Resources"
+    },
+    "rendererCrash": {
+      "at": "2026-10-16T15:02:09.251Z",
+      "level": "fatal",
+      "event": "renderer.process_gone",
+      "detail": {
+        "reason": "killed",
+        "exitCode": 2
+      }
+    },
+    "preparedVideo": {
+      "measuredFps": 24,
+      "codec": "vp8",
+      "originalPreserved": true
+    },
+    "result": "passed",
+    "isolation": {
+      "node": "undefined",
+      "bridge": "function"
+    },
+    "preferences": {
+      "sandbox": true,
+      "contextIsolation": true,
+      "nodeIntegration": false
+    },
+    "checks": [
+      "Distributed macOS .app launched as packaged arm64 executable",
+      "Bundled native FFmpeg/FFprobe regenerate actual image preview",
+      "Bundled tools prepare and play a new 24 fps Fast derivative",
+      "Actual app:// protocol media playback",
+      "Native image-preview IPC and JPEG decoding",
+      "Change animation is visible immediately at the top of a ready game sheet",
+      "Native Steam key save/removal and 24 fps profile settings IPC",
+      "Full product name and no Local-first badge",
+      "Real Electron preview pause",
+      "Native per-game crop overrides general framing without reprocessing media",
+      "Sender/action restrictions",
+      "Native purge action requires confirmation before any filesystem change",
+      "No Node in renderer",
+      "Sandbox enabled",
+      "Library lock released on close",
+      "Settings opens exactly the local diagnostic JSON",
+      "Injected JavaScript error, unhandled rejection and console error persist in JSON",
+      "Forced renderer crash persists its reason; orderly app close leaves valid JSON"
+    ],
+    "pageErrors": []
+  },
+  "nativeMedia": {
+    "result": "passed",
+    "version": "1.0.0",
+    "app": "<workspace>/dist/Steam Animated Screensaver-darwin-arm64/Steam Animated Screensaver.app",
+    "fixture": "Original generated test media; no personal API key or remote artwork",
+    "checks": [
+      "Both media executables are arm64, use system libraries only and disable nonfree/GPL configuration",
+      "Bundled tools prepare, validate and preview gif; original bytes preserved",
+      "Bundled tools generate and validate fast / 24 fps",
+      "Bundled tools generate and validate quality / 30 fps",
+      "Bundled tools generate and validate blend / 24 fps",
+      "Bundled tools prepare, validate and preview webp; original bytes preserved",
+      "Bundled tools prepare, validate and preview webm; original bytes preserved",
+      "Bundled tools prepare, validate and preview av1; original bytes preserved"
+    ]
+  },
+  "lifecycle": {
+    "version": "1.0.0",
+    "platform": "darwin",
+    "arch": "arm64",
+    "packaged": true,
+    "checks": [
+      "Actual Electron startup migrates old catalog before creating Chromium profile or library locks",
+      "Three native app open/change/close cycles preserve queued changes, valid catalog/log JSON and release locks",
+      "Injected fatal main-process exception exits and leaves durable JSON with stack and unclean-exit status",
+      "Restart after fatal exit detects interruption, recovers stale library lock and preserves the library"
+    ],
+    "result": "passed",
+    "scope": "Short native lifecycle/fault-injection regression; not a long-duration soak or target Steam CEF acceptance."
+  },
+  "macArchives": {
+    "version": "1.0.0",
+    "result": "passed",
+    "files": 333,
+    "symlinks": 14,
+    "checks": [
+      "Final ZIP and mounted DMG app contents byte-match the tested app",
+      "Framework symlinks survive ZIP and DMG extraction",
+      "Both extracted app signatures verify strictly",
+      "Freshly extracted final ZIP app launches with isolated data, working IPC and no renderer Node access"
+    ]
+  },
+  "packages": {
+    "version": "1.0.0",
+    "at": "2026-10-16T15:05:04.136Z",
+    "result": "passed",
+    "assets": [
+      {
+        "file": "Steam-Animated-Screensaver-1.0.0-steamos-x64.tar.gz",
+        "bytes": 246091563,
+        "sha256": "004705c714a58aae21610f2dc85d9d0611b6384c89131bf5aa8eb9c1653acb25"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-1.0.0-linux-x64.tar.gz",
+        "bytes": 246091563,
+        "sha256": "004705c714a58aae21610f2dc85d9d0611b6384c89131bf5aa8eb9c1653acb25"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-1.0.0-windows-x64.zip",
+        "bytes": 226089257,
+        "sha256": "8ce392f9f1286dd47f2be6b35f21b00002efe1aa99abe5244b31fda352859146"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-1.0.0-macos-arm64.dmg",
+        "bytes": 185358181,
+        "sha256": "f9b50a1c3497f774ea1591e223e7dd09cb051e74455d4daff6284fe286f1959f"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-1.0.0-macos-arm64.zip",
+        "bytes": 170062055,
+        "sha256": "ca74c124d80bb2ccdf58229b587e7b8e27210f9d2077ccfc0cfe4caa9e8e72ab"
+      }
+    ],
+    "archiveFileCounts": {
+      "linux": 154,
+      "windows": 149
+    },
+    "checks": [
+      "All four platform downloads exist and match current version",
+      "ZIP/tar/DMG integrity checks",
+      "Packaged Core/Manager/Player and main/preload byte-match current source",
+      "No catalog or credential files at application root",
+      "Windows Electron/FFmpeg/FFprobe PE headers are x64",
+      "Extracted Windows/Linux archives byte-match their packaged application trees and executable permissions",
+      "SteamOS archive is byte-identical to the Linux archive"
+    ],
+    "limitations": [
+      "No native Windows/Linux/SteamOS execution on this Mac",
+      "SteamOS and Linux use the same Linux x64 application"
+    ]
+  },
+  "mediaDistribution": {
+    "version": "1.0.0",
+    "result": "passed",
+    "scope": "architecture, dependencies, enabled media features, licenses, complete pinned source archives and current rebuild recipes",
+    "nativeWindowsLinuxExecution": false,
+    "results": [
+      {
+        "target": "linux-x64",
+        "sourceArchives": 6,
+        "requiredCodecsAndFilters": [
+          "GIF_DECODER",
+          "PNG_DECODER",
+          "WEBP_DECODER",
+          "LIBDAV1D_DECODER",
+          "LIBVPX_VP9_ENCODER",
+          "MINTERPOLATE_FILTER",
+          "TBLEND_FILTER",
+          "WEBM_MUXER"
+        ],
+        "tools": [
+          {
+            "file": "ffmpeg",
+            "architecture": "ELF x86_64",
+            "staticallyLinked": true
+          },
+          {
+            "file": "ffprobe",
+            "architecture": "ELF x86_64",
+            "staticallyLinked": true
+          }
+        ]
+      },
+      {
+        "target": "windows-x64",
+        "sourceArchives": 6,
+        "requiredCodecsAndFilters": [
+          "GIF_DECODER",
+          "PNG_DECODER",
+          "WEBP_DECODER",
+          "LIBDAV1D_DECODER",
+          "LIBVPX_VP9_ENCODER",
+          "MINTERPOLATE_FILTER",
+          "TBLEND_FILTER",
+          "WEBM_MUXER"
+        ],
+        "tools": [
+          {
+            "file": "ffmpeg.exe",
+            "architecture": "PE x64",
+            "imports": [
+              "api-ms-win-crt-conio-l1-1-0.dll",
+              "api-ms-win-crt-convert-l1-1-0.dll",
+              "api-ms-win-crt-environment-l1-1-0.dll",
+              "api-ms-win-crt-filesystem-l1-1-0.dll",
+              "api-ms-win-crt-heap-l1-1-0.dll",
+              "api-ms-win-crt-locale-l1-1-0.dll",
+              "api-ms-win-crt-math-l1-1-0.dll",
+              "api-ms-win-crt-private-l1-1-0.dll",
+              "api-ms-win-crt-runtime-l1-1-0.dll",
+              "api-ms-win-crt-stdio-l1-1-0.dll",
+              "api-ms-win-crt-string-l1-1-0.dll",
+              "api-ms-win-crt-time-l1-1-0.dll",
+              "api-ms-win-crt-utility-l1-1-0.dll",
+              "bcrypt.dll",
+              "kernel32.dll",
+              "shell32.dll"
+            ]
+          },
+          {
+            "file": "ffprobe.exe",
+            "architecture": "PE x64",
+            "imports": [
+              "api-ms-win-crt-convert-l1-1-0.dll",
+              "api-ms-win-crt-environment-l1-1-0.dll",
+              "api-ms-win-crt-filesystem-l1-1-0.dll",
+              "api-ms-win-crt-heap-l1-1-0.dll",
+              "api-ms-win-crt-locale-l1-1-0.dll",
+              "api-ms-win-crt-math-l1-1-0.dll",
+              "api-ms-win-crt-private-l1-1-0.dll",
+              "api-ms-win-crt-runtime-l1-1-0.dll",
+              "api-ms-win-crt-stdio-l1-1-0.dll",
+              "api-ms-win-crt-string-l1-1-0.dll",
+              "api-ms-win-crt-time-l1-1-0.dll",
+              "api-ms-win-crt-utility-l1-1-0.dll",
+              "bcrypt.dll",
+              "kernel32.dll",
+              "shell32.dll"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "showcase": {
+    "version": "1.0.0",
+    "result": "passed",
+    "video": {
+      "duration": 88.983333,
+      "width": 1920,
+      "height": 1080
+    },
+    "checks": [
+      "Final MP4 loads, plays with browser controls and seeks to actual Mac Steam playback",
+      "Actual README opens with the animated GIF, renders all six images and includes complete Steam activation and five-minute instructions",
+      "Actual changelog renders its four activation steps, including Steam selection, quit/apply and restart",
+      "SteamOS overview loads its 79-second video and clearly discloses macOS app capture",
+      "Both demos, README, changelog and all four Reddit drafts have no horizontal overflow at 1440, 800 and 390px",
+      "Static export contains video and rendered documents; local preview does not serve app code or keys"
+    ],
+    "pageErrors": [],
+    "publicHostingEnabled": false
+  },
+  "video": {
+    "result": "passed",
+    "duration": 88.984,
+    "bytes": 25454422,
+    "video": {
+      "codec": "h264",
+      "width": 1920,
+      "height": 1080,
+      "fps": "60/1"
+    },
+    "audio": {
+      "codec": "aac",
+      "sampleRate": "48000",
+      "music": "Song Of The Forge - Scott Buckley (CC-BY-4.0)",
+      "source": "https://www.scottbuckley.com.au/library/song-of-the-forge/",
+      "excerptStartSeconds": 30,
+      "targetLUFS": -23
+    },
+    "allFramesDecoded": true,
+    "editingInterpolation": false,
+    "chapters": [
+      {
+        "file": "showcase-final.mp4",
+        "start": 0.266,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 0
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 5.921,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 4
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 13.482,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 8
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 19.783,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 12
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 28.833,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 16
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 0.6,
+        "duration": 4.5,
+        "caption": "Select all · prepare 10 games",
+        "speed": 1,
+        "timelineStart": 20
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 5.493,
+        "duration": 81.2,
+        "caption": "Automatic preparation · 10 games · 8× speed",
+        "speed": 8,
+        "timelineStart": 24.5
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 86.8,
+        "duration": 2.2,
+        "caption": "10 games ready",
+        "speed": 1,
+        "timelineStart": 34.65
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 0.3,
+        "duration": 1.8,
+        "caption": "Choose the framing",
+        "speed": 1,
+        "timelineStart": 36.85
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 9.8,
+        "duration": 3.2,
+        "caption": "Position the still artwork",
+        "speed": 1,
+        "timelineStart": 38.65
+      },
+      {
+        "file": "alternatives-loaded.mp4",
+        "start": 0.3,
+        "duration": 2.6,
+        "caption": "Find another animation",
+        "speed": 1,
+        "timelineStart": 41.85
+      },
+      {
+        "file": "processing-enabled.mp4",
+        "start": 0.3,
+        "duration": 4.5,
+        "caption": "Optional 24 / 30 fps processing · shown here: 30 fps, light blend",
+        "speed": 1,
+        "timelineStart": 44.45
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 35.083,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 48.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 41.352,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 52.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 47.617,
+        "duration": 2,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 56.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 53.866,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 58.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 60.145,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 62.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 67.984,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 66.95
+      },
+      {
+        "file": "steam-idle.mp4",
+        "start": 0.3,
+        "duration": 8,
+        "caption": "Steam inactivity delay · 5 minutes · apply with Steam closed",
+        "speed": 1,
+        "timelineStart": 70.95
+      },
+      {
+        "file": "steam-big-picture-macos.mp4",
+        "start": 2,
+        "duration": 10,
+        "caption": "Automatic playback in Steam Big Picture · macOS",
+        "speed": 1,
+        "fullFrame": true,
+        "timelineStart": 78.95
+      }
+    ]
+  },
+  "steamosVideo": {
+    "result": "passed",
+    "file": "Steam-Animated-Screensaver-SteamOS-overview.mp4",
+    "duration": 78.984,
+    "fullDecode": true,
+    "containsNativeMacSteamSequence": false,
+    "appCapturePlatform": "macOS",
+    "disclosureInVideo": true,
+    "nativeSteamOSRecording": false,
+    "music": "Song Of The Forge - Scott Buckley (CC-BY-4.0)",
+    "chapters": [
+      {
+        "file": "showcase-final.mp4",
+        "start": 0.266,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 0
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 5.921,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 4
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 13.482,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 8
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 19.783,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 12
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 28.833,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 16
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 0.6,
+        "duration": 4.5,
+        "caption": "Select all · prepare 10 games",
+        "speed": 1,
+        "timelineStart": 20
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 5.493,
+        "duration": 81.2,
+        "caption": "Automatic preparation · 10 games · 8× speed",
+        "speed": 8,
+        "timelineStart": 24.5
+      },
+      {
+        "file": "batch-live.mp4",
+        "start": 86.8,
+        "duration": 2.2,
+        "caption": "10 games ready",
+        "speed": 1,
+        "timelineStart": 34.65
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 0.3,
+        "duration": 1.8,
+        "caption": "Choose the framing",
+        "speed": 1,
+        "timelineStart": 36.85
+      },
+      {
+        "file": "settings-live.mp4",
+        "start": 9.8,
+        "duration": 3.2,
+        "caption": "Position the still artwork",
+        "speed": 1,
+        "timelineStart": 38.65
+      },
+      {
+        "file": "alternatives-loaded.mp4",
+        "start": 0.3,
+        "duration": 2.6,
+        "caption": "Find another animation",
+        "speed": 1,
+        "timelineStart": 41.85
+      },
+      {
+        "file": "processing-enabled.mp4",
+        "start": 0.3,
+        "duration": 4.5,
+        "caption": "Optional 24 / 30 fps processing · shown here: 30 fps, light blend",
+        "speed": 1,
+        "timelineStart": 44.45
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 35.083,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 48.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 41.352,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 52.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 47.617,
+        "duration": 2,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 56.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 53.866,
+        "duration": 4,
+        "caption": "Original framing · full image",
+        "speed": 1,
+        "timelineStart": 58.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 60.145,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 62.95
+      },
+      {
+        "file": "showcase-final.mp4",
+        "start": 67.984,
+        "duration": 4,
+        "caption": "16:9 crop",
+        "speed": 1,
+        "timelineStart": 66.95
+      },
+      {
+        "file": "steam-idle.mp4",
+        "start": 0.3,
+        "duration": 8,
+        "caption": "Steam inactivity delay · 5 minutes · apply with Steam closed",
+        "speed": 1,
+        "timelineStart": 70.95
+      }
+    ]
+  },
+  "music": {
+    "result": "passed",
+    "music": "Song Of The Forge",
+    "artist": "Scott Buckley",
+    "license": "CC-BY-4.0",
+    "source": "https://www.scottbuckley.com.au/library/song-of-the-forge/",
+    "excerptStartSeconds": 30,
+    "measuredLUFS": -21.15,
+    "truePeakDbFS": -6.77,
+    "videoStreams": [
+      {
+        "file": "Steam-Animated-Screensaver-demo.mp4",
+        "videoStreamUnchanged": true,
+        "hash": "SHA256=4c8a5b3f202a55224796646aa314a3010d4854dae45054e94b62c37d8606de98",
+        "embeddedCredit": "'Song Of The Forge' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au https://creativecommons.org/licenses/by/4.0/"
+      },
+      {
+        "file": "Steam-Animated-Screensaver-SteamOS-overview.mp4",
+        "videoStreamUnchanged": true,
+        "hash": "SHA256=72f0fa3aff0b1b7cd62231885c675b28cd5fe39a9b6e5f25024ed991811ccd46",
+        "embeddedCredit": "'Song Of The Forge' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au https://creativecommons.org/licenses/by/4.0/"
+      }
+    ]
+  },
+  "readmeGif": {
+    "result": "passed",
+    "file": "screenshots/public/screensaver-demo.gif",
+    "width": 800,
+    "height": 450,
+    "frames": 240,
+    "fps": 20,
+    "durationSeconds": 12,
+    "bytes": 3396313,
+    "loop": "infinite",
+    "allFramesDecoded": true,
+    "content": "Elden Ring in original framing and 16:9, followed by Cyberpunk 2077",
+    "sourceSpeed": "real time, no interpolation added for the GIF"
+  },
+  "limitations": [
+    "Windows and Linux native runtime and actual Steam acceptance still need target-machine testing.",
+    "SteamOS and Linux use the same Linux x64 archive.",
+    "macOS is ad-hoc signed and not notarized; Windows is unsigned.",
+    "Presentation captures show earlier development UI versions, with native Steam footage from macOS.",
+    "Controller and mouse dismissal and multi-day resource behavior need further testing."
+  ]
+}

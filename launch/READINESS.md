@@ -1,35 +1,32 @@
-# Public 1.0.0 preparation
+# Public release 1.0.0
 
-This is a launch kit, not a published 1.0.0. The current development app/package version is 0.1.11. Library/artwork captures are 0.1.9; the new delay panel is 0.1.11. The repository remains private. No Reddit post has been sent.
+Steam Animated Screensaver is published by [Alyenax](https://github.com/Alyenax). The public release contains the SteamOS, Linux and Windows x64 packages, the macOS Apple Silicon DMG and ZIP, source code, checksums and validation reports. Earlier private development releases are retained as unpublished drafts.
 
-## Prepared material
+## Presentation
 
-- Root README: functional overview, real app screenshots, setup and platform testing limits.
-- Root changelog: short first-public-release entry; earlier history lives in `docs/DEVELOPMENT_CHANGELOG.md`.
-- Reddit drafts: [English](REDDIT_EN.md) and [French](REDDIT_FR.md). SteamOS-specific drafts: [English](REDDIT_STEAMOS_EN.md) and [French](REDDIT_STEAMOS_FR.md). The drafts assume public downloads exist; post them only after launch.
-- Video: local `dist/public-launch-v2/Steam-Animated-Screensaver-demo.mp4` (89 seconds, 1080p60, Song Of The Forge by Scott Buckley, CC BY 4.0 music), plus a silent version. All ten requested games appear, with original/16:9 framing, real ten-game batch preparation marked 8× speed, alternatives, processing settings, the five-minute delay flow and actual automatic playback in Mac Steam. Upload the MP4 directly to Reddit after launch.
-- SteamOS video variant: `Steam-Animated-Screensaver-SteamOS-overview.mp4`, 79 seconds. It omits the native Mac Steam ending and explicitly identifies the app footage as captured on macOS; it is not SteamOS Gaming Mode evidence. Both video mixes now use an orchestral excerpt of Song Of The Forge by Scott Buckley (CC BY 4.0), replacing the electronic soundtrack.
-- Review page: `node scripts/showcase-preview.cjs` shows the video, rendered README, changelog and Reddit drafts. `--export` prepares `dist/showcase-site` for later hosting. No public hosting has been enabled.
-- Visuals: [credits and capture scope](../screenshots/public/CREDITS.md). Screenshots are from the actual app: earlier 0.1.9 library/artwork views and the 0.1.11 five-minute panel, without relabeling versions.
+The README opens with a looping GIF. The general 89-second video shows ten games, original and 16:9 framing, batch preparation, animation choices, processing controls, the five-minute delay setting and actual automatic playback inside Steam on macOS. Preparation is explicitly accelerated 8×; artwork playback is real time.
 
-## Before public binary distribution
+The 79-second SteamOS overview omits the native Mac Steam ending and states that the app footage was captured on macOS. It is not a recording of SteamOS Gaming Mode. Earlier library and artwork captures show version 0.1.9; the delay controls show 0.1.11. The release does not relabel that footage as a new native run.
 
-- Complete exact corresponding-source/build-material review for the Linux GPL media tools and the Windows LGPL media tools. The existing notices explicitly leave this open; see [THIRD_PARTY.md](../docs/THIRD_PARTY.md). Preserve the full component notices and sources required by their licenses.
-- Review screenshot/video artwork credits and distribution scope. Captures illustrate the app; third-party artwork is not MIT licensed or included as reusable source media.
-- Run a final secret/history and package-content audit. No personal keys, account catalogs, raw game artwork or private unrelated project code may enter the public distribution.
-- Bump the app/package/UI version together to 1.0.0; build **all four platforms**, including both Mac DMG and ZIP. Run the existing package/native Mac/archives/lifecycle release gates and verify downloaded assets against local checksums.
-- Retain clear known limitations: Windows/Linux native Steam acceptance pending, smoothing quality varies, Mac is not notarized, Windows unsigned. Signing status should be disclosed; paid signing credentials are not presumed.
-- Remove the README preparation notice and date the changelog only when the release actually exists. Publish the source archive, checksums and validation reports with the platform assets.
-- Making the repository public, publishing 1.0.0 and posting to Reddit are subsequent publication actions, outside this preparation step.
+Both videos use [Song Of The Forge by Scott Buckley](MUSIC.md). Keep its CC BY 4.0 attribution with uploads. [Artwork credits and capture scope](../screenshots/public/CREDITS.md).
 
-Capture and final MP4 verification: [VALIDATION.json](VALIDATION.json). Both the UI run and full video decode passed; this is presentation validation, not new platform runtime acceptance.
+The static showcase archive contains both videos, the illustrated README, changelog and Reddit drafts. A local review is available through `node scripts/showcase-preview.cjs`; `--export` prepares the standalone site. GitHub Actions and remote builds remain disabled.
 
-## Tester focus
+## Release checks
 
-On every platform: launch, search previews, prepare/change animation, still-artwork choice, framing, install/update, idle activation in Steam, offline playback and controller/keyboard/mouse dismissal. For Linux and Windows, start with a fresh standard installation and record dependencies or permission problems. Longer playback sessions should check CPU/GPU/memory use and process cleanup.
+- Audit reachable Git history and release contents for credentials and private data.
+- Use Alyenax as the project author and publisher. Preserve required third-party credits and notices.
+- Build all four platforms from the same current app, UI and documentation version.
+- Ship exact media source archives, notices and rebuild recipes in every platform package. The public Linux and Windows tools replace the previous upstream candidates.
+- Run unit, browser, packaged Mac, native media, lifecycle and archive checks. Keep inspection results separate from target-platform runtime testing.
+- Download the published artifacts and verify them against the release checksums.
 
-The current detailed report documents automated Mac execution and package inspection separately. SteamOS hands-on feedback comes from the maintainer; this launch capture uses the packaged Mac app and native window recording. Mac Steam selection was observed separately; the user confirmed custom playback in Preview. Automatic Mac activation is now observed using the internal Steam timer workaround; physical keyboard interruption was subsequently confirmed by the maintainer. Controller/mouse dismissal has not been separately accepted. The Manager now provides Settings → Automatic start in Steam, with guarded config writes; Windows/Linux native Steam acceptance remains pending. It is not Gamescope or Windows Steam footage.
+## Testing still needed
 
-## Steam context
+Windows and Linux need more hands-on testing inside Steam. Controller and mouse dismissal, long playback sessions, memory, CPU, GPU and battery behavior need further target-machine reports. Mac keyboard dismissal was confirmed by the maintainer. Source animation quality varies, and processing at 24 or 30 fps can be slow.
 
-Valve's [October 13, 2026 stable client notes](https://www.steamdeck.com/en/news?pubDate=20261013) confirm custom screensavers and the Steam `config/uioverrides/screensavers` directory. This is a **Steam client** feature, not a separate SteamOS-only OS update. Recheck the target subreddit's current self-promotion rules and flair before posting; no rules or acceptance are assumed here.
+The Mac app is ad-hoc signed and not notarized. Windows is unsigned. These limits are stated in the installation guide and release notes.
+
+## Reddit drafts
+
+[General English post](REDDIT_EN.md) and [SteamOS English post](REDDIT_STEAMOS_EN.md) are prepared but have not been posted. French drafts are retained as references. Check each community's rules and flair before posting. Publication of this GitHub release does not post to Reddit.

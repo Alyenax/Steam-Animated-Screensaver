@@ -8,10 +8,6 @@ const { pipeline } = require('node:stream/promises');
 const { createWriteStream } = require('node:fs');
 const { createGunzip } = require('node:zlib');
 const { execFileSync } = require('node:child_process');
-const EXPECTED_LINUX_BINARIES = {
-  ffmpeg: 'e7e7fb30477f717e6f55f9180a70386c62677ef8a4d4d1a5d948f4098aa3eb99',
-  ffprobe: '4f231a1960d83e403d08f7971e271707bec278a9ae18e21b8b5b03186668450d'
-};
 
 async function download(url, destination, gzip = false) {
   const response = await fetch(url, { signal: AbortSignal.timeout(120000) });
@@ -98,53 +94,19 @@ async function build(platform = 'linux', arch = 'x64') {
       Object.assign(
         binaryHashes,
         await require('./windows-media.cjs').stageWindowsMedia({
-          cache: path.join(dist, '.binary-cache/windows-x64'),
+          cache: path.join(dist, '.binary-cache/windows-x64-source'),
           destination: bin,
           download
         })
       );
     } else {
-      const cache = path.join(dist, '.binary-cache');
-      await fs.mkdir(cache, { recursive: true });
-      for (const name of ['ffmpeg', 'ffprobe']) {
-        const target = path.join(cache, `${name}-${platform}-${arch}`);
-        try {
-          await fs.access(target);
-        } catch {
-          console.log(`Downloading ${name} (${platform}/${arch})…`);
-          await download(
-            `https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/${name}-${platform}-${arch}.gz`,
-            target,
-            true
-          );
-        }
-        await fs.chmod(target, 0o755);
-        await fs.copyFile(target, path.join(bin, name));
-        await fs.chmod(path.join(bin, name), 0o755);
-        binaryHashes[name] = crypto
-          .createHash('sha256')
-          .update(await fs.readFile(target))
-          .digest('hex');
-        if (binaryHashes[name] !== EXPECTED_LINUX_BINARIES[name]) {
-          throw new Error(`The pinned ${name} executable digest does not match. Build stopped.`);
-        }
-      }
-      for (const extension of ['LICENSE', 'README'])
-        await download(
-          `https://github.com/eugeneware/ffmpeg-static/releases/download/b6.1.1/${platform}-${arch}.${extension}`,
-          path.join(bin, `FFmpeg.${extension}`)
-        );
-      await fs.writeFile(
-        path.join(bin, 'PROVENANCE.json'),
-        JSON.stringify(
-          {
-            upstream: 'https://github.com/eugeneware/ffmpeg-static/releases/tag/b6.1.1',
-            distribution: 'Linux x64 upstream separate GPL executables',
-            sha256: binaryHashes
-          },
-          null,
-          2
-        )
+      Object.assign(
+        binaryHashes,
+        await require('./cross-media.cjs').stageCrossMedia({
+          target: 'linux-x64',
+          cache: path.join(dist, '.binary-cache/linux-x64-source'),
+          destination: bin
+        })
       );
     }
     const { packager } = require('@electron/packager');
@@ -198,7 +160,7 @@ async function build(platform = 'linux', arch = 'x64') {
     if (windows) {
       await fs.writeFile(
         path.join(output, 'README.txt'),
-        'Steam Animated Screensaver - Windows x64\r\n\r\nExtract the entire ZIP, then run Steam Animated Screensaver.exe. No Node, FFmpeg installation or server is required.\r\nPrepare artwork, preview, then install into Steam from Settings. Restart Steam, open Big Picture > Settings > Customization and select steam-animated-screensaver.\r\nLocal data: %APPDATA%/steam-animated-screensaver. Previous app data and owned exports migrate automatically.\r\nPrivate unsigned installation candidate. Native Windows runtime and Big Picture activation require Windows validation.\r\n'
+        'Steam Animated Screensaver - Windows x64\r\n\r\nExtract the entire ZIP, then run Steam Animated Screensaver.exe. No Node, FFmpeg installation or server is required.\r\nPrepare artwork, preview, then install into Steam from Settings. Restart Steam, open Big Picture > Settings > Customization and select steam-animated-screensaver.\r\nLocal data: %APPDATA%/steam-animated-screensaver. Previous app data and owned exports migrate automatically.\r\nUnsigned application. Windows users are invited to report native playback and installation issues.\r\n'
       );
       const filename = `Steam-Animated-Screensaver-${pkg.version}-windows-x64.zip`;
       execFileSync('ditto', ['-c', '-k', '--keepParent', output, path.join(dist, filename)]);
@@ -219,8 +181,8 @@ async function build(platform = 'linux', arch = 'x64') {
       'steam-animated-screensaver-v1\n'
     );
     await fs.writeFile(
-      path.join(output, 'CANDIDATE.txt'),
-      'Private installation candidate. Linux runtime and physical SteamOS Gaming Mode acceptance remain pending. See resources/app/docs/VALIDATION.md.\n'
+      path.join(output, 'README.txt'),
+      'Steam Animated Screensaver by Alyenax. See resources/app/docs/INSTALLATION.md for setup and resources/app/docs/VALIDATION.md for test coverage and remaining native checks.\n'
     );
     const filename = `Steam-Animated-Screensaver-${pkg.version}-${steamOS ? 'steamos' : platform}-${arch}.tar.gz`;
     execFileSync('tar', ['-czf', path.join(dist, filename), '-C', dist, path.basename(output)], {
@@ -269,10 +231,10 @@ async function finishMac({ dist, output, pkg }) {
     await fs.symlink('/Applications', path.join(stage, 'Applications'));
     await fs.writeFile(
       path.join(stage, 'LISEZ-MOI - README.txt'),
-      'Steam Animated Screensaver — macOS Apple Silicon, macOS 13+.\n\n' +
+      'Steam Animated Screensaver - macOS Apple Silicon, macOS 13+.\n\n' +
         'FR : Glissez l’application dans Applications, puis ouvrez-la. Ajoutez votre clé SteamGridDB dans Réglages, choisissez un jeu, préparez ses images puis ouvrez Aperçu. Aucun outil à installer et aucun serveur requis. Dans Réglages, installez le lecteur dans Steam, redémarrez Steam, puis sélectionnez steam-animated-screensaver dans Big Picture > Réglages > Personnalisation.\n\n' +
         'EN: Drag the app into Applications and open it. Add your SteamGridDB key in Settings, choose a game, prepare its artwork, then open Preview. No extra tools or server are required. Install the player from Settings, restart Steam, then select steam-animated-screensaver in Big Picture > Settings > Customization.\n\n' +
-        'Private test build with ad-hoc signature, not Apple notarized. If macOS blocks a downloaded copy, use System Settings > Privacy & Security > Open Anyway for this app. No global security setting needs changing.\n' +
+        'Ad-hoc signed app, not Apple notarized. If macOS blocks a downloaded copy, use System Settings > Privacy & Security > Open Anyway for this app. No global security setting needs changing.\n' +
         'FFmpeg / libvpx notices, complete source archives and rebuild recipe: app Contents/Resources/app/binaries/.\n'
     );
     const dmg = path.join(dist, base + '.dmg');

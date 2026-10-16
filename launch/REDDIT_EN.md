@@ -1,4 +1,4 @@
-# General draft for when public downloads are available
+# General Reddit draft
 
 **Title:** Had an idea for Steam’s new screensavers: animated artwork from your library
 

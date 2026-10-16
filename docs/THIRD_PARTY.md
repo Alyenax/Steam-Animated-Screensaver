@@ -1,41 +1,39 @@
-# Source and redistribution review
+# Third-party components and source
 
 ## Original project
 
-All code in `core`, `manager`, `player`, the Electron shell, tests and project scripts was written independently for this project. No code, artwork, tokens or private resource from `Alyenax/GabeCubeAura-Lab` was copied. That private repository has no declared license in its GitHub metadata; access permission was not treated as a redistribution license.
+Original application code is copyright 2026 Alyenax and licensed under the root MIT LICENSE. The application is an unofficial community project, unaffiliated with Valve or SteamGridDB. Third-party components retain their own licenses.
 
-Original source and original test artwork are MIT licensed under the root LICENSE. No Valve or SteamGridDB trademark artwork is embedded. The product is an unofficial community project.
+## Electron
 
-## Distributed executable components
+Every platform package retains Electron's LICENSE and Chromium third-party notices. Electron is pinned in `package-lock.json`. The application uses Node built-ins at runtime and does not ship development `node_modules`.
 
-The Linux x64 candidate contains Electron 44.7.2 (Electron's MIT license and bundled Chromium third-party notices remain in the distribution) plus separate FFmpeg and FFprobe executables downloaded from the pinned [ffmpeg-static b6.1.1 release](https://github.com/eugeneware/ffmpeg-static/releases/tag/b6.1.1). The tag name does **not** reliably identify the binary version: that release's Linux README identifies a John Van Sickle FFmpeg **7.0.2** build licensed GPLv3. Packaging preserves the exact upstream `FFmpeg.LICENSE`, `FFmpeg.README`, the source URL and hashes in `binaries/PROVENANCE.json`.
+## Media tools in version 1.0.0
 
-FFmpeg upstream and its compiled libraries retain their own licenses. These tools run as separate child processes. The MIT license on the original application does not replace or relicense those executables. Their build/source provenance is described by the [upstream packaging project](https://github.com/eugeneware/ffmpeg-static) and [John Van Sickle build site](https://johnvansickle.com/ffmpeg/).
+FFmpeg and FFprobe run as separate executable processes. Every platform package includes their full LGPL 2.1-or-later license, source archives, source checksums, build configuration and exact build recipe under `resources/app/binaries` or the macOS app's `Contents/Resources/app/binaries`.
 
-**Public binary release gate:** reproduce or obtain the exact complete corresponding source and build materials for the distributed GPL binaries, retain all notices and satisfy the applicable distribution obligations before making a public binary release. A general link to the FFmpeg homepage is not being treated as a completed source-compliance package. The candidate stays private while this item is outstanding. Source code may be reviewed independently of third-party binary redistribution.
+All current media tools use FFmpeg 8.1.3 with libvpx 1.16.0 and dav1d 1.5.4. GPL, nonfree and version3 configuration options are disabled. libvpx and dav1d use BSD licenses; the libvpx patent notice is retained. The original app's MIT license does not relicense these components.
 
-The npm macOS `ffmpeg-static` executable used locally reports FFmpeg 6.0 with `--enable-nonfree`. It is used for local development/fixture generation only and is not included in any released package. The Linux build downloads separate Linux executables and does not reuse the macOS development tools.
+- macOS Apple Silicon tools are built natively by `scripts/build-media-macos.cjs`, with macOS 13 as the deployment target. They use only macOS system dynamic libraries. Their complete unmodified sources, including the build-only pkgconf source, accompany the binaries.
+- Linux and SteamOS x64 tools are built locally by `scripts/build-media-cross.cjs`, using pinned Zig 0.15.2 and NASM 2.16.03. They are statically linked with musl. Zlib 1.3.1 source and notices, musl notices and the Zig runtime source archive are included.
+- Windows x64 tools use the same local cross-build recipe, FFmpeg and codec sources. Zlib and the MinGW runtime notices and source are included. The Windows package is portable and does not require a separate FFmpeg installation.
 
-## macOS native media tools (0.1.7)
+`binaries/PROVENANCE.json` records the target, exact source digests and executable digests. `binaries/REBUILD.txt` describes rebuilding and replacing the tools in a user's own copy. Modifying and replacing these separate executables is permitted under their licenses. The application does not impose a DRM or signature restriction on replacement. On macOS, a changed personal app copy can be ad-hoc signed again.
 
-The Apple Silicon app builds separate FFmpeg / FFprobe executables from **FFmpeg 8.1.3**, with **libvpx 1.16.0** and **dav1d 1.5.4**. GPL, version3 and nonfree options are explicitly disabled; the resulting FFmpeg tools report LGPL 2.1-or-later. libvpx and dav1d use BSD licenses. The build disables network input and uses only macOS system dynamic libraries. No Homebrew installation, Intel executable or development `ffmpeg-static` binary is copied into the Mac app.
+Build-only prerequisites, including the compiler, Python, Meson and Ninja, are not shipped executable application dependencies. The recipes pin the downloaded build inputs. The Zig source archive also supplies the runtime source used by its cross compiler.
 
-`binaries/` includes licenses, libvpx patent notice, binary/source digests and compiler/configuration provenance. Complete unmodified source archives and the exact Node build recipe are in `binaries/sources/`; `REBUILD.txt` describes prerequisites and replacement in a user's own app copy. pkgconf is a build-only tool whose source archive is also included. Meson 1.9.1 and Ninja 1.13.0 are isolated build dependencies, not shipped runtime dependencies. The FFmpeg release archive's signature was checked against the official release key (fingerprint FCF986EA15E6E293A5644F10B4322F04D67658D8) before pinning its digest. Upstream references: [FFmpeg](https://ffmpeg.org/download.html), [libvpx](https://github.com/webmproject/libvpx/tree/v1.16.0), [dav1d](https://github.com/videolan/dav1d/tree/1.5.4).
+Earlier private test builds used upstream Linux GPL or Windows LGPL binaries without a completed corresponding-source bundle. Those development releases are retained as unpublished drafts. Version 1.0.0 replaces those media tools rather than publicly distributing the old candidates.
 
-Electron's bundled license/Chromium notices are retained in the `.app`. Its local ad-hoc code signature checks bundle integrity; it does not provide Apple Developer identity or notarization. No such certificate/credentials are assumed.
+The npm macOS `ffmpeg-static` binary used to generate local test fixtures reports a nonfree configuration. It remains a development-only tool and is never copied into the platform downloads.
 
-## Development dependencies
+## Signing
 
-`package-lock.json` records exact npm package versions. Electron, Electron Packager, Playwright, and the npm wrappers around executable tools have their individual package notices/licenses. Development dependencies and their node_modules tree are not copied into the Linux application's code directory. The application itself uses Node built-ins at runtime; the media executables are found in `binaries/`.
+The macOS app has an ad-hoc signature and is not Apple notarized. Windows is unsigned. This status is disclosed in the installation guide. No signing certificate or paid account is assumed.
 
-## Artworks
+## Artwork and music
 
-SteamGridDB artists and game rights holders retain rights in their assets. Users download artwork locally under the service's terms; creator names and source attribution are retained. API access is not interpreted as a blanket redistribution license. No third-party game artwork appears in the released archive. QA captures use original labelled test animations and mocked search results; they do not prove a live authenticated API session.
+SteamGridDB artists and game rights holders retain rights in their assets. Users download artwork separately; a personal API key is not a blanket redistribution license. No raw game artwork, personal library or API key is bundled in the applications.
 
-## Windows x64 media tools (0.1.8)
+The README, GIF and demonstration videos show actual app captures with game artwork. The files are presentation material, not reusable artwork under the app's MIT license. Artist names, sources and capture scope are listed in [visual credits](../screenshots/public/CREDITS.md).
 
-The Windows package contains separate LGPL executables from the dated [BtbN FFmpeg build](https://github.com/BtbN/FFmpeg-Builds/releases/tag/autobuild-2026-10-15-13-03), `ffmpeg-n8.1.3-18-g46d899d7a0-win64-lgpl-8.1.zip`. Archive SHA-256 is pinned in `scripts/windows-media.cjs`; LGPL notices, exact upstream/source/build links and executable hashes are included in `binaries/PROVENANCE.json`. PE machine headers must be x64. No Wine runtime or nonfree development binary is bundled. Native Windows execution and complete redistribution/source review remain distinct release acceptance items. SteamOS uses the Linux binary and its existing notices.
-
-## Launch presentation captures
-
-The proposed 1.0.0 README and launch video use actual UI/player screenshot excerpts with third-party game artwork. Credits and capture scope are documented in [screenshots/public/CREDITS.md](../screenshots/public/CREDITS.md). These presentation files live outside the packaged application source folders; they are not bundled as reusable media in the platform applications. Their depicted artwork is not covered by the original-code MIT license.
+The videos use Song Of The Forge by Scott Buckley under CC BY 4.0. The track is excerpted, level-matched and faded. Keep the [music credit, source and license](../launch/MUSIC.md) with each video upload. The music license does not cover the depicted game artwork.

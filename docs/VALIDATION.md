@@ -1,10 +1,14 @@
-# Validation — Steam Animated Screensaver 0.1.11
+# Validation - Steam Animated Screensaver 1.0.0
 
 Validation host: macOS arm64. This report distinguishes native execution, automated software tests and cross-platform package inspection. Windows, Linux and SteamOS packages are built here; native execution and actual Steam CEF idle/wake acceptance on those targets remain pending. Passing tests does not establish universal stability.
 
-The 0.1.10 update adds guarded Steam inactivity configuration after inspection of current first-party Windows/macOS/Linux client packages. Its dedicated unit tests exercise backups, unchanged unrelated values, closed/running Steam, malformed/ambiguous files, links and concurrent changes. The real UI test exercises Apply, blocked Apply, refresh, persistence, EN/FR and responsive widths. Full suite: 127 passing tests. Native Mac packaged-app results are recorded with the private release; Windows/Linux/SteamOS native Steam acceptance remains pending. See [the client investigation](STEAM_IDLE_INVESTIGATION.md).
+The 0.1.10 update adds guarded Steam inactivity configuration after inspection of current first-party Windows/macOS/Linux client packages. Its dedicated unit tests exercise backups, unchanged unrelated values, closed/running Steam, malformed/ambiguous files, links and concurrent changes. The real UI test exercises Apply, blocked Apply, refresh, persistence, EN/FR and responsive widths. Full suite: 127 passing tests. Native Mac packaged-app results are recorded with the release; Windows/Linux/SteamOS native Steam acceptance remains pending. See [the client investigation](STEAM_IDLE_INVESTIGATION.md).
 
 The 0.1.11 update additionally checks that a fresh profile starts in English, a first delay configuration proposes five minutes without writing, existing explicit delays including Disabled survive reload, and a saved French choice is retained. The final presentation video decodes fully and includes the current delay controls plus separately recorded native Mac Steam playback.
+
+## Public 1.0.0 checks
+
+The public release reruns the 127 unit and integration tests and the browser and packaged Mac checks. Linux and Windows media tools are now built locally with the pinned complete sources and recipes included in each package. Their ELF or PE architecture, static dependencies, source checksums and required media configuration are inspected. These checks do not substitute for running those executables on their target platforms. Exact results accompany the release.
 
 ## Previous 0.1.9 baseline
 
@@ -45,7 +49,7 @@ The crash tests deliberately terminate a test renderer or throw in a test main p
 
 Native platform root detection is unit-tested for Linux/Flatpak, macOS and Windows registry/environment paths. Generic installer tests exercise atomic update/rollback, legacy markers, dual installer locks, uninstall/purge and preservation of other screensavers. Windows joining/case rules are tested with `path.win32`; those fixtures are not a Windows runtime claim.
 
-The actual local Mac Steam root and its bundled `bouncinglogo/index.html` were inspected read-only. Export remains `<Steam root>/config/uioverrides/screensavers/steam-animated-screensaver/`. The player is tested under a mapped `https://uioverride-steam-animated-screensaver.steamscreensavers.host/` origin and directly from files, with no external requests after preparation. Actual Big Picture/Gaming Mode activation, codec behavior, controller wake and the reported Steam Machine error -105 must still be confirmed in the target client.
+The actual local Mac Steam root and its bundled `bouncinglogo/index.html` were inspected read-only. Export remains `<Steam root>/config/uioverrides/screensavers/steam-animated-screensaver/`. The player is tested under a mapped `https://uioverride-steam-animated-screensaver.steamscreensavers.host/` origin and directly from files, with no external requests after preparation. Automatic Big Picture playback and physical keyboard dismissal were separately confirmed on the maintainer’s Mac. SteamOS feedback comes from the maintainer. Windows and Linux native playback, controller wake and long-duration behavior still need target-client testing.
 
 ## Remaining native acceptance
 
@@ -53,7 +57,7 @@ The actual local Mac Steam root and its bundled `bouncinglogo/index.html` were i
 - On each platform, select the installed player in Steam Big Picture/Gaming Mode; verify timeout activation, offline playback, transition timing, keyboard/mouse/controller dismissal and no leaked decoders.
 - Measure long-duration memory/GPU/CPU/thermals at Steam Deck, 1080p and 4K resolutions. No performance/battery claim is made from headless or macOS tests.
 - Validate an actual personal owned-library import and privacy/rate-limit scenarios on the user's account. Provider fixtures cover behavior without representing a live authenticated import.
-- Complete platform-specific signing/notarization and exact redistribution-source review before a public binary release. Current releases remain private installation candidates.
+- Signing remains limited to the Mac ad-hoc signature. Windows is unsigned. Current packages include their media-tool source archives, licenses and exact build recipes.
 
 ## Reproduce
 

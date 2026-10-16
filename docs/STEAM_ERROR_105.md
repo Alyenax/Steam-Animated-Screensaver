@@ -1,4 +1,4 @@
-# Steam Machine error -105 — installation identifier correction
+# Steam Machine error -105 - installation identifier correction
 
 ## Report and evidence
 

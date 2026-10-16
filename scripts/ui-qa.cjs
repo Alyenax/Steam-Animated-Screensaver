@@ -624,8 +624,8 @@ async function runUI({ capture = false } = {}) {
       );
     return evidence;
   } finally {
-    if (instance) await instance.close();
     await browser.close();
+    if (instance) await instance.close();
     await fs.rm(root, { recursive: true, force: true });
   }
 }

@@ -1,5 +1,5 @@
 {
-  "version": "0.1.9",
+  "version": "1.0.0",
   "result": "passed",
   "fixture": "Isolated real Core/Manager/media/export with original generated animations and injected provider faults; no personal key or downloaded game artwork.",
   "checks": [

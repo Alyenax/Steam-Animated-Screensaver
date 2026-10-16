@@ -8,7 +8,7 @@ const videoName = 'Steam-Animated-Screensaver-demo.mp4';
 const steamosName = 'Steam-Animated-Screensaver-SteamOS-overview.mp4';
 const video = path.join(root, 'dist/public-launch-v2', videoName);
 const github =
-  'https://github.com/Alyenax/Steam-Animated-Screensaver/blob/codex/steam-animated-screensaver/';
+  'https://github.com/Alyenax/Steam-Animated-Screensaver/blob/main/';
 const esc = (s) =>
   String(s ?? '').replace(
     /[&<>"']/g,
@@ -82,7 +82,7 @@ async function markdown(file) {
     }
   }
   const language = file.endsWith('_FR.md') ? 'fr' : 'en';
-  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(file)} — Steam Animated Screensaver</title><link rel="stylesheet" href="showcase.css"></head><body><header class="top"><a class="name" href="index.html">Steam Animated Screensaver</a><nav aria-label="Documentation"><a href="index.html">Demo</a><a href="readme.html">README</a><a href="changelog.html">Changelog</a><a href="reddit-en.html">Reddit EN</a><a href="reddit-fr.html">FR</a></nav></header><main><article>${render(ast)}</article></main><footer>Rendered from the actual ${esc(file)} file.</footer></body></html>`;
+  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(file)} - Steam Animated Screensaver</title><link rel="stylesheet" href="showcase.css"></head><body><header class="top"><a class="name" href="index.html">Steam Animated Screensaver</a><nav aria-label="Documentation"><a href="index.html">Demo</a><a href="readme.html">README</a><a href="changelog.html">Changelog</a><a href="reddit-en.html">Reddit EN</a><a href="reddit-fr.html">FR</a></nav></header><main><article>${render(ast)}</article></main><footer>Rendered from the actual ${esc(file)} file.</footer></body></html>`;
 }
 async function index(localVideo, page = 'index.html') {
   if (page === 'steamos.html')
@@ -91,7 +91,7 @@ async function index(localVideo, page = 'index.html') {
       localVideo
     );
   return (await fs.readFile(path.join(root, 'showcase/index.html'), 'utf8')).replaceAll(
-    'https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v0.1.11-rc.1/' +
+    'https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/' +
       videoName,
     localVideo
   );
