@@ -2,7 +2,7 @@
 
 Use Node 22.12 or later. Run `npm ci`, `npm test`, and `npm run check`. `npm run dev` prints a loopback URL for browser UI development. `npm start` launches the sandboxed Electron application.
 
-Preserve the component contracts in docs/CONTRACTS.md. Test real boundaries: filesystem scanning, catalog recovery, provider errors, downloads, decoder failures, cancellation, installation and offline playback. Keep API keys and third-party artwork out of Git; use original labelled test media. User-facing descriptions must explain functionality without promotional slogans. Exercise English/French, keyboard controls and narrow layouts.
+Preserve the component contracts in docs/CONTRACTS.md. Test real boundaries: filesystem scanning, catalog recovery, provider errors, downloads, decoder failures, cancellation, installation and offline playback. Keep API keys and standalone third-party artwork out of Git; use original labelled media for tests. The launch presentation uses app screenshot excerpts, credited separately in screenshots/public/CREDITS.md; those captures do not relicense the depicted artwork or permit bundling its raw media. User-facing descriptions must explain functionality without promotional slogans. Exercise English/French, keyboard controls and narrow layouts.
 
 Use the `codex/` prefix for implementation branches. Product name: **Steam Animated Screensaver**; slug: `steam-animated-screensaver`. Historical identifiers are permitted only for safe migration.
 

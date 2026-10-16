@@ -1,0 +1,93 @@
+{
+  "capture": {
+    "sourceVersion": "0.1.9",
+    "format": "Actual unmodified Manager/Player, isolated three-game catalog, copied existing local media; no live search/import/preparation or Steam activation claimed.",
+    "sourceCatalogUnchanged": true,
+    "credentialsRead": false,
+    "externalRequests": [],
+    "errors": [],
+    "duration": 65.174,
+    "chapters": [
+      {
+        "seconds": 0.01,
+        "title": "Full-screen player — original size, full image"
+      },
+      {
+        "seconds": 9.89,
+        "title": "Full-screen player — 16:9 crop, same animation"
+      },
+      {
+        "seconds": 18.34,
+        "title": "Library"
+      },
+      {
+        "seconds": 25.71,
+        "title": "Game details — animation selection and crop"
+      },
+      {
+        "seconds": 35.41,
+        "title": "Preview — move the still artwork"
+      },
+      {
+        "seconds": 47.77,
+        "title": "Settings — optional 24/30 fps processing"
+      },
+      {
+        "seconds": 58.59,
+        "title": "Full-screen player — final result"
+      }
+    ],
+    "artwork": [
+      {
+        "game": "Balatro",
+        "animation": {
+          "artist": "Nosebeggar",
+          "url": "https://cdn2.steamgriddb.com/hero/8dc2c09b481972807b78402a87b518fd.webp"
+        },
+        "cover": {
+          "artist": "NNB",
+          "url": "https://cdn2.steamgriddb.com/grid/704f72562168940fbfa7e9f01e0f84aa.jpg"
+        }
+      },
+      {
+        "game": "Disco Elysium",
+        "animation": {
+          "artist": "TUFKAC",
+          "url": "https://cdn2.steamgriddb.com/hero/282b71a86a960e117b12b24d88aff20e.webp"
+        },
+        "cover": {
+          "artist": "Maxine",
+          "url": "https://cdn2.steamgriddb.com/grid/7e85bfb04eae1af627743dd44b8686bf.png"
+        }
+      },
+      {
+        "game": "Vampire Crawlers",
+        "animation": {
+          "artist": "Blackdraon12099",
+          "url": "https://cdn2.steamgriddb.com/grid/5686cd3d88525a81d7cf55f74cce72cb.webp"
+        },
+        "cover": {
+          "artist": "Strom",
+          "url": "https://cdn2.steamgriddb.com/grid/d0390da5abdafb939e810c5df4dc4842.png"
+        }
+      }
+    ]
+  },
+  "video": {
+    "result": "passed",
+    "sourceVersion": "0.1.9",
+    "duration": 66.034,
+    "bytes": 23450716,
+    "codec": "h264",
+    "pixelFormat": "yuv420p",
+    "width": 1920,
+    "height": 1080,
+    "fps": 30,
+    "audio": false,
+    "fullDecode": "passed",
+    "captureErrors": [],
+    "externalRequests": [],
+    "sourceCatalogUnchanged": true,
+    "limitations": "Recording of actual UI/player in a temporary catalog; no SteamOS/Windows native execution claim. No interpolation applied to shown artwork."
+  }
+}
