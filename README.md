@@ -6,7 +6,7 @@ Choose games, prepare their animations and install the screensaver in Steam. Pre
 
 [![Animated preview: Elden Ring in original and 16:9 framing, followed by Cyberpunk 2077](screenshots/public/screensaver-demo.gif)](docs/DEMO.md)
 
-[Demo videos and credits](docs/DEMO.md) · [Download version 1.0.0](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/tag/v1.0.0)
+[Demo video and credits](docs/DEMO.md) · [Download version 1.0.0](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/tag/v1.0.0)
 
 Maintained by [Alyenax](https://github.com/Alyenax).
 

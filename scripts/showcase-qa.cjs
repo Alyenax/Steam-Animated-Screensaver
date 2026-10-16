@@ -87,12 +87,13 @@ async function main() {
     await page.locator('article img').first().click();
     assert.equal(new URL(page.url()).pathname, '/demo.html');
     assert.equal(await page.locator('article details[open]').count(), 0);
-    for (const name of [
-      'Steam-Animated-Screensaver-demo.mp4',
-      'Steam-Animated-Screensaver-SteamOS-overview.mp4'
-    ])
-      assert((await page.locator(`article a[href$="/${name}"]`).count()) > 0);
-    assert.equal(await page.locator('article video').count(), 2);
+    assert.equal(await page.locator('article video').count(), 1);
+    assert.equal(
+      await page.locator('article a[href$="/Steam-Animated-Screensaver-demo.mp4"]').count(),
+      1
+    );
+    assert.equal(await page.locator('article a[href*="SteamOS-overview"]').count(), 0);
+    assert(!(await page.locator('article').innerText()).includes('SteamOS overview'));
     for (const v of await page.locator('article video').all()) {
       await v.evaluate((v) => v.play());
       await page.waitForTimeout(350);
@@ -109,12 +110,12 @@ async function main() {
       await v.evaluate((v) => v.pause());
     }
     checks.push(
-      'Both inline 720p videos load and play with native controls alongside original 1080p download links'
+      'The single full demo loads and plays in 720p with native controls; its original 1080p download remains available and the duplicate overview is absent'
     );
     assert((await page.locator('article').innerText()).includes('Scott Buckley'));
     assert((await page.locator('article').innerText()).includes('CC BY 4.0'));
     checks.push(
-      'README disclosures are closed initially and expand on click; the GIF opens the GitHub demo document with both videos and visible music attribution'
+      'README disclosures are closed initially and expand on click; the GIF opens the GitHub demo document with the full demo and visible music attribution'
     );
     await page.goto(server.url + 'changelog.html');
     assert.equal(await page.locator('article ol > li').count(), 4);
