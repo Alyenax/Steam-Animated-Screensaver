@@ -7,8 +7,7 @@ const root = path.resolve(__dirname, '..');
 const videoName = 'Steam-Animated-Screensaver-demo.mp4';
 const steamosName = 'Steam-Animated-Screensaver-SteamOS-overview.mp4';
 const video = path.join(root, 'dist/public-launch-v2', videoName);
-const github =
-  'https://github.com/Alyenax/Steam-Animated-Screensaver/blob/main/';
+const github = 'https://github.com/Alyenax/Steam-Animated-Screensaver/blob/main/';
 const esc = (s) =>
   String(s ?? '').replace(
     /[&<>"']/g,
@@ -16,6 +15,7 @@ const esc = (s) =>
   );
 const documents = {
   'readme.html': 'README.md',
+  'demo.html': 'docs/DEMO.md',
   'changelog.html': 'CHANGELOG.md',
   'reddit-en.html': 'launch/REDDIT_EN.md',
   'reddit-fr.html': 'launch/REDDIT_FR.md',
@@ -41,6 +41,11 @@ async function markdown(file) {
     switch (node.type) {
       case 'root':
         return body();
+      case 'html':
+        // Only the collapsible disclosure markup used in our Markdown is allowed.
+        return /^(?:<details>\s*|<\/details>\s*|<summary>[^<>]*<\/summary>\s*)+$/.test(node.value)
+          ? node.value
+          : esc(node.value);
       case 'text':
         return esc(node.value);
       case 'heading':
@@ -91,8 +96,7 @@ async function index(localVideo, page = 'index.html') {
       localVideo
     );
   return (await fs.readFile(path.join(root, 'showcase/index.html'), 'utf8')).replaceAll(
-    'https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/' +
-      videoName,
+    'https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.0.0/' + videoName,
     localVideo
   );
 }

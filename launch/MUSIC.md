@@ -8,7 +8,7 @@ Credit to keep with any upload of either video:
 
 > 'Song Of The Forge' by Scott Buckley - released under CC-BY 4.0. www.scottbuckley.com.au
 
-Link to the [track](https://www.scottbuckley.com.au/library/song-of-the-forge/) and [license](https://creativecommons.org/licenses/by/4.0/). Changes made: excerpted, level-matched and faded to accompany the app demonstration. Credits are included in the README, showcase pages, Reddit drafts and MP4 metadata. If uploading to YouTube, include the credit in the video description, as the artist requests.
+Link to the [track](https://www.scottbuckley.com.au/library/song-of-the-forge/) and [license](https://creativecommons.org/licenses/by/4.0/). Changes made: excerpted, level-matched and faded to accompany the app demonstration. Credits are included on the demo page linked from the README, in the showcase pages, Reddit drafts and MP4 metadata. If uploading to YouTube, include the credit in the video description, as the artist requests.
 
 - Reproduce the excerpt: `node scripts/prepare-demo-music.cjs`
 - Exact source URL, checksum and excerpt: [MUSIC_SOURCE.json](MUSIC_SOURCE.json)

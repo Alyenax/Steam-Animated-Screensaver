@@ -33,6 +33,16 @@ async function main() {
       fullPage: true
     });
     await page.goto(server.url + 'readme.html');
+    assert.equal(await page.locator('article details').count(), 4);
+    assert.equal(await page.locator('article details[open]').count(), 0);
+    assert.equal(
+      await page.locator('article img').first().locator('..').getAttribute('href'),
+      'demo.html'
+    );
+    await page.locator('summary').first().click();
+    assert.equal(await page.locator('article details[open]').count(), 1);
+    await page.locator('summary').first().click();
+    await page.evaluate(() => document.querySelectorAll('details').forEach((d) => (d.open = true)));
     await page.evaluate(() =>
       document.querySelectorAll('img').forEach((img) => (img.loading = 'eager'))
     );
@@ -61,10 +71,26 @@ async function main() {
     checks.push(
       'Actual README opens with the animated GIF, renders all six images and includes complete Steam activation and five-minute instructions'
     );
+    await page.evaluate(() =>
+      document.querySelectorAll('details').forEach((d) => (d.open = false))
+    );
     await page.screenshot({
       path: path.resolve(__dirname, '../dist/readme-review.png'),
       fullPage: true
     });
+    await page.locator('article img').first().click();
+    assert.equal(new URL(page.url()).pathname, '/demo.html');
+    assert.equal(await page.locator('article details[open]').count(), 0);
+    for (const name of [
+      'Steam-Animated-Screensaver-demo.mp4',
+      'Steam-Animated-Screensaver-SteamOS-overview.mp4'
+    ])
+      assert((await page.locator(`article a[href$="/${name}"]`).count()) > 0);
+    assert((await page.locator('article').innerText()).includes('Scott Buckley'));
+    assert((await page.locator('article').innerText()).includes('CC BY 4.0'));
+    checks.push(
+      'README disclosures are closed initially and expand on click; the GIF opens the GitHub demo document with both videos and visible music attribution'
+    );
     await page.goto(server.url + 'changelog.html');
     assert.equal(await page.locator('article ol > li').count(), 4);
     assert((await page.locator('article').innerText()).includes('Quit Steam completely'));
@@ -84,6 +110,7 @@ async function main() {
       for (const route of [
         '',
         'readme.html',
+        'demo.html',
         'changelog.html',
         'reddit-en.html',
         'reddit-fr.html',
@@ -105,6 +132,7 @@ async function main() {
     for (const file of [
       'index.html',
       'readme.html',
+      'demo.html',
       'changelog.html',
       'showcase.css',
       'showcase.js',
