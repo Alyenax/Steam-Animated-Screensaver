@@ -29,4 +29,4 @@ The Mac app is ad-hoc signed and not notarized. Windows is unsigned. These limit
 
 ## Reddit drafts
 
-[General English post](REDDIT_EN.md) and [SteamOS English post](REDDIT_STEAMOS_EN.md) are prepared but have not been posted. French drafts are retained as references. Check each community's rules and flair before posting. Publication of this GitHub release does not post to Reddit.
+[Steam post](REDDIT_EN.md), [SteamOS and Steam Deck post](REDDIT_STEAMOS_EN.md), and [Linux Gaming post](REDDIT_LINUX_EN.md) are prepared in English but have not been posted. All three explain that Steam runs the installed screensaver through its built-in support, with the preparation app closed. French drafts are retained as references. Check each community's rules and flair before posting. Publication of this GitHub release does not post to Reddit.

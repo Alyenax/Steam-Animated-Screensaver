@@ -139,6 +139,7 @@ async function main() {
         'demo.html',
         'changelog.html',
         'reddit-en.html',
+        'reddit-linux-en.html',
         'reddit-fr.html',
         'steamos.html',
         'reddit-steamos-en.html',
@@ -153,7 +154,7 @@ async function main() {
       }
     }
     checks.push(
-      'Both demos, README, changelog and all four Reddit drafts have no horizontal overflow at 1440, 800 and 390px'
+      'Both demos, README, changelog and all five Reddit drafts have no horizontal overflow at 1440, 800 and 390px'
     );
     for (const file of [
       'index.html',

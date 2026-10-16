@@ -19,6 +19,7 @@ const documents = {
   'demo.html': 'docs/DEMO.md',
   'changelog.html': 'CHANGELOG.md',
   'reddit-en.html': 'launch/REDDIT_EN.md',
+  'reddit-linux-en.html': 'launch/REDDIT_LINUX_EN.md',
   'reddit-fr.html': 'launch/REDDIT_FR.md',
   'reddit-steamos-en.html': 'launch/REDDIT_STEAMOS_EN.md',
   'reddit-steamos-fr.html': 'launch/REDDIT_STEAMOS_FR.md'
@@ -94,7 +95,7 @@ async function markdown(file) {
     }
   }
   const language = file.endsWith('_FR.md') ? 'fr' : 'en';
-  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(file)} - Steam Animated Screensaver</title><link rel="stylesheet" href="showcase.css"></head><body><header class="top"><a class="name" href="index.html">Steam Animated Screensaver</a><nav aria-label="Documentation"><a href="index.html">Demo</a><a href="readme.html">README</a><a href="changelog.html">Changelog</a><a href="reddit-en.html">Reddit EN</a><a href="reddit-fr.html">FR</a></nav></header><main><article>${render(ast)}</article></main><footer>Rendered from the actual ${esc(file)} file.</footer></body></html>`;
+  return `<!doctype html><html lang="${language}"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(file)} - Steam Animated Screensaver</title><link rel="stylesheet" href="showcase.css"></head><body><header class="top"><a class="name" href="index.html">Steam Animated Screensaver</a><nav aria-label="Documentation"><a href="index.html">Demo</a><a href="readme.html">README</a><a href="changelog.html">Changelog</a><a href="reddit-en.html">Reddit Steam</a><a href="reddit-steamos-en.html">SteamOS</a><a href="reddit-linux-en.html">Linux Gaming</a></nav></header><main><article>${render(ast)}</article></main><footer>Rendered from the actual ${esc(file)} file.</footer></body></html>`;
 }
 async function index(localVideo, page = 'index.html') {
   if (page === 'steamos.html')

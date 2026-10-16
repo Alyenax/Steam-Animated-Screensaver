@@ -1,17 +1,17 @@
-# General Reddit draft
+# Steam Reddit draft
 
-**Title:** Had an idea for Steam’s new screensavers: animated artwork from your library
+**Title:** Steam's new screensavers gave me an idea: animated artwork from your library
 
-When Steam added custom screensavers, I had the idea of using animated SteamGridDB artwork from my library. You pick a few games in Steam Animated Screensaver, prepare them together and let Steam cycle through their animations.
+When Steam added custom screensavers, I had the idea of using animated SteamGridDB artwork from my library.
 
-It works in SteamOS Gaming Mode and desktop Big Picture. You can keep the original framing or crop to 16:9 or 16:10, add a still cover and choose a different animation for each game. Once everything is ready, it plays offline with the app closed. You’ll need your own SteamGridDB API key.
+It uses Steam's built-in screensaver support. You select it in Steam's own settings, and Steam handles the idle timer, playback and returning to the interface. Steam Animated Screensaver is the app that prepares the artwork and installs it. No Decky needed. Once prepared, leave Steam running and close the app. It plays offline.
 
-Steam hides the timer controls on devices with a battery outside Gamescope. The app lets you set the delay with Steam closed, backing up the settings first. It suggests five minutes.
+Pick several games, prepare them together, choose their animations and add a still cover if you want. You can keep the full image or crop to 16:9 or 16:10. You'll need your own SteamGridDB API key.
 
-[Code and downloads](https://github.com/Alyenax/Steam-Animated-Screensaver)
+There are builds for SteamOS, Windows, Linux and Mac. On laptops outside Gamescope, Steam currently hides some timer controls. The app can save those settings while Steam is closed, with a backup first.
 
-I’d love some testers, especially on Windows and Linux. Those builds have passed automated checks, but need more testing on real machines. Most hands-on testing so far has been on SteamOS and Mac.
+I'd love some testers, especially on Windows and Linux. Most hands-on testing has been on SteamOS and Mac. Contributors would be welcome too, especially to help with animation smoothness and processing speed. Some source animations look rough fullscreen.
 
-I’d also love some help improving it, especially the animation smoothness. SteamGridDB artwork often looks choppy at full screen. Processing at 24 or 30 fps is available, but can be slow and the results vary. Other contributions are welcome too.
+[GitHub and downloads](https://github.com/Alyenax/Steam-Animated-Screensaver) · [Demo](https://github.com/Alyenax/Steam-Animated-Screensaver/blob/main/docs/DEMO.md)
 
-Music in the video: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Video music: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).

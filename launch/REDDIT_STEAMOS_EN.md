@@ -1,19 +1,19 @@
-# SteamOS Reddit draft
+# SteamOS and Steam Deck Reddit draft
 
-**Title:** Had an idea for Steam’s new screensavers: animated artwork from your library
+**Title:** Animated SteamGridDB artwork in Steam's own screensaver on Deck and SteamOS
 
-When Steam added custom screensavers, I had the idea of using animated SteamGridDB artwork from my library. You pick a few games in Steam Animated Screensaver, prepare them together and let Steam cycle through their animations. It plays offline with the app closed. You’ll need your own SteamGridDB API key.
+Steam's new custom screensavers gave me the idea of using the animated artwork from my library as a rotating screensaver.
 
-Set it up in Desktop Mode, then select it under Screensavers in Gaming Mode’s Customization settings. You can keep the original framing or crop to 16:9 or 16:10 and add a still cover.
+It runs through Steam itself, using its built-in custom screensaver support. Steam handles starting it when idle and returning to the interface. You don't need Decky or an app running in the background. The separate app, Steam Animated Screensaver, prepares the artwork and installs it for Steam to use offline.
 
-Gaming Mode already has timer controls in Power. Steam hides them on devices with a battery when running outside Gamescope. For that case, the app lets you set the delay while Steam is closed and backs up the settings first. It suggests five minutes.
+Set it up in Desktop Mode, pick a few games and prepare them together. Then go back to Gaming Mode and select steam-animated-screensaver under Settings → Customization → Screensavers. Set the delay in Power and you're done.
 
-[Code and downloads](https://github.com/Alyenax/Steam-Animated-Screensaver)
+You can change each game's animation, add a still cover and keep the full image or crop to 16:9 or 16:10. You'll need a SteamGridDB API key.
 
-I’d love some Steam Deck and Steam Machine testers. Windows and Linux could also use more testing on real machines. Most hands-on testing so far has been on SteamOS and Mac.
+I'd love more Steam Deck and Steam Machine testers. There are Windows, Linux and Mac builds too, with Windows and Linux needing more real-machine testing. Contributors are very welcome, especially for improving animation smoothness. Some SteamGridDB sources are pretty choppy fullscreen, and the optional processing can be slow.
 
-I’d also love some help improving it, especially the animation smoothness. SteamGridDB artwork often looks choppy at full screen. Processing at 24 or 30 fps is available, but can be slow and the results vary. Other contributions are welcome too.
+The demo was recorded on Mac.
 
-The app footage in the video was captured on macOS.
+[GitHub and downloads](https://github.com/Alyenax/Steam-Animated-Screensaver) · [Demo](https://github.com/Alyenax/Steam-Animated-Screensaver/blob/main/docs/DEMO.md)
 
-Music in the video: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), licensed under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
+Video music: [Song Of The Forge by Scott Buckley](https://www.scottbuckley.com.au/library/song-of-the-forge/), under [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/).
