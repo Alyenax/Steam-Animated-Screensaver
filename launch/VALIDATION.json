@@ -610,10 +610,10 @@
       "reducedMotion": false
     },
     "selectionInSteam": "Observed in Steam Customization UI on 2026-10-16",
-    "idleActivation": "Not verified: Steam MacBook timer UI routes to missing Gamescope-only controls",
+    "idleActivation": "Verified native automatic playback after setting both Steam timers to 60 seconds; long-delay comparison kept Steam home visible beyond 70 seconds.",
     "note": "File installation is separate from Steam selector/idle acceptance.",
     "previewPlayback": "User confirms animated games display in Steam Preview on 2026-10-16",
-    "dismissal": "not verified",
+    "dismissal": "Inconclusive with remote input",
     "timeoutResearch": {
       "date": "2026-10-16",
       "officialSource": "https://www.steamdeck.com/en/news?pubDate=20261013",
@@ -629,6 +629,58 @@
       "scope": "Local installed Steam client analysis plus observed MacBook UI. Not a claim that every Steam version/platform has this defect.",
       "steamModified": false,
       "workaround": "Use Preview for manual playback; no verified automatic-timer workaround applied."
+    },
+    "macIdleTest": {
+      "date": "2026-10-16",
+      "scope": "Native installed Steam client on this MacBook; no preview or ForceScreensaver call used during automatic test",
+      "result": "automatic-playback-verified; dismissal-inconclusive",
+      "configuration": {
+        "path": "config/config.vdf > InstallConfigStore/Software/Valve/Steam/System",
+        "acSeconds": 60,
+        "batterySeconds": 60,
+        "persistedAfterRestart": true,
+        "backupSaved": true,
+        "onlyTwoSettingsChanged": true,
+        "steamBinariesModified": false,
+        "macOSSettingsModified": false
+      },
+      "selected": "uioverride-steam-animated-screensaver",
+      "automatic": {
+        "observed": true,
+        "gamesObserved": [
+          "ELDEN RING",
+          "Cyberpunk 2077",
+          "HELLDIVERS 2",
+          "Disco Elysium",
+          "Rainbow Six Siege",
+          "Baldurs Gate 3",
+          "ARC Raiders"
+        ],
+        "rotation": true,
+        "recordingSeconds": 101,
+        "recordingSha256": "d4c439b3f3f61aa42a7dfffaa9e0f77b090de6968385b86f4dfa6466770aafaf",
+        "exactSecondsFromLastPhysicalInput": "not measured; remote synthetic input is not a reliable start marker"
+      },
+      "control": {
+        "configuredSeconds": 3600,
+        "noScreensaverThroughSeconds": 70,
+        "recordingSeconds": 79,
+        "observed": "Steam home remained visible at 2, 30, 65 and 70 seconds"
+      },
+      "dismissal": {
+        "status": "inconclusive",
+        "reason": "Remote Escape/click did not produce an observable return, and later focus/fullscreen changes produced black capture. Remote Escape also failed to close native Steam menus, so a player defect is not established."
+      },
+      "limitations": [
+        "AC playback observed; battery delay configured but not tested on battery",
+        "No physical keyboard/controller dismissal acceptance",
+        "No long-duration stability claim",
+        "Consumer-facing automatic timer control is not implemented in the Manager"
+      ],
+      "finalConfiguration": {
+        "idlescreensaveracseconds": "60",
+        "idlescreensaverbatteryseconds": "60"
+      }
     }
   }
 }
