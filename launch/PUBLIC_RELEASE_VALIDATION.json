@@ -96,7 +96,7 @@
       "resources": "<workspace>/dist/Steam Animated Screensaver-darwin-arm64/Steam Animated Screensaver.app/Contents/Resources"
     },
     "rendererCrash": {
-      "at": "2026-10-16T15:02:09.251Z",
+      "at": "2026-10-16T15:48:28.369Z",
       "level": "fatal",
       "event": "renderer.process_gone",
       "detail": {
@@ -174,7 +174,7 @@
   "macArchives": {
     "version": "1.0.0",
     "result": "passed",
-    "files": 333,
+    "files": 336,
     "symlinks": 14,
     "checks": [
       "Final ZIP and mounted DMG app contents byte-match the tested app",
@@ -185,38 +185,38 @@
   },
   "packages": {
     "version": "1.0.0",
-    "at": "2026-10-16T15:05:04.136Z",
+    "at": "2026-10-16T15:48:02.325Z",
     "result": "passed",
     "assets": [
       {
         "file": "Steam-Animated-Screensaver-1.0.0-steamos-x64.tar.gz",
-        "bytes": 246091563,
-        "sha256": "004705c714a58aae21610f2dc85d9d0611b6384c89131bf5aa8eb9c1653acb25"
+        "bytes": 246060636,
+        "sha256": "66bdcc2b73c790ae1301f5629d204e4cb2ffddf3826406bae70c24c743a27a14"
       },
       {
         "file": "Steam-Animated-Screensaver-1.0.0-linux-x64.tar.gz",
-        "bytes": 246091563,
-        "sha256": "004705c714a58aae21610f2dc85d9d0611b6384c89131bf5aa8eb9c1653acb25"
+        "bytes": 246060636,
+        "sha256": "66bdcc2b73c790ae1301f5629d204e4cb2ffddf3826406bae70c24c743a27a14"
       },
       {
         "file": "Steam-Animated-Screensaver-1.0.0-windows-x64.zip",
-        "bytes": 226089257,
-        "sha256": "8ce392f9f1286dd47f2be6b35f21b00002efe1aa99abe5244b31fda352859146"
+        "bytes": 226103864,
+        "sha256": "f474e49de4b813010a8cd2c0355b193b83bf87bae9ac0009281f15d780c8c451"
       },
       {
         "file": "Steam-Animated-Screensaver-1.0.0-macos-arm64.dmg",
-        "bytes": 185358181,
-        "sha256": "f9b50a1c3497f774ea1591e223e7dd09cb051e74455d4daff6284fe286f1959f"
+        "bytes": 185639853,
+        "sha256": "080180f2f15d369290db93fa3c2ddc510519be600bec0d6bae3383285209303b"
       },
       {
         "file": "Steam-Animated-Screensaver-1.0.0-macos-arm64.zip",
-        "bytes": 170062055,
-        "sha256": "ca74c124d80bb2ccdf58229b587e7b8e27210f9d2077ccfc0cfe4caa9e8e72ab"
+        "bytes": 170076913,
+        "sha256": "27719deb174cf684c1c503cea9c04ac5f992fc6203012ad46588ea1286e1b84a"
       }
     ],
     "archiveFileCounts": {
-      "linux": 154,
-      "windows": 149
+      "linux": 157,
+      "windows": 152
     },
     "checks": [
       "All four platform downloads exist and match current version",
@@ -335,7 +335,9 @@
     },
     "checks": [
       "Final MP4 loads, plays with browser controls and seeks to actual Mac Steam playback",
-      "Actual README opens with the animated GIF, renders all six images and includes complete Steam activation and five-minute instructions",
+      "Actual README opens with the animated GIF, renders all seven images and includes complete Steam activation and five-minute instructions",
+      "Both inline 720p videos load and play with native controls alongside original 1080p download links",
+      "README disclosures are closed initially and expand on click; the GIF opens the GitHub demo document with both videos and visible music attribution",
       "Actual changelog renders its four activation steps, including Steam selection, quit/apply and restart",
       "SteamOS overview loads its 79-second video and clearly discloses macOS app capture",
       "Both demos, README, changelog and all four Reddit drafts have no horizontal overflow at 1440, 800 and 390px",
@@ -737,5 +739,15 @@
     "macOS is ad-hoc signed and not notarized; Windows is unsigned.",
     "Presentation captures show earlier development UI versions, with native Steam footage from macOS.",
     "Controller and mouse dismissal and multi-day resource behavior need further testing."
-  ]
+  ],
+  "licensing": {
+    "license": "GPL-3.0-only",
+    "version": "1.0.0",
+    "reference": "https://github.com/Alyenax/GabeCubeAura/blob/main/LICENSE",
+    "licenseTextMatchesReference": true,
+    "allPlatformNoticesVerified": true,
+    "previouslyDistributedRightsPreserved": true,
+    "optionalFunding": "https://ko-fi.com/alyenax",
+    "githubFundingLinkVerified": true
+  }
 }
