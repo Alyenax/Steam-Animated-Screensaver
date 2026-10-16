@@ -160,7 +160,7 @@
     },
     "checks": [
       "Final MP4 loads, plays with browser controls and seeks to actual Mac Steam playback",
-      "Actual README renders all six images and includes complete Steam activation and five-minute instructions",
+      "Actual README opens with the animated GIF, renders all six images and includes complete Steam activation and five-minute instructions",
       "Actual changelog renders its four activation steps, including Steam selection, quit/apply and restart",
       "SteamOS overview loads its 79-second video and clearly discloses macOS app capture",
       "Both demos, README, changelog and all four Reddit drafts have no horizontal overflow at 1440, 800 and 390px",
@@ -951,5 +951,19 @@
         "timelineStart": 70.95
       }
     ]
+  },
+  "readmeGif": {
+    "result": "passed",
+    "file": "screenshots/public/screensaver-demo.gif",
+    "width": 800,
+    "height": 450,
+    "frames": 240,
+    "fps": 20,
+    "durationSeconds": 12,
+    "bytes": 3396313,
+    "loop": "infinite",
+    "allFramesDecoded": true,
+    "content": "Elden Ring in original framing and 16:9, followed by Cyberpunk 2077",
+    "sourceSpeed": "real time, no interpolation added for the GIF"
   }
 }

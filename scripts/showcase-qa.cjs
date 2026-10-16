@@ -40,6 +40,18 @@ async function main() {
       [...document.images].every((img) => img.complete && img.naturalWidth > 0)
     );
     assert.equal(await page.locator('article img').count(), 6);
+    assert.equal(
+      await page.locator('article img').first().getAttribute('src'),
+      'screenshots/public/screensaver-demo.gif'
+    );
+    const gifResponse = await fetch(server.url + 'screenshots/public/screensaver-demo.gif');
+    assert.equal(gifResponse.headers.get('content-type'), 'image/gif');
+    assert.equal(
+      Buffer.from(await gifResponse.arrayBuffer())
+        .subarray(0, 6)
+        .toString(),
+      'GIF89a'
+    );
     assert(
       (await page.locator('article').innerText()).includes(
         'Big Picture → Settings → Customization → Screensavers'
@@ -47,7 +59,7 @@ async function main() {
     );
     assert((await page.locator('article').innerText()).includes('5 minutes'));
     checks.push(
-      'Actual README renders all six images and includes complete Steam activation and five-minute instructions'
+      'Actual README opens with the animated GIF, renders all six images and includes complete Steam activation and five-minute instructions'
     );
     await page.screenshot({
       path: path.resolve(__dirname, '../dist/readme-review.png'),

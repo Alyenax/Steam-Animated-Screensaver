@@ -28,7 +28,9 @@ function href(url, file) {
   const page = Object.entries(documents).find(([, source]) => source === resolved)?.[0];
   return esc(
     page ||
-      (/^screenshots\/public\/[\w.-]+\.(png|jpg)$/.test(resolved) ? resolved : github + resolved)
+      (/^screenshots\/public\/[\w.-]+\.(png|jpg|gif)$/.test(resolved)
+        ? resolved
+        : github + resolved)
   );
 }
 async function markdown(file) {
@@ -146,9 +148,13 @@ async function serve({ recordUrl = true, port = Number(process.env.SAS_PREVIEW_P
       } else if (['showcase.css', 'showcase.js'].includes(name)) {
         file = path.join(root, 'showcase', name);
         type = name.endsWith('.css') ? 'text/css' : 'text/javascript';
-      } else if (/^screenshots\/public\/[\w.-]+\.(png|jpg)$/.test(name)) {
+      } else if (/^screenshots\/public\/[\w.-]+\.(png|jpg|gif)$/.test(name)) {
         file = path.join(root, name);
-        type = name.endsWith('.png') ? 'image/png' : 'image/jpeg';
+        type = name.endsWith('.gif')
+          ? 'image/gif'
+          : name.endsWith('.png')
+            ? 'image/png'
+            : 'image/jpeg';
       } else {
         response.writeHead(404);
         return response.end();

@@ -4,7 +4,7 @@ Use animated artwork from [SteamGridDB](https://www.steamgriddb.com/) as a scree
 
 Choose games, prepare their animations and install the screensaver in Steam. Prepared playback works offline with this app closed. No Decky plugin or hosted server is needed.
 
-[![Watch the demo: game animations, batch preparation and settings](screenshots/public/video-poster.jpg)](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v0.1.11-rc.1/Steam-Animated-Screensaver-demo.mp4)
+[![Animated preview: Elden Ring in original and 16:9 framing, followed by Cyberpunk 2077](screenshots/public/screensaver-demo.gif)](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v0.1.11-rc.1/Steam-Animated-Screensaver-demo.mp4)
 
 [Watch / download the video](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v0.1.11-rc.1/Steam-Animated-Screensaver-demo.mp4). It shows ten games, original and 16:9 framing, preparing several games at once, animation choices, the Steam delay setting and playback inside Steam on a Mac. Batch preparation is marked 8× speed; artwork playback is real time. Music: [Virtual Rush by vitalezzz (CC0)](launch/MUSIC.md), mixed at a moderate background level.
 
