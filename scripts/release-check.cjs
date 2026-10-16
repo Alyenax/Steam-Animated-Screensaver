@@ -3,6 +3,27 @@
 const fs = require('node:fs/promises');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const os = require('node:os');
+const assert = require('node:assert/strict');
+async function fileTree(root, relative = '', result = {}) {
+  for (const entry of (await fs.readdir(path.join(root, relative), { withFileTypes: true })).sort(
+    (a, b) => a.name.localeCompare(b.name)
+  )) {
+    const name = path.join(relative, entry.name),
+      file = path.join(root, name);
+    if (entry.isSymbolicLink()) result[name] = { link: await fs.readlink(file) };
+    else if (entry.isDirectory()) await fileTree(root, name, result);
+    else {
+      const hash = crypto.createHash('sha256');
+      for await (const chunk of require('node:fs').createReadStream(file)) hash.update(chunk);
+      result[name] = {
+        sha256: hash.digest('hex'),
+        executable: !!((await fs.stat(file)).mode & 0o111)
+      };
+    }
+  }
+  return result;
+}
 const { execFileSync } = require('node:child_process');
 async function check() {
   const root = path.resolve(__dirname, '..'),
@@ -78,6 +99,33 @@ async function check() {
         throw new Error(`Private/unexpected file in ${platform}: ${forbidden}`);
     }
   }
+  const temporary = await fs.mkdtemp(path.join(os.tmpdir(), 'sas-package-verify-'));
+  const archiveFileCounts = {};
+  try {
+    for (const [platform, suffix, folder] of [
+      ['linux', 'linux-x64.tar.gz', 'steam-animated-screensaver-linux-x64'],
+      ['windows', 'windows-x64.zip', 'Steam Animated Screensaver-win32-x64']
+    ]) {
+      const extract = path.join(temporary, platform);
+      await fs.mkdir(extract);
+      if (platform === 'linux')
+        execFileSync('tar', ['-xzf', path.join(dist, `${prefix}-${suffix}`), '-C', extract]);
+      else execFileSync('ditto', ['-x', '-k', path.join(dist, `${prefix}-${suffix}`), extract]);
+      const original = await fileTree(path.join(dist, folder)),
+        extracted = await fileTree(path.join(extract, folder));
+      assert.deepEqual(extracted, original, `Archive contents differ: ${platform}`);
+      archiveFileCounts[platform] = Object.keys(original).length;
+    }
+    const linux = assets.find((a) => a.file.endsWith('linux-x64.tar.gz')),
+      steamos = assets.find((a) => a.file.endsWith('steamos-x64.tar.gz'));
+    assert.equal(
+      steamos.sha256,
+      linux.sha256,
+      'SteamOS must contain the identical tested Linux application archive'
+    );
+  } finally {
+    await fs.rm(temporary, { recursive: true, force: true });
+  }
   const pe = require('./windows-media.cjs').peMachine;
   for (const file of [
     'Steam Animated Screensaver.exe',
@@ -94,12 +142,15 @@ async function check() {
     at: new Date().toISOString(),
     result: 'passed',
     assets,
+    archiveFileCounts,
     checks: [
       'All four platform downloads exist and match current version',
       'ZIP/tar/DMG integrity checks',
       'Packaged Core/Manager/Player and main/preload byte-match current source',
       'No catalog or credential files at application root',
-      'Windows Electron/FFmpeg/FFprobe PE headers are x64'
+      'Windows Electron/FFmpeg/FFprobe PE headers are x64',
+      'Extracted Windows/Linux archives byte-match their packaged application trees and executable permissions',
+      'SteamOS archive is byte-identical to the Linux archive'
     ],
     limitations: [
       'No native Windows/Linux/SteamOS execution on this Mac',
