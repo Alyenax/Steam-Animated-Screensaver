@@ -1,5 +1,35 @@
 # Changelog
 
+## 1.1.1 - October 17, 2026
+
+### Optional playback credits
+
+- Hide artist credits by default, including when upgrading an existing library.
+- Choose animation artwork, still cover and game logo credits independently in Preview or Settings. Saved choices are retained after restarting the app.
+- Apply the same credit choices to offline Steam playback. Credits for a hidden or missing cover or logo stay hidden.
+- Apply credit changes with **Update in Steam**. Preparing or downloading media again is not required. Artist information remains stored with the media.
+
+### Downloads and installation
+
+Download only the package for your platform. Other release files are optional developer sources, grouped validation reports, the original demo and checksums.
+
+| Platform            | Download                                                                                                                                                    | Installation                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| SteamOS Gaming Mode | [SteamOS x64](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-steamos-x64.tar.gz)           | In Desktop Mode, extract the archive and run `./install.sh`.       |
+| Linux desktop       | [Linux x64](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-linux-x64.tar.gz)               | Extract the archive and run `./install.sh`.                        |
+| Windows 10 or 11    | [Windows x64 portable ZIP](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-windows-x64.zip) | Extract the whole folder and run `Steam Animated Screensaver.exe`. |
+| macOS 13 or later   | [Mac Apple Silicon DMG](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-macos-arm64.dmg)    | Open the DMG and drag the app to Applications.                     |
+
+### Apply it in Steam
+
+1. For a first installation, choose games, click **Prepare scenes**, check **Preview**, then **Install in Steam**.
+2. In **Preview** or **Settings → Artist credits**, enable only the credits you want. All three choices are off by default.
+3. For an existing Steam installation, click **Update in Steam** to apply the credit settings. No new preparation is needed for this change.
+4. In Steam Big Picture or SteamOS Gaming Mode, open **Settings → Customization → Screensavers**, select **steam-animated-screensaver** and try **Preview**. Restart Steam if it is missing.
+5. Set the inactivity delay in Steam. If the controls are missing, fully quit Steam and use **Settings → Automatic start in Steam** in the app, then reopen Steam. The app can be closed during Steam playback.
+
+Windows and Linux still need more hands-on testing on their target systems. Package checks and macOS execution do not establish native behavior on those platforms.
+
 ## 1.1.0 - October 17, 2026
 
 ### Game logos

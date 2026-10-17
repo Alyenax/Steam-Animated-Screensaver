@@ -54,7 +54,7 @@ async function bundle() {
       reports: [],
       limitations: [
         'Native Windows, Linux and SteamOS execution was not performed on the Mac validation host.',
-        'The included original demo was recorded for 1.0.0 and does not show the new 1.1.0 controls.'
+        'The included original demo was recorded for 1.0.0 and does not show the current logo, installation or credit controls.'
       ]
     };
     for (const [source, name] of evidence) {

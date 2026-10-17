@@ -2732,3 +2732,33 @@ body.reduced-motion *:after {
     flex-wrap: wrap;
   }
 }
+
+.credits-options {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 16px;
+  margin: 18px 0;
+}
+.credits-options legend {
+  color: var(--text);
+  font-size: 13px;
+  padding: 0 6px;
+}
+.credits-choices {
+  display: flex;
+  gap: 16px 24px;
+  flex-wrap: wrap;
+}
+.credits-choices label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+}
+.credits-options p {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 12px 0 0;
+}

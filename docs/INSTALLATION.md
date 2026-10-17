@@ -44,6 +44,10 @@ The script refuses linked or unowned destinations. It does not use `sudo`, chang
 
 By default, the game logo appears beside the still cover. A missing or unreadable logo falls back to the game title. In Preview or Settings, choose title, logo, both or hidden, and choose the logo position. The game sheet has alternative logos and individual display overrides. Prepare once after upgrading to download missing logos; valid animations are reused. Click **Update in Steam** to apply changes to an existing installation. The player uses only copied local files during playback.
 
+## Playback credits
+
+Artist credits are hidden by default, including when opening a library created with an earlier version. In **Preview** or **Settings → Artist credits**, choose animation artwork, still cover and game logo credits independently. Choices are saved. Credits for a hidden or unavailable cover or logo are not displayed. Click **Update in Steam** to apply changes to the installed player; there is no need to prepare or download media again. Artist information is retained with the media.
+
 ## Steam paths
 
 The export path is always **`<Steam client root>/config/uioverrides/screensavers/steam-animated-screensaver/`**. A secondary game library contributes games but is not a screensaver installation target.

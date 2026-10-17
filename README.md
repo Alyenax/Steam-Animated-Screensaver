@@ -6,7 +6,7 @@ Choose games, prepare their animations and install the screensaver in Steam. Pre
 
 [![Animated preview: Elden Ring in original and 16:9 framing, followed by Cyberpunk 2077](screenshots/public/screensaver-demo.gif)](docs/DEMO.md)
 
-[Demo video and credits](docs/DEMO.md) · [Download version 1.1.0](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/tag/v1.1.0)
+[Demo video and credits](docs/DEMO.md) · [Download version 1.1.1](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/tag/v1.1.1)
 
 Maintained by [Alyenax](https://github.com/Alyenax).
 
@@ -20,6 +20,7 @@ Maintained by [Alyenax](https://github.com/Alyenax).
 - Scan installed games, import owned games that are not installed, or search by title / Steam AppID. Proton and other Steam components are filtered out.
 - Select all filtered games, your top 100 by playtime or current player count, or discover Steam's current top 100.
 - Choose an animation, still cover and game logo. The default is the logo beside the cover, with the title as fallback if no logo is available. Show title, logo, both or neither, and place the logo in any corner. Override branding for individual games.
+- Choose which artist credits appear: animation, cover and logo. All are hidden by default. Changes apply through **Update in Steam**, with no new preparation.
 - Keep the full image or crop it to 16:9 / 16:10, with an adjustable focal point.
 - Set scene duration, shuffle and transitions. Optional 24/30 fps processing can help with some sources; it can be slow and does not fix every animation.
 - Set Steam's inactivity delays. A first configuration proposes **5 minutes** on AC and battery; saved choices are preserved.
@@ -41,10 +42,10 @@ Maintained by [Alyenax](https://github.com/Alyenax).
 
 | Platform                             | Package                                                                                                                                                             | Launch                                                            |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
-| SteamOS / Steam Deck / Steam Machine | [Download for SteamOS](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-steamos-x64.tar.gz)          | In Desktop Mode, extract and run `./install.sh`                   |
-| Linux desktop                        | [Download for Linux](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-linux-x64.tar.gz)              | Extract and run `./install.sh`                                    |
-| Windows                              | [Download for Windows](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-windows-x64.zip)             | Extract the whole folder and run `Steam Animated Screensaver.exe` |
-| macOS 13+                            | [Download for Mac (Apple Silicon)](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-macos-arm64.dmg) | Open the DMG and drag the app to Applications                     |
+| SteamOS / Steam Deck / Steam Machine | [Download for SteamOS](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-steamos-x64.tar.gz)          | In Desktop Mode, extract and run `./install.sh`                   |
+| Linux desktop                        | [Download for Linux](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-linux-x64.tar.gz)              | Extract and run `./install.sh`                                    |
+| Windows                              | [Download for Windows](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-windows-x64.zip)             | Extract the whole folder and run `Steam Animated Screensaver.exe` |
+| macOS 13+                            | [Download for Mac (Apple Silicon)](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.1/Steam-Animated-Screensaver-1.1.1-macos-arm64.dmg) | Open the DMG and drag the app to Applications                     |
 
 The app starts in English; French can be selected in Settings. Saved language choices are retained.
 

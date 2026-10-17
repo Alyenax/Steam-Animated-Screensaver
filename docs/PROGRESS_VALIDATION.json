@@ -8,7 +8,7 @@
     "Resume with very light 24 fps produces a verified separate file",
     "Completed history retains paused and validation phases"
   ],
-  "observedProgress": 0.075,
+  "observedProgress": 0.01675,
   "uncaughtBrowserErrors": 0,
   "physicalSteamOS": false
 }

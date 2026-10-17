@@ -242,7 +242,7 @@ body {
 }
 .scene[data-logo-position='bottom-left'] > .game-logo {
   left: var(--caption-x);
-  bottom: calc(var(--caption-y) + var(--caption-height, 0px) + var(--cover-gap));
+  bottom: calc(var(--caption-y) + var(--caption-clearance, 0px));
 }
 .scene[data-logo-position='bottom-right'] > .game-logo {
   right: var(--caption-x);
@@ -269,4 +269,8 @@ body {
 }
 .caption .logo-credit {
   margin-top: 0.35em;
+}
+
+.caption .credit[hidden] {
+  display: none;
 }

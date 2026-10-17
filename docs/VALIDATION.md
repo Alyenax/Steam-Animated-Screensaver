@@ -1,5 +1,9 @@
 # Validation - Steam Animated Screensaver
 
+## 1.1.1 validation
+
+The full unit and integration suite passes 134 tests. Dedicated tests cover hidden defaults for new and existing libraries, independent boolean settings, persistence, exported metadata and installation change detection. Browser checks exercise all eight credit combinations, conditional cover and logo attribution, English/French controls, reload persistence and actual offline Steam export. The original 1.1.0 logo and installation regression remains covered.
+
 ## 1.1.0 validation
 
 The full unit and integration suite passes 131 tests, including four dedicated branding and installation-state cases. The 1.1.0 release adds logo provider, catalog persistence, offline export, missing-logo fallback and installation-change detection checks. Browser tests exercise the logo picker, per-game overrides, all four corners with cover collisions at desktop, handheld and mobile widths, the preparation-to-installation path and English/French labels. Machine-readable results accompany the 1.1.0 release in its grouped validation ZIP. Existing 1.0.0 results below remain historical evidence.

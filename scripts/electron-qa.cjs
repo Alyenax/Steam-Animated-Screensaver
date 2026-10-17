@@ -229,6 +229,20 @@ async function run({ appPath, reportPath } = {}) {
       return logo && !logo.hidden && logo.naturalWidth > 0;
     });
     assert.equal(await frame.locator('.scene.visible h1').isVisible(), false);
+    assert.equal(await frame.locator('.scene.visible .credit:visible').count(), 0);
+    for (const key of ['showArtworkCredit', 'showCoverCredit', 'showLogoCredit'])
+      await page.locator(`[data-setting="${key}"]`).check();
+    await frame.waitForFunction(
+      () =>
+        [...document.querySelectorAll('.scene.visible .credit')].filter((el) => !el.hidden)
+          .length === 3
+    );
+    for (const key of ['showArtworkCredit', 'showCoverCredit', 'showLogoCredit'])
+      await page.locator(`[data-setting="${key}"]`).uncheck();
+    await frame.waitForFunction(() =>
+      [...document.querySelectorAll('.scene.visible .credit')].every((el) => el.hidden)
+    );
+
     await frame.waitForFunction(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
@@ -354,6 +368,7 @@ async function run({ appPath, reportPath } = {}) {
           : []),
         'Actual app:// protocol media playback',
         'Prepared transparent game logo loads in the native app with the duplicate title hidden',
+        'Native app starts with no credits, displays all three independent credits when enabled and hides them again',
         'Native image-preview IPC and JPEG decoding',
         'Change animation is visible immediately at the top of a ready game sheet',
         'Native Steam key save/removal and 24 fps profile settings IPC',

@@ -11,7 +11,7 @@ const { createServer } = require('./dev-server.cjs');
   const checks = [],
     errors = [];
   let browser, instance, fixture;
-  const output = path.resolve('dist/branding-1.1.0');
+  const output = path.resolve(`dist/branding-${require('../package.json').version}`);
   await fs.mkdir(output, { recursive: true });
   try {
     browser = await chromium.launch({
@@ -57,6 +57,43 @@ const { createServer } = require('./dev-server.cjs');
       'Default native PNG logo alone is displayed beside the cover with no duplicate title'
     );
     await page.screenshot({ path: path.join(output, 'logo-default.png'), fullPage: true });
+    assert.equal(await frame.locator('.scene.visible .credit:visible').count(), 0);
+    checks.push('Animation, cover and logo credits are all hidden by default');
+    const creditKeys = ['showArtworkCredit', 'showCoverCredit', 'showLogoCredit'];
+    const creditClasses = ['artwork-credit', 'cover-credit', 'logo-credit'];
+    for (let mask = 0; mask < 8; mask++) {
+      for (let i = 0; i < 3; i++) {
+        await page.locator(`[data-setting="${creditKeys[i]}"]`).setChecked(!!(mask & (1 << i)));
+        await settled();
+      }
+      await frame.locator('.scene.visible .game-logo:not([hidden])').waitFor();
+      for (let i = 0; i < 3; i++)
+        assert.equal(
+          await frame.locator(`.scene.visible .${creditClasses[i]}`).isVisible(),
+          !!(mask & (1 << i))
+        );
+    }
+    checks.push('All eight independent credit combinations render correctly in the real preview');
+    await page.locator('[data-setting="showCover"]').uncheck();
+    await settled();
+    assert.equal(await frame.locator('.scene.visible .cover-credit').isVisible(), false);
+    await page.locator('[data-setting="nameDisplay"]').selectOption('title');
+    await settled();
+    assert.equal(await frame.locator('.scene.visible .logo-credit').isVisible(), false);
+    await page.locator('[data-setting="nameDisplay"]').selectOption('logo');
+    await settled();
+    await page.locator('[data-setting="showCover"]').check();
+    await settled();
+    await page.locator('[data-setting="showCoverCredit"]').uncheck();
+    await settled();
+    checks.push('Cover and logo credits hide automatically when their associated image is hidden');
+    await page.reload();
+    await go('preview');
+    await frame.locator('.scene.visible .game-logo:not([hidden])').waitFor();
+    for (let i = 0; i < 3; i++)
+      assert.equal(await page.locator(`[data-setting="${creditKeys[i]}"]`).isChecked(), i !== 1);
+    checks.push('Mixed credit choices persist across a full reload');
+
     await page.locator('[data-setting="nameDisplay"]').selectOption('both');
     await settled();
     await frame.locator('.scene.visible h1').waitFor();
@@ -141,7 +178,7 @@ const { createServer } = require('./dev-server.cjs');
     assert.equal((await fixture.core.invoke('state')).steam.needsUpdate, false);
     assert((await page.locator('#steam-next-step').innerText()).includes('Customization'));
     await go('preview');
-    await page.locator('[data-setting="shuffle"]').uncheck();
+    await page.locator('[data-setting="showCoverCredit"]').check();
     await settled();
     await page.locator('#steam-next-step [data-action="update-install"]').waitFor();
     await page.locator('#steam-next-step [data-action="update-install"]').click();
@@ -162,6 +199,10 @@ const { createServer } = require('./dev-server.cjs');
     await offline.goto(pathToFileURL(path.join(installed, 'index.html')).href);
     await offline.locator('.scene.visible .game-logo:not([hidden])').waitFor();
     assert.equal(external, 0);
+    assert.equal(await offline.locator('.scene.visible .credit:visible').count(), 3);
+    checks.push(
+      'Offline Steam export preserves the selected credits without preparing media again'
+    );
     await offline.screenshot({ path: path.join(output, 'offline-logo.png') });
     let state = await fixture.core.invoke('state');
     await fs.unlink(path.join(installed, 'media', state.games[0].logo.file));
@@ -171,7 +212,23 @@ const { createServer } = require('./dev-server.cjs');
     checks.push(
       'Exported player works offline and falls back to the game title if the logo file fails to load'
     );
+    assert.equal(await offline.locator('.scene.visible .logo-credit').isVisible(), false);
     await offline.close();
+    for (const key of creditKeys) {
+      await page.locator(`[data-setting="${key}"]`).uncheck();
+      await settled();
+    }
+    await page.locator('#steam-next-step [data-action="update-install"]').click();
+    await settled();
+    const clean = await browser.newPage();
+    await clean.goto(pathToFileURL(path.join(installed, 'index.html')).href);
+    await clean.locator('.scene.visible .game-logo:not([hidden])').waitFor();
+    assert.equal(await clean.locator('.scene.visible .credit:visible').count(), 0);
+    await clean.close();
+    checks.push(
+      'Disabling every credit and updating Steam produces an offline export with no visible credits'
+    );
+
     await go('settings');
     await page.locator('[data-setting="language"]').selectOption('fr');
     await settled();

@@ -44,6 +44,9 @@
       ].includes(input.logoPosition)
         ? input.logoPosition
         : 'beside-title',
+      showArtworkCredit: input.showArtworkCredit === true,
+      showCoverCredit: input.showCoverCredit === true,
+      showLogoCredit: input.showLogoCredit === true,
       showCover: input.showCover !== false,
       coverPosition: ['beside-title', 'bottom-right', 'top-right', 'top-left'].includes(
         input.coverPosition
@@ -274,9 +277,16 @@
       else scene.append(logo);
     }
     const logoCredit = scene.querySelector('.logo-credit');
-    if (logoCredit) logoCredit.hidden = !logo || logo.hidden;
+    if (logoCredit) logoCredit.hidden = !options.showLogoCredit || !logo || logo.hidden;
+    const artworkCredit = scene.querySelector('.artwork-credit');
+    if (artworkCredit) artworkCredit.hidden = !options.showArtworkCredit;
     scene.classList.toggle('has-logo', !!logo && !logo.hidden);
-    scene.style.setProperty('--caption-height', `${caption.getBoundingClientRect().height}px`);
+    const captionHeight = caption.getBoundingClientRect().height;
+    scene.style.setProperty('--caption-height', `${captionHeight}px`);
+    scene.style.setProperty(
+      '--caption-clearance',
+      captionHeight > 0 ? `calc(${captionHeight}px + var(--cover-gap))` : '0px'
+    );
   }
   function placeCover(scene) {
     const cover = scene.querySelector('.caption-cover');
@@ -288,7 +298,8 @@
     else scene.append(cover);
     scene.classList.toggle('has-cover', !cover.hidden);
     const credit = scene.querySelector('.cover-credit');
-    if (credit) credit.hidden = cover.hidden || cover.dataset.fallback === 'true';
+    if (credit)
+      credit.hidden = !options.showCoverCredit || cover.hidden || cover.dataset.fallback === 'true';
     placeBranding(scene);
   }
   function placeFrame(scene) {
@@ -345,7 +356,8 @@
     title.textContent = String(game.name || '');
     title.hidden = !options.showLogos;
     const credit = doc.createElement('p');
-    credit.className = 'credit';
+    credit.className = 'credit artwork-credit';
+    credit.hidden = !options.showArtworkCredit;
     credit.textContent = `${french() ? 'Artwork de' : 'Artwork by'} ${String(game.media.author?.name || 'Unknown')} · SteamGridDB`;
     const copy = doc.createElement('div');
     copy.className = 'caption-copy';

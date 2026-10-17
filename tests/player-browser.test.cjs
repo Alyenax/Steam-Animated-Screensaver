@@ -155,7 +155,13 @@ test(
       catalog: {
         version: 1,
         games: [makeGame('one'), makeGame('two'), makeGame('three')],
-        settings: { shuffle: false, sceneDuration: 8, reducedMotion: true }
+        settings: {
+          shuffle: false,
+          sceneDuration: 8,
+          reducedMotion: true,
+          showArtworkCredit: true,
+          showCoverCredit: true
+        }
       }
     });
     await frame.waitForFunction(
@@ -294,6 +300,9 @@ test(
     await frame.waitForFunction(
       () => document.querySelector('.scene.visible video')?.paused === false
     );
+    // Rapid navigation can still be committing its last pending scene.
+    // Observe the settled decoder tree before reading styles from the current element.
+    await frame.waitForFunction(() => document.querySelectorAll('#stage > .scene').length === 1);
     await page.setViewportSize({ width: 800, height: 1280 });
     assert.equal(
       await frame
