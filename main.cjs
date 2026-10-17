@@ -84,6 +84,8 @@ const actions = new Set([
   'artworks',
   'covers',
   'setCover',
+  'logos',
+  'setLogo',
   'previewImage',
   'prepare',
   'pause',

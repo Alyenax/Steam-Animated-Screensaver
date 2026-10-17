@@ -17,6 +17,8 @@ const defaults = {
   shuffle: true,
   transition: 'crossfade',
   showLogos: true,
+  nameDisplay: 'logo',
+  logoPosition: 'beside-title',
   showCover: true,
   coverPosition: 'beside-title',
   framing: 'original',
@@ -65,6 +67,12 @@ function validateSettings(p, initial = false) {
       ].includes(k)
     ) {
       if (typeof v !== 'boolean') throw new Error(`Invalid ${k}.`);
+    } else if (k === 'nameDisplay') {
+      if (!['title', 'logo', 'both', 'hidden'].includes(v))
+        throw new Error('Invalid game name display.');
+    } else if (k === 'logoPosition') {
+      if (!['beside-title', 'bottom-left', 'bottom-right', 'top-left', 'top-right'].includes(v))
+        throw new Error('Invalid logo position.');
     } else if (k === 'language') {
       if (!['en', 'fr'].includes(v)) throw new Error('Choose English or Français.');
     } else if (k === 'transition') {
@@ -109,6 +117,19 @@ function validateCrop(value) {
     throw new Error('Invalid crop. Choose a framing mode and positions from 0 to 100.');
   return { mode: value.mode, x: value.x, y: value.y };
 }
+function validateBranding(value) {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    Array.isArray(value) ||
+    !['inherit', 'title', 'logo', 'both', 'hidden'].includes(value.mode) ||
+    !['inherit', 'beside-title', 'bottom-left', 'bottom-right', 'top-left', 'top-right'].includes(
+      value.position
+    )
+  )
+    throw new Error('Invalid game branding.');
+  return { mode: value.mode, position: value.position };
+}
 function cleanGame(g) {
   if (
     !g ||
@@ -134,6 +155,9 @@ function cleanGame(g) {
     manualSelection: !!g.manualSelection,
     media: g.media || null,
     cover: g.cover || null,
+    logo: g.logo || null,
+    selectedLogo: g.selectedLogo || null,
+    logoManualSelection: !!g.logoManualSelection,
     selectedCover: g.selectedCover || null,
     coverManualSelection: !!g.coverManualSelection,
     thumb: g.thumb || null,
@@ -144,7 +168,7 @@ function cleanGame(g) {
     result.media = null;
     result.status = 'new';
   }
-  for (const kind of ['cover', 'smoothed']) {
+  for (const kind of ['cover', 'logo', 'smoothed']) {
     if (result[kind] && (!safeFilename(result[kind].file) || !safeFilename(result[kind].thumbnail)))
       result[kind] = null;
   }
@@ -156,8 +180,14 @@ function cleanGame(g) {
       result.crop = validateCrop(g.crop);
     } catch {}
   }
+  if (g.branding) {
+    try {
+      result.branding = validateBranding(g.branding);
+    } catch {}
+  }
+  if (result.logo?.animated !== false) result.logo = null;
   if (result.cover?.animated !== false) result.cover = null;
-  for (const key of ['coverError', 'smoothingError'])
+  for (const key of ['coverError', 'logoError', 'smoothingError'])
     if (g[key]) result[key] = String(g[key]).slice(0, 500);
   if (g.error) result.error = String(g.error).slice(0, 500);
   return result;
@@ -201,7 +231,8 @@ function createCore(options = {}) {
   let writes = Promise.resolve(),
     actions = Promise.resolve();
   const assetCache = new Map(),
-    coverCache = new Map();
+    coverCache = new Map(),
+    logoCache = new Map();
   const lifetime = new AbortController();
   const media = options.media || require('./media.cjs').createMedia({ dataDir });
   const sgdb = options.sgdb || createSGDB({ getKey: () => key, signal: lifetime.signal });
@@ -210,6 +241,8 @@ function createCore(options = {}) {
   function publicState() {
     const s = clone(state);
     s.selectionJob = clone(selectionJob);
+    s.steam.needsUpdate =
+      !!s.steam.installed && s.steam.signature !== require('./installer.cjs').signature(state);
     s.diagnostics = {
       available: !!diagnostics,
       file: diagnostics?.file || null,
@@ -298,6 +331,8 @@ function createCore(options = {}) {
           .map(cleanGame)
           .filter(Boolean);
         state.settings = { ...defaults, ...validateSettings(saved.settings || {}, true) };
+        if (saved.settings?.nameDisplay === undefined && saved.settings?.showLogos === false)
+          state.settings.nameDisplay = 'hidden';
         if (saved.settings?.smoothingMode === undefined && saved.settings?.smoothMotion)
           state.settings.smoothingMode = 'quality';
         if (saved.steamAccount && typeof saved.steamAccount.profile === 'string') {
@@ -388,6 +423,8 @@ function createCore(options = {}) {
         g.smoothed = preferred.smoothed || null;
         g.selectedCover = preferred.selectedCover || null;
         g.coverManualSelection = !!preferred.coverManualSelection;
+        for (const key of ['logo', 'selectedLogo', 'logoManualSelection', 'branding'])
+          g[key] = g[key] || preferred[key] || duplicates.find((old) => old[key])?.[key];
         g.status = preferred.status;
         g.included = preferred.included;
       }
@@ -471,6 +508,51 @@ function createCore(options = {}) {
         if (signal.aborted) throw error;
         g.coverError = safeError(error);
         diagnostics?.record('warn', 'preparation.cover_failed', { gameId: g.id, error });
+      }
+    }
+    if (
+      sgdb.logos &&
+      !['title', 'hidden'].includes(
+        g.branding?.mode && g.branding.mode !== 'inherit'
+          ? g.branding.mode
+          : state.settings.nameDisplay
+      )
+    ) {
+      try {
+        jobProgress({ stage: 'logo-check' });
+        if (!g.logo || g.logo.animated !== false || !(await media.validate(g.logo, { signal }))) {
+          g.logo = null;
+          state.job.stage = 'Finding game logo';
+          await save();
+          const candidates =
+            g.logoManualSelection && g.selectedLogo
+              ? [g.selectedLogo]
+              : await sgdb.logos(await resolveGame(g, signal), { signal });
+          let lastError;
+          for (const asset of candidates.slice(0, 3)) {
+            try {
+              const logo = await media.prepare(asset, {
+                signal,
+                requireStatic: true,
+                onProgress: (p) => jobProgress({ ...p, stage: 'logo-prepare' }),
+                maxBytes: await optionalBudget(12 * 1024 * 1024)
+              });
+              if (logo.animated !== false || !(await media.validate(logo, { signal })))
+                throw new Error('The logo must be a valid still logo.');
+              g.logo = logo;
+              break;
+            } catch (error) {
+              if (signal.aborted) throw error;
+              lastError = error;
+            }
+          }
+          if (!g.logo && lastError) throw lastError;
+        }
+        delete g.logoError;
+      } catch (error) {
+        if (signal.aborted) throw error;
+        g.logoError = safeError(error);
+        diagnostics?.record('warn', 'preparation.logo_failed', { gameId: g.id, error });
       }
     }
     if (state.settings.smoothMotion && g.media.animated && media.smooth) {
@@ -853,6 +935,7 @@ function createCore(options = {}) {
         'retry',
         'purgeMedia',
         'setCover',
+        'setLogo',
         'repair',
         'clearUnused',
         'install',
@@ -1090,9 +1173,12 @@ function createCore(options = {}) {
         } else state.games.push(g);
       }
       const installer = require('./installer.cjs');
-      state.steam.installed = scan.roots.length
-        ? await installer.isInstalled(scan.roots[0])
-        : false;
+      Object.assign(
+        state.steam,
+        scan.roots.length
+          ? await installer.installationInfo(scan.roots[0])
+          : { installed: false, signature: null }
+      );
       await save();
       return publicState();
     }
@@ -1139,6 +1225,8 @@ function createCore(options = {}) {
         g.sources = [...new Set([...matches.flatMap((m) => m.sources), 'manual'])];
         g.installed = matches.some((m) => m.installed);
         g.cover = g.cover || matches.find((m) => m.cover)?.cover || null;
+        for (const key of ['logo', 'selectedLogo', 'logoManualSelection', 'branding'])
+          g[key] = g[key] || matches.find((m) => m[key])?.[key];
         if (g.playtimeMinutes === undefined)
           g.playtimeMinutes = matches.find((m) => m.playtimeMinutes !== undefined)?.playtimeMinutes;
         if (g.popularRank === undefined)
@@ -1220,6 +1308,52 @@ function createCore(options = {}) {
       await save();
       return publicState();
     }
+    if (action === 'logos') {
+      const g = find(p.id),
+        rows = await sgdb.logos(await resolveGame(g));
+      if (state.previewsPaused) {
+        state.previewsPaused = false;
+        await save();
+      }
+      logoCache.set(g.id, rows);
+      return rows;
+    }
+    if (action === 'setLogo') {
+      const g = find(p.id);
+      if (runner || state.job.current === g.id)
+        throw new Error('Pause preparation before changing the current game.');
+      const rows = logoCache.get(g.id) || (await sgdb.logos(await resolveGame(g)));
+      const automatic = p.selectedLogo === null;
+      const asset = automatic
+        ? rows[0]
+        : rows.find(
+            (a) =>
+              a.id === Number(p.selectedLogo?.id) &&
+              (!p.selectedLogo.kind || p.selectedLogo.kind === a.kind)
+          );
+      if (!asset && !automatic)
+        throw new Error('Choose a game logo from this game’s SteamGridDB gallery.');
+      let prepared = null;
+      if (asset) {
+        prepared = await media.prepare(asset, {
+          requireStatic: true,
+          signal: lifetime.signal,
+          maxBytes: await optionalBudget(160 * 1024 * 1024)
+        });
+        if (
+          prepared.animated !== false ||
+          !(await media.validate(prepared, { signal: lifetime.signal }))
+        )
+          throw new Error('The game logo must be a valid still image.');
+      }
+      g.logo = prepared;
+      g.selectedLogo = automatic ? null : asset;
+      g.logoManualSelection = !automatic;
+      delete g.logoError;
+      await refreshStorage();
+      await save();
+      return publicState();
+    }
     if (action === 'updateGame') {
       const g = find(p.id);
       if (state.job.current === g.id)
@@ -1238,6 +1372,8 @@ function createCore(options = {}) {
         );
         if (!chosen) throw new Error('Choose an artwork from this game’s SteamGridDB gallery.');
       }
+      const branding = 'branding' in p ? validateBranding(p.branding) : undefined;
+      if (branding) g.branding = branding;
       const crop = 'crop' in p ? validateCrop(p.crop) : undefined;
       if (crop) g.crop = crop;
       if ('included' in p) {
@@ -1316,6 +1452,8 @@ function createCore(options = {}) {
       return publicState();
     }
     if (action === 'settings') {
+      if ('showLogos' in p && !('nameDisplay' in p))
+        p = { ...p, nameDisplay: p.showLogos ? 'logo' : 'hidden' };
       state.settings = { ...state.settings, ...validateSettings(p) };
       await save();
       return publicState();
@@ -1330,7 +1468,7 @@ function createCore(options = {}) {
         }
       }
       for (const g of state.games)
-        for (const kind of ['cover', 'smoothed'])
+        for (const kind of ['cover', 'logo', 'smoothed'])
           if (g[kind] && !(await media.validate(g[kind]))) g[kind] = null;
       await refreshStorage();
       await save();
@@ -1365,14 +1503,17 @@ function createCore(options = {}) {
         for (const game of state.games) {
           game.media = null;
           game.cover = null;
+          game.logo = null;
           game.smoothed = null;
           game.status = 'new';
           delete game.error;
           delete game.coverError;
+          delete game.logoError;
           delete game.smoothingError;
         }
         assetCache.clear();
         coverCache.clear();
+        logoCache.clear();
         // Persist the reset before unlinking files, so interruption never leaves
         // missing files advertised as ready. Any interrupted deletion is retryable.
         await save();
@@ -1394,7 +1535,7 @@ function createCore(options = {}) {
       if (runner) throw new Error('Pause preparation before clearing unused media.');
       const used = new Set();
       for (const g of state.games)
-        for (const m of [g.media, g.cover, g.smoothed].filter(Boolean))
+        for (const m of [g.media, g.cover, g.logo, g.smoothed].filter(Boolean))
           for (const key of ['file', 'thumbnail', 'sourceFile'])
             if (safeFilename(m[key])) used.add(m[key]);
       for (const dir of ['media', 'sources', 'processed', 'thumbnails']) {
@@ -1440,6 +1581,7 @@ function createCore(options = {}) {
       if (!root) throw new Error('Steam was not detected. Install Steam and rescan your library.');
       const installer = require('./installer.cjs');
       if (action === 'install') {
+        if (runner) throw new Error('Finish or cancel preparation before installing in Steam.');
         const ready = state.games.filter(
           (g) =>
             g.included &&
@@ -1455,7 +1597,7 @@ function createCore(options = {}) {
           settings: state.settings
         });
       } else await installer.uninstall({ steamRoot: root });
-      state.steam.installed = await installer.isInstalled(root);
+      Object.assign(state.steam, await installer.installationInfo(root));
       await save();
       return publicState();
     }

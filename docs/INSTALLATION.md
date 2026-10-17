@@ -4,12 +4,12 @@ Steam Animated Screensaver prepares local artwork and installs a standalone HTML
 
 ## Packages
 
-| Platform | Package                    | Requirements                                                         |
-| -------- | -------------------------- | -------------------------------------------------------------------- |
-| SteamOS  | `*-steamos-x64.tar.gz`     | Desktop Mode for the manager; Linux x64 graphical session            |
-| Linux    | `*-linux-x64.tar.gz`       | Linux x64 with Electron's GTK/NSS/GBM/audio and sandbox dependencies |
-| Windows  | `*-windows-x64.zip`        | Windows 10/11 x64, current Steam client                              |
-| macOS    | `*-macos-arm64.dmg`        | Apple Silicon, macOS 13+                                             |
+| Platform | Package                | Requirements                                                         |
+| -------- | ---------------------- | -------------------------------------------------------------------- |
+| SteamOS  | `*-steamos-x64.tar.gz` | Desktop Mode for the manager; Linux x64 graphical session            |
+| Linux    | `*-linux-x64.tar.gz`   | Linux x64 with Electron's GTK/NSS/GBM/audio and sandbox dependencies |
+| Windows  | `*-windows-x64.zip`    | Windows 10/11 x64, current Steam client                              |
+| macOS    | `*-macos-arm64.dmg`    | Apple Silicon, macOS 13+                                             |
 
 SteamOS and Linux packages contain the same Linux x64 application. Separate downloads identify the intended installation instructions; they do not represent different engines. Intel Mac and Windows ARM64 packages are not supplied. Package inspection is separate from native runtime acceptance: see [VALIDATION.md](VALIDATION.md).
 
@@ -38,7 +38,11 @@ The script refuses linked or unowned destinations. It does not use `sudo`, chang
 3. In Library, filter/search, then **Select all shown** or **Deselect all shown**. The two library top-100 buttons use current concurrent Steam players or personal total playtime. They replace inclusion only among the owned games in the current filtered list.
 4. **Import current Steam top 100** adds available games from Valve's ranking without asserting ownership. New entries are excluded until selected. The upstream top 100 may include software; it is filtered out, so fewer than 100 games can remain. Ranking requests show progress and can be cancelled without changing the previous selection.
 5. Open a game’s sheet and use **Change animation / Find animations** at the top to browse alternatives. Choose an animation and **Prepare this game**; fixed artwork and crop choices are retained. Inspect Preview and choose optional 24/30 fps processing.
-6. Install from Preparation or Settings. Restart Steam if needed, open **Big Picture → Settings → Customization → Screensavers**, then select **steam-animated-screensaver**. SteamOS Gaming Mode exposes the corresponding Customization settings.
+6. Use **Prepare and install** in the sidebar and follow the steps at the top. When preparation finishes, click **Install in Steam** or **Update in Steam** in the highlighted panel. Restart Steam if needed, open **Big Picture → Settings → Customization → Screensavers**, then select **steam-animated-screensaver**. SteamOS Gaming Mode exposes the corresponding Customization settings.
+
+## Game logos
+
+By default, the game logo appears beside the still cover. A missing or unreadable logo falls back to the game title. In Preview or Settings, choose title, logo, both or hidden, and choose the logo position. The game sheet has alternative logos and individual display overrides. Prepare once after upgrading to download missing logos; valid animations are reused. Click **Update in Steam** to apply changes to an existing installation. The player uses only copied local files during playback.
 
 ## Steam paths
 
@@ -56,11 +60,11 @@ A `STEAM_ROOT` environment variable prioritizes a custom client root. Root symli
 
 The first new-name launch moves the previous owned data folder to `steam-animated-screensaver` atomically, preserving keys, catalog and cached bytes. Close the previous manager first. If both folders already exist, they are not merged or overwritten. Chromium uses a separate `steam-animated-screensaver-electron` profile so its early lock cannot mask the data migration.
 
-Update / Repair writes the ready included player snapshot and then retires owned exports carrying either historical identifier. It preserves unrelated screensavers. The standalone repair script can rename a single owned historical export without preparing its media again.
+Update in Steam writes the ready included player snapshot and then retires owned exports carrying either historical identifier. It preserves unrelated screensavers. The standalone repair script can rename a single owned historical export without preparing its media again.
 
-After upgrading to 0.1.9, use **Update / Repair** once to remove the introductory loading page from an existing installed Steam snapshot. Restart Steam if it retains the previous page.
+After upgrading to 0.1.9, use **Update in Steam** once to remove the introductory loading page from an existing installed Steam snapshot. Restart Steam if it retains the previous page.
 
-Changes appear immediately in Preview; **Update / Repair** applies them to Steam. An installed snapshot works offline with the manager closed. Interrupted preparation can resume; completed files are reused. A malformed catalog is preserved as `.corrupt-TIMESTAMP`. The exclusive library lock detects an active manager and recovers a dead process's stale lock.
+Changes appear immediately in Preview; **Update in Steam** applies them to Steam. An installed snapshot works offline with the manager closed. Interrupted preparation can resume; completed files are reused. A malformed catalog is preserved as `.corrupt-TIMESTAMP`. The exclusive library lock detects an active manager and recovers a dead process's stale lock.
 
 ## Logs and crashes
 

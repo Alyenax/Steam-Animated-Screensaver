@@ -256,6 +256,18 @@ function createSGDB({
       const games = await request(`/search/autocomplete/${encodeURIComponent(query)}`, options);
       return (Array.isArray(games) ? games : []).slice(0, 30).map((g) => gameResult(g));
     },
+    async logos(sgdbId, { signal } = {}) {
+      const rows = await request(
+        `/logos/game/${positiveId(sgdbId)}?types=static&nsfw=false&humor=false&epilepsy=false&limit=50&page=0`,
+        { signal, notFoundEmpty: true }
+      );
+      return (Array.isArray(rows) ? rows : [])
+        .map((raw) => normalizeAsset(raw, 'logo', false))
+        .filter((asset) => asset && asset.width > 0 && asset.height > 0)
+        .sort(
+          (a, b) => b.score - a.score || b.width * b.height - a.width * a.height || a.id - b.id
+        );
+    },
     async covers(sgdbId, { signal } = {}) {
       const rows = await request(
         `/grids/game/${positiveId(sgdbId)}?types=static&dimensions=600x900,342x482&nsfw=false&humor=false&epilepsy=false&limit=50&page=0`,

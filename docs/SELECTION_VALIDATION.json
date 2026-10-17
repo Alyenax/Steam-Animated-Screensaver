@@ -1,5 +1,5 @@
 {
-  "version": "1.0.0",
+  "version": "1.1.0",
   "fixture": "Isolated 125-game catalog and deterministic ranking provider; no personal credentials.",
   "checks": [
     "Select/deselect all respects the non-installed filter and search, through actual UI",

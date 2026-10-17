@@ -362,7 +362,7 @@ async function runUI({ capture = false } = {}) {
       () => document.querySelector('[data-setting="sceneDuration"]')?.value === '12'
     );
     assert.equal((await fixture.core.invoke('state')).settings.sceneDuration, 12);
-    await page.locator('[data-action="install"]').click();
+    await page.locator('[data-action="install"]').first().click();
     await page.locator('[data-action="uninstall"]').waitFor();
     assert.equal((await fixture.core.invoke('state')).steam.installed, true);
     check('Screensaver install from actual Settings into isolated Steam fixture');
@@ -378,7 +378,7 @@ async function runUI({ capture = false } = {}) {
       14,
       'Settings change reaches persisted backend'
     );
-    await page.locator('[data-action="update-install"]').click();
+    await page.locator('[data-action="update-install"]').first().click();
     const installed = path.join(
       fixture.steamRoot,
       'config',
@@ -430,7 +430,7 @@ async function runUI({ capture = false } = {}) {
       'Export plays actual interpolated VP9 directly over file:// with zero HTTP requests and no manager dependency'
     );
     await page.locator('[data-setting="smoothMotion"]').uncheck();
-    await page.locator('[data-action="update-install"]').click();
+    await page.locator('[data-action="update-install"]').first().click();
     for (let i = 0; i < 100; i++) {
       if (
         !(await fs.readFile(path.join(installed, 'catalog.js'), 'utf8')).includes(

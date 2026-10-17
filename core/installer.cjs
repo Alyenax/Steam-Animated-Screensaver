@@ -93,6 +93,77 @@ async function lock(parent, fn) {
   }
 }
 
+const playerSettings = [
+  'language',
+  'sceneDuration',
+  'shuffle',
+  'transition',
+  'showLogos',
+  'nameDisplay',
+  'logoPosition',
+  'showCover',
+  'coverPosition',
+  'framing',
+  'staticFallback',
+  'reducedMotion'
+];
+function signature({ games, settings = {} }) {
+  const playable = games.filter(
+    (g) =>
+      !isSteamComponent(g) &&
+      g.included &&
+      g.status === 'ready' &&
+      g.media &&
+      (g.media.animated || settings.staticFallback)
+  );
+  return crypto
+    .createHash('sha256')
+    .update(
+      JSON.stringify({
+        version: require('../package.json').version,
+        settings: Object.fromEntries(
+          [...playerSettings, 'smoothMotion', 'smoothingFps', 'smoothingMode'].map((k) => [
+            k,
+            settings[k]
+          ])
+        ),
+        games: playable.map((g) => ({
+          id: g.id,
+          name: g.name,
+          crop: g.crop || null,
+          branding: g.branding || null,
+          media: g.media,
+          cover: g.cover || null,
+          logo: g.logo || null,
+          smoothed:
+            settings.smoothMotion && g.smoothed && smoothingMatches(g.smoothed, settings)
+              ? g.smoothed
+              : null
+        }))
+      })
+    )
+    .digest('hex');
+}
+async function installationInfo(steamRoot) {
+  const installed = await isInstalled(steamRoot);
+  if (!installed) return { installed: false, signature: null };
+  try {
+    const parent = await directory(steamRoot),
+      target = path.join(parent, NAME);
+    if (!(await owned(target))) return { installed: true, signature: null };
+    const filename = path.join(target, MARKER),
+      stat = await fs.lstat(filename);
+    if (stat.isSymbolicLink() || !stat.isFile() || stat.size > 1024)
+      throw new Error('Unsafe marker');
+    const marker = JSON.parse(await fs.readFile(filename, 'utf8'));
+    return {
+      installed: true,
+      signature: /^[a-f0-9]{64}$/.test(marker.signature) ? marker.signature : null
+    };
+  } catch {
+    return { installed: true, signature: null };
+  }
+}
 async function install({ dataDir, steamRoot, games, settings = {} }) {
   const parent = await directory(steamRoot, true);
   return lock(parent, async () => {
@@ -155,6 +226,21 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
             if (!['ENOENT'].includes(error.code)) throw error;
           }
         }
+        let logo = null;
+        if (original.logo?.animated === false) {
+          try {
+            if (!copied.has(original.logo.file))
+              await copyMedia(dataDir, original.logo.file, path.join(staging, 'media'));
+            copied.add(original.logo.file);
+            logo = {
+              file: `media/${original.logo.file}`,
+              animated: false,
+              author: { name: String(original.logo.author?.name || 'Unknown') }
+            };
+          } catch (error) {
+            if (!['ENOENT'].includes(error.code)) throw error;
+          }
+        }
         for (const file of [game.media.file, game.media.thumbnail])
           if (!copied.has(file)) {
             await copyMedia(dataDir, file, path.join(staging, 'media'));
@@ -168,6 +254,8 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
           crop: game.crop || null,
           status: 'ready',
           cover,
+          logo,
+          branding: game.branding || null,
           media: {
             file: `media/${m.file}`,
             thumbnail: `media/${m.thumbnail}`,
@@ -181,18 +269,7 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
         });
       }
       const cleanSettings = {};
-      for (const key of [
-        'language',
-        'sceneDuration',
-        'shuffle',
-        'transition',
-        'showLogos',
-        'showCover',
-        'coverPosition',
-        'framing',
-        'staticFallback',
-        'reducedMotion'
-      ])
+      for (const key of playerSettings)
         if (settings[key] !== undefined) cleanSettings[key] = settings[key];
       const catalog = JSON.stringify({ version: 1, games: catalogGames, settings: cleanSettings })
         .replace(/</g, '\\u003c')
@@ -203,7 +280,12 @@ async function install({ dataDir, steamRoot, games, settings = {} }) {
       });
       await fs.writeFile(
         path.join(staging, MARKER),
-        JSON.stringify({ owner: OWNER, version: 1, installedAt: new Date().toISOString() }),
+        JSON.stringify({
+          owner: OWNER,
+          version: 1,
+          installedAt: new Date().toISOString(),
+          signature: signature({ games, settings })
+        }),
         { mode: 0o600 }
       );
       if (exists) {
@@ -287,6 +369,8 @@ async function isInstalled(steamRoot) {
 }
 module.exports = {
   install,
+  signature,
+  installationInfo,
   uninstall,
   isInstalled,
   assertCanUninstall,

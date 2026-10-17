@@ -12,6 +12,7 @@ async function run({ appPath, reportPath } = {}) {
     const fixture = await require('./qa-fixture.cjs').createFixture({
       root,
       browser,
+      includeLogos: true,
       animationFps: appPath ? 12 : 24
     });
     await fixture.add(901);
@@ -223,6 +224,11 @@ async function run({ appPath, reportPath } = {}) {
       await page.waitForTimeout(20);
     }
     assert.ok(frame, 'Player frame navigates to app://');
+    await frame.waitForFunction(() => {
+      const logo = document.querySelector('.scene.visible .game-logo');
+      return logo && !logo.hidden && logo.naturalWidth > 0;
+    });
+    assert.equal(await frame.locator('.scene.visible h1').isVisible(), false);
     await frame.waitForFunction(
       () => document.querySelector('.scene.visible video')?.currentTime > 0.1
     );
@@ -347,6 +353,7 @@ async function run({ appPath, reportPath } = {}) {
             ]
           : []),
         'Actual app:// protocol media playback',
+        'Prepared transparent game logo loads in the native app with the duplicate title hidden',
         'Native image-preview IPC and JPEG decoding',
         'Change animation is visible immediately at the top of a ready game sheet',
         'Native Steam key save/removal and 24 fps profile settings IPC',

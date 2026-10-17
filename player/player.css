@@ -210,3 +210,63 @@ body {
 .scene[data-framing='16:10'] .artwork {
   object-fit: cover;
 }
+
+/* Logos use the same safe margins as captions and covers. */
+.caption h1[hidden],
+.game-logo[hidden] {
+  display: none;
+}
+.game-logo {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: min(36vw, 460px);
+  max-height: min(12vh, 150px);
+  object-fit: contain;
+  object-position: bottom left;
+  margin: 0 0 0.65em;
+  filter: drop-shadow(0 3px 10px #000a);
+  z-index: 3;
+}
+.scene > .game-logo {
+  position: absolute;
+  margin: 0;
+}
+.scene[data-logo-position='top-left'] > .game-logo {
+  left: var(--caption-x);
+  top: var(--caption-y);
+}
+.scene[data-logo-position='top-right'] > .game-logo {
+  right: var(--caption-x);
+  top: var(--caption-y);
+}
+.scene[data-logo-position='bottom-left'] > .game-logo {
+  left: var(--caption-x);
+  bottom: calc(var(--caption-y) + var(--caption-height, 0px) + var(--cover-gap));
+}
+.scene[data-logo-position='bottom-right'] > .game-logo {
+  right: var(--caption-x);
+  bottom: var(--caption-y);
+}
+.scene.has-cover[data-logo-position='top-left'][data-cover-position='top-left'] > .game-logo {
+  left: calc(var(--caption-x) + var(--cover-width) + var(--cover-gap));
+}
+.scene.has-cover[data-logo-position='top-right'][data-cover-position='top-right'] > .game-logo,
+.scene.has-cover[data-logo-position='bottom-right'][data-cover-position='bottom-right']
+  > .game-logo {
+  right: calc(var(--caption-x) + var(--cover-width) + var(--cover-gap));
+}
+.scene.has-logo[data-logo-position='bottom-right'] .caption {
+  padding-right: calc(36vw + var(--cover-gap));
+}
+.scene.has-logo.has-cover[data-logo-position='bottom-right'][data-cover-position='bottom-right']
+  .caption {
+  padding-right: calc(36vw + var(--cover-width) + 2 * var(--cover-gap));
+}
+
+.logo-credit[hidden] {
+  display: none;
+}
+.caption .logo-credit {
+  margin-top: 0.35em;
+}

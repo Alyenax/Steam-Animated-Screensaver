@@ -1,4 +1,8 @@
-# Validation - Steam Animated Screensaver 1.0.0
+# Validation - Steam Animated Screensaver
+
+## 1.1.0 validation
+
+The full unit and integration suite passes 131 tests, including four dedicated branding and installation-state cases. The 1.1.0 release adds logo provider, catalog persistence, offline export, missing-logo fallback and installation-change detection checks. Browser tests exercise the logo picker, per-game overrides, all four corners with cover collisions at desktop, handheld and mobile widths, the preparation-to-installation path and English/French labels. Machine-readable results accompany the 1.1.0 release in its grouped validation ZIP. Existing 1.0.0 results below remain historical evidence.
 
 Validation host: macOS arm64. This report distinguishes native execution, automated software tests and cross-platform package inspection. Windows, Linux and SteamOS packages are built here; native execution and actual Steam CEF idle/wake acceptance on those targets remain pending. Passing tests does not establish universal stability.
 
@@ -43,7 +47,7 @@ The 0.1.9 regression also delays the installed player’s catalog and first GIF,
 | Logging faults        | Immediate process exit, nested stack/stderr retention, credential redaction, bounded JSON rotation, simulated disk-full failure/recovery and linked-path rejection                              | `tests/diagnostics.test.cjs`                            |
 | Distribution          | All four current platform artifacts; ZIP/tar/DMG integrity; package/source byte checks; Windows x64 PE headers; no catalog/key files in shipped app                                             | Release `PACKAGE_VALIDATION.json`, `SHA256SUMS`         |
 
-The release pipeline is local and explicit. `npm run release:check` refuses a missing/stale platform package. GitHub Actions remains disabled. Downloaded release assets are byte-compared with the local published files before delivery.
+The release pipeline is local and explicit. After validation and tagging the committed source, `npm run release:bundle` prepares exactly eight upload files: four app packages, one source snapshot, one grouped report archive, the original demo and SHA256SUMS. GitHub adds two automatic source archives. Upload this prepared directory rather than all files in `dist`. `npm run release:check` refuses a missing/stale platform package. GitHub Actions remains disabled. Downloaded release assets are byte-compared with the local published files before delivery.
 
 ## Fault-injection boundaries
 

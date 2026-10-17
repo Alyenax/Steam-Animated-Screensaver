@@ -1,5 +1,43 @@
 # Changelog
 
+## 1.1.0 - October 17, 2026
+
+### Game logos
+
+- Show a game's logo beside its cover by default. The game title automatically replaces a missing or unreadable logo.
+- Choose title, logo, both or neither. Position the logo beside the cover or in any of the four corners, with consistent screen margins and space for the cover.
+- Find alternative SteamGridDB logos in the game sheet. Override the display mode and position for individual games.
+- Keep prepared logos with the offline Steam export. Preparing an existing library downloads missing logos while reusing valid animations.
+
+### Preparation and installation
+
+- Follow **Choose games → Prepare → Install in Steam** at the top of the app.
+- Use the **Prepare and install** navigation entry, with live progress and a pending-installation or update badge.
+- Prepare selected games from the top of the library. Once ready, a prominent **Install in Steam** or **Update in Steam** button shows the next step.
+- Detect when prepared media or playback settings differ from the installed copy. Keep **Repair installation** in Settings as a separate maintenance action.
+- After installation, show how to select the screensaver in Steam. Installation does not select it automatically.
+
+### Downloads and installation
+
+Download only the package for your platform. Other release files are optional developer sources, grouped validation reports, the original demo and checksums.
+
+| Platform            | Download                                                                                                                                                    | Installation                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| SteamOS Gaming Mode | [SteamOS x64](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-steamos-x64.tar.gz)           | In Desktop Mode, extract the archive and run `./install.sh`.       |
+| Linux desktop       | [Linux x64](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-linux-x64.tar.gz)               | Extract the archive and run `./install.sh`.                        |
+| Windows 10 or 11    | [Windows x64 portable ZIP](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-windows-x64.zip) | Extract the whole folder and run `Steam Animated Screensaver.exe`. |
+| macOS 13 or later   | [Mac Apple Silicon DMG](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.1.0/Steam-Animated-Screensaver-1.1.0-macos-arm64.dmg)    | Open the DMG and drag the app to Applications.                     |
+
+### Apply it in Steam
+
+1. Choose games and click **Prepare scenes**. If upgrading, prepare once to fetch game logos; existing valid animations are reused.
+2. Check **Preview**, then click **Install in Steam** or **Update in Steam** in the highlighted panel.
+3. In Steam Big Picture or SteamOS Gaming Mode, open **Settings → Customization → Screensavers**, select **steam-animated-screensaver** and try **Preview**. Restart Steam if it is missing.
+4. Set the inactivity delay in Steam. If the controls are missing, fully quit Steam and use **Settings → Automatic start in Steam** in the app, then reopen Steam. Five minutes remains the suggested starting point.
+5. After changing prepared content, logos, framing or playback settings, click **Update in Steam** again. The app can be closed during Steam playback.
+
+Windows and Linux still need more hands-on testing on their target systems. Package checks and macOS execution do not establish native behavior on those platforms.
+
 ## 1.0.0 - October 16, 2026
 
 First public release by Alyenax, under GPL-3.0-only.

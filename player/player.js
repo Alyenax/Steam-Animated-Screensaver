@@ -30,6 +30,20 @@
         ? input.transition
         : 'crossfade',
       showLogos: input.showLogos !== false,
+      nameDisplay: ['title', 'logo', 'both', 'hidden'].includes(input.nameDisplay)
+        ? input.nameDisplay
+        : input.showLogos === false
+          ? 'hidden'
+          : 'logo',
+      logoPosition: [
+        'beside-title',
+        'bottom-left',
+        'bottom-right',
+        'top-left',
+        'top-right'
+      ].includes(input.logoPosition)
+        ? input.logoPosition
+        : 'beside-title',
       showCover: input.showCover !== false,
       coverPosition: ['beside-title', 'bottom-right', 'top-right', 'top-left'].includes(
         input.coverPosition
@@ -236,6 +250,34 @@
     if (order.length > 1 && order[0]?.id === lastId) [order[0], order[1]] = [order[1], order[0]];
     position = -1;
   }
+  function placeBranding(scene) {
+    const copy = scene.querySelector('.caption-copy'),
+      caption = scene.querySelector('.caption'),
+      logo = scene.querySelector('.game-logo'),
+      title = scene.querySelector('h1'),
+      custom = scene.game.branding || {},
+      mode = ['title', 'logo', 'both', 'hidden'].includes(custom.mode)
+        ? custom.mode
+        : options.nameDisplay,
+      position = ['beside-title', 'bottom-left', 'bottom-right', 'top-left', 'top-right'].includes(
+        custom.position
+      )
+        ? custom.position
+        : options.logoPosition;
+    scene.dataset.logoPosition = position;
+    const available =
+      !!logo && logo.dataset.failed !== 'true' && logo.complete && logo.naturalWidth > 0;
+    title.hidden = mode === 'hidden' || (mode === 'logo' && available);
+    if (logo) {
+      logo.hidden = !available || mode === 'hidden' || mode === 'title';
+      if (position === 'beside-title') copy.prepend(logo);
+      else scene.append(logo);
+    }
+    const logoCredit = scene.querySelector('.logo-credit');
+    if (logoCredit) logoCredit.hidden = !logo || logo.hidden;
+    scene.classList.toggle('has-logo', !!logo && !logo.hidden);
+    scene.style.setProperty('--caption-height', `${caption.getBoundingClientRect().height}px`);
+  }
   function placeCover(scene) {
     const cover = scene.querySelector('.caption-cover');
     scene.dataset.coverPosition = options.coverPosition;
@@ -247,6 +289,7 @@
     scene.classList.toggle('has-cover', !cover.hidden);
     const credit = scene.querySelector('.cover-credit');
     if (credit) credit.hidden = cover.hidden || cover.dataset.fallback === 'true';
+    placeBranding(scene);
   }
   function placeFrame(scene) {
     const crop = framing(scene.game, options),
@@ -263,7 +306,10 @@
     frame.style.height = `${box.height}px`;
   }
   function resizeFrames() {
-    for (const scene of stage.children) placeFrame(scene);
+    for (const scene of stage.children) {
+      placeFrame(scene);
+      placeBranding(scene);
+    }
   }
   function sceneFor(game) {
     const scene = doc.createElement('section');
@@ -304,6 +350,27 @@
     const copy = doc.createElement('div');
     copy.className = 'caption-copy';
     copy.append(title, credit);
+    if (game.logo?.animated === false && localMedia(game.logo.file)) {
+      const logo = doc.createElement('img');
+      logo.className = 'game-logo';
+      logo.alt = String(game.name || '');
+      logo.hidden = true;
+      logo.addEventListener('load', () => {
+        if (!logo._sasReleased) placeBranding(scene);
+      });
+      logo.addEventListener('error', () => {
+        if (logo._sasReleased) return;
+        logo.dataset.failed = 'true';
+        placeBranding(scene);
+      });
+      copy.prepend(logo);
+      const logoCredit = doc.createElement('p');
+      logoCredit.className = 'credit logo-credit';
+      logoCredit.hidden = true;
+      logoCredit.textContent = `${french() ? 'Logo de' : 'Logo by'} ${String(game.logo.author?.name || 'Unknown')} · SteamGridDB`;
+      copy.append(logoCredit);
+      logo.src = game.logo.file;
+    }
     const cover = doc.createElement('img');
     cover.className = 'caption-cover';
     cover.alt = french() ? `Jaquette de ${game.name}` : `${game.name} cover`;
@@ -355,6 +422,7 @@
     const token = ++generation,
       { scene, art, isVideo } = sceneFor(game);
     stage.append(scene);
+    placeBranding(scene);
     pending = scene;
     let complete = false;
     function fail() {
@@ -491,6 +559,8 @@
     else if (!waitingForParent) emptyState();
   }
   function setSettings(partial) {
+    if ('showLogos' in partial && !('nameDisplay' in partial))
+      partial = { ...partial, nameDisplay: partial.showLogos ? 'logo' : 'hidden' };
     const nextSettings = settings({ ...options, ...partial });
     const structural =
       nextSettings.staticFallback !== options.staticFallback ||
@@ -504,7 +574,7 @@
     for (const scene of stage.children) {
       scene.classList.toggle('reduced', options.reducedMotion);
       scene.classList.toggle('instant', options.reducedMotion);
-      scene.querySelector('h1').hidden = !options.showLogos;
+      placeBranding(scene);
       placeCover(scene);
       placeFrame(scene);
     }

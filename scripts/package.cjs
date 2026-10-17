@@ -234,8 +234,8 @@ async function finishMac({ dist, output, pkg }) {
     await fs.writeFile(
       path.join(stage, 'LISEZ-MOI - README.txt'),
       'Steam Animated Screensaver - macOS Apple Silicon, macOS 13+.\n\n' +
-        'FR : Glissez l’application dans Applications, puis ouvrez-la. Ajoutez votre clé SteamGridDB dans Réglages, choisissez un jeu, préparez ses images puis ouvrez Aperçu. Aucun outil à installer et aucun serveur requis. Dans Réglages, installez le lecteur dans Steam, redémarrez Steam, puis sélectionnez steam-animated-screensaver dans Big Picture > Réglages > Personnalisation.\n\n' +
-        'EN: Drag the app into Applications and open it. Add your SteamGridDB key in Settings, choose a game, prepare its artwork, then open Preview. No extra tools or server are required. Install the player from Settings, restart Steam, then select steam-animated-screensaver in Big Picture > Settings > Customization.\n\n' +
+        'FR : Glissez l’application dans Applications, puis ouvrez-la. Ajoutez votre clé SteamGridDB dans Réglages, choisissez un jeu, préparez ses images puis ouvrez Aperçu. Aucun outil à installer et aucun serveur requis. Suivez Préparer et installer, cliquez sur Installer dans Steam, redémarrez Steam, puis sélectionnez steam-animated-screensaver dans Big Picture > Réglages > Personnalisation.\n\n' +
+        'EN: Drag the app into Applications and open it. Add your SteamGridDB key in Settings, choose a game, prepare its artwork, then open Preview. No extra tools or server are required. Follow Prepare and install, click Install in Steam, restart Steam, then select steam-animated-screensaver in Big Picture > Settings > Customization.\n\n' +
         'Ad-hoc signed app, not Apple notarized. If macOS blocks a downloaded copy, use System Settings > Privacy & Security > Open Anyway for this app. No global security setting needs changing.\n' +
         'FFmpeg / libvpx notices, complete source archives and rebuild recipe: app Contents/Resources/app/binaries/.\n'
     );

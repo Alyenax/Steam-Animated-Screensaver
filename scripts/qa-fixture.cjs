@@ -9,7 +9,7 @@ const names = [
   'Horizon · original QA animation',
   'Orbit · QA search result'
 ];
-async function createFixture({ root, browser, animationFps = 24 }) {
+async function createFixture({ root, browser, animationFps = 24, includeLogos = false }) {
   const dataDir = path.join(root, 'data'),
     steamRoot = path.join(root, 'steam');
   await fs.mkdir(path.join(steamRoot, 'steamapps'), { recursive: true });
@@ -27,7 +27,8 @@ async function createFixture({ root, browser, animationFps = 24 }) {
   const art = await browser.newPage({ viewport: { width: 1280, height: 720 } });
   await art.setContent('<canvas width="1280" height="720"></canvas>');
   const sources = [],
-    covers = [];
+    covers = [],
+    logos = [];
   for (let index = 0; index < 3; index++) {
     const png = await art.evaluate((index) => {
       const c = document.querySelector('canvas'),
@@ -133,6 +134,19 @@ async function createFixture({ root, browser, animationFps = 24 }) {
       '-y',
       coverFile
     ]);
+    const logoFile = path.join(sourceDir, `${index}-logo.png`);
+    const logoPng = await art.evaluate((index) => {
+      const c = document.createElement('canvas');
+      c.width = 480;
+      c.height = 140;
+      const ctx = c.getContext('2d');
+      ctx.fillStyle = '#f2f6ff';
+      ctx.font = 'bold 72px sans-serif';
+      ctx.fillText(['AURORA', 'EMBER', 'HORIZON'][index], 16, 97);
+      return c.toDataURL('image/png').split(',')[1];
+    }, index);
+    await fs.writeFile(logoFile, Buffer.from(logoPng, 'base64'));
+    logos.push(logoFile);
     covers.push(coverFile);
     sources.push(webm);
   }
@@ -158,7 +172,10 @@ async function createFixture({ root, browser, animationFps = 24 }) {
         });
       const isCover = url.endsWith('.png');
       const index = Number(new URL(url).pathname.match(/(\d+)\.(?:webm|png)$/)?.[1]) % 3;
-      await fs.copyFile((isCover ? covers : sources)[index], dest);
+      await fs.copyFile(
+        (new URL(url).pathname.startsWith('/logo/') ? logos : isCover ? covers : sources)[index],
+        dest
+      );
       prepares++;
       onProgress?.({ stage: 'downloading', bytes: (await fs.stat(dest)).size });
     }
@@ -200,6 +217,22 @@ async function createFixture({ root, browser, animationFps = 24 }) {
         kind: 'grid',
         author: { name: `Original validation cover ${index + 1}` }
       })),
+    ...(includeLogos
+      ? {
+          logos: async (id) =>
+            [0, 1].map((index) => ({
+              ...assets(id)[0],
+              id: id * 100 + index,
+              url: `https://cdn2.steamgriddb.com/logo/${(id + index) % 3}.png`,
+              thumb: `https://cdn2.steamgriddb.com/logo/${(id + index) % 3}.png`,
+              width: 480,
+              height: 140,
+              animated: false,
+              kind: 'logo',
+              author: { name: `Original validation logo ${index + 1}` }
+            }))
+        }
+      : {}),
     validateKey: async () => ({ valid: true })
   };
   const core = require('../core/index.cjs').createCore({

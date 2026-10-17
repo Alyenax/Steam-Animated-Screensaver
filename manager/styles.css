@@ -2560,3 +2560,175 @@ body.reduced-motion *:after {
     gap: 8px;
   }
 }
+
+/* Keep the three preparation steps and the next action in view. */
+.workflow {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.workflow-step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: transparent;
+  color: var(--muted);
+  padding: 11px 16px;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.workflow-step > span {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #1c293a;
+  flex-shrink: 0;
+}
+.workflow-step svg {
+  width: 15px;
+  height: 15px;
+}
+.workflow-step.current {
+  border-color: var(--cyan);
+  color: var(--text);
+  background: var(--cyan-soft);
+}
+.workflow-step.current > span {
+  background: var(--cyan);
+  color: #07111c;
+}
+.workflow-step.done {
+  color: #b4cec8;
+}
+.steam-next-step {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 22px;
+  margin-bottom: 24px;
+  border: 1px solid var(--cyan);
+  border-radius: 14px;
+  background: var(--cyan-soft);
+}
+.steam-next-step h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  margin: 0 0 8px;
+}
+.steam-next-step h2 svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.steam-next-step p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 66em;
+}
+.steam-next-step .button-row {
+  flex-shrink: 0;
+}
+.steam-next-step.installed {
+  background: #10241f;
+  border-color: #2e6053;
+}
+.library-prepare-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 22px;
+  padding: 15px 18px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #101b2b;
+}
+.library-prepare-bar > span {
+  color: var(--muted);
+  font-size: 13px;
+}
+.nav button[data-route='preparation'] {
+  flex-wrap: wrap;
+}
+.workflow-badge {
+  margin-left: 31px;
+  padding: 3px 6px;
+  border-radius: 5px;
+  font-size: 10px;
+  color: var(--cyan);
+  background: var(--cyan-soft);
+}
+.workflow-badge[hidden] {
+  display: none;
+}
+.branding-game-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin: 16px 0;
+}
+.branding-game-controls label {
+  display: grid;
+  gap: 8px;
+  font-size: 13px;
+}
+.game-logo-picker .managed-image {
+  background: repeating-conic-gradient(#203045 0% 25%, #152234 0% 50%) 50% / 16px 16px;
+  aspect-ratio: 3/1;
+}
+.game-logo-picker .managed-image img {
+  object-fit: contain;
+}
+.game-logo-picker .fixed-artwork-current > .managed-image {
+  width: 190px;
+  height: 80px;
+}
+@media (max-width: 1100px) {
+  .steam-next-step {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+@media (max-width: 600px) {
+  .workflow {
+    gap: 5px;
+  }
+  .workflow-step {
+    padding: 9px 7px;
+    gap: 5px;
+    font-size: 11px;
+    flex: 1;
+    justify-content: center;
+  }
+  .workflow-step > span {
+    width: 19px;
+    height: 19px;
+  }
+  .steam-next-step {
+    padding: 16px;
+  }
+  .steam-next-step .button-row {
+    width: 100%;
+  }
+  .steam-next-step .button {
+    flex: 1;
+  }
+  .branding-game-controls {
+    grid-template-columns: 1fr;
+  }
+  .library-prepare-bar {
+    flex-wrap: wrap;
+  }
+}
