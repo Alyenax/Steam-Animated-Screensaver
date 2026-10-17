@@ -1,7 +1,7 @@
 {
   "name": "steam-animated-screensaver",
   "productName": "Steam Animated Screensaver",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "Prepare, preview and install animated SteamGridDB artwork as a Steam screensaver.",
   "main": "main.cjs",
   "license": "GPL-3.0-only",
@@ -24,7 +24,9 @@
   },
   "dependencies": {
     "ffmpeg-static": "5.3.0",
-    "ffprobe-static": "3.1.0"
+    "ffprobe-static": "3.1.0",
+    "tar-stream": "3.2.2",
+    "yauzl": "3.4.0"
   },
   "devDependencies": {
     "@electron/packager": "20.3.0",

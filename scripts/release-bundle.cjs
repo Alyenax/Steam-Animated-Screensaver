@@ -24,15 +24,18 @@ async function bundle() {
     'macos-arm64.dmg'
   ].map((suffix) => `${prefix}-${suffix}`);
   for (const name of appFiles) await fs.copyFile(path.join(dist, name), path.join(output, name));
-  const source = `${prefix}-source.zip`;
-  execFileSync('git', ['archive', '--format=zip', '--output', path.join(output, source), tag], {
-    cwd: root
-  });
+  await require('./sign-update.cjs').signUpdate({ directory: output });
+  const update = 'update.json';
   const demo = 'Steam-Animated-Screensaver-demo.mp4';
   await fs.copyFile(path.join(dist, 'public-launch-v2', demo), path.join(output, demo));
   const reports = await fs.mkdtemp(path.join(dist, '.release-reports-'));
   try {
     const evidence = [
+      ['dist/POWERSHELL_HELPER_VALIDATION.json', 'POWERSHELL_HELPER_VALIDATION.json'],
+      ['dist/UPDATER_ARCHIVE_VALIDATION.json', 'UPDATER_ARCHIVE_VALIDATION.json'],
+      ['dist/UPDATER_VALIDATION.json', 'UPDATER_VALIDATION.json'],
+      ['dist/UPDATER_UI_VALIDATION.json', 'UPDATER_UI_VALIDATION.json'],
+      ['dist/MACOS_UPDATE_VALIDATION.json', 'MACOS_UPDATE_VALIDATION.json'],
       [`dist/branding-${version}/BRANDING_UI_VALIDATION.json`, 'BRANDING_UI_VALIDATION.json'],
       ['dist/RELEASE_TEST_SUMMARY.json', 'RELEASE_TEST_SUMMARY.json'],
       ['dist/PACKAGE_VALIDATION.json', 'PACKAGE_VALIDATION.json'],
@@ -81,7 +84,7 @@ async function bundle() {
       cwd: reports
     });
     execFileSync('unzip', ['-tq', path.join(output, validation)]);
-    const files = [...appFiles, source, demo, validation];
+    const files = [...appFiles, update, demo, validation];
     const checks = [];
     for (const name of files)
       checks.push(

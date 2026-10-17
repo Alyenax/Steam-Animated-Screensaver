@@ -1,5 +1,38 @@
 # Changelog
 
+## 1.2.0 - October 17, 2026
+
+### App updates from GitHub
+
+- Check for stable releases inside Settings. Daily automatic checks are enabled while the app is open and can be disabled. No GitHub account, token or background service is needed.
+- Download an update with a measured percentage and byte count. Cancel a download and retry when ready. Installation always requires **Restart and install** and confirmation.
+- Verify an Ed25519-signed release descriptor, platform, version, exact size and SHA-256 before preparing the application. Unsafe archive paths and links are rejected.
+- Replace the app after it closes, keep the previous version and restore it if the new app fails to acknowledge a healthy startup. Preserve the library, artwork, API keys and settings; snapshot the catalog before replacement.
+- Distinguish the app update from **Update in Steam**, which refreshes the separately installed screensaver without preparing valid media again.
+- Keep 10 release assets: four app packages, `update.json`, validation reports, the original demo, checksums and GitHub's two automatic source archives.
+
+### Downloads and installation
+
+Download only the package for your platform. Other release files are the signed update descriptor, grouped validation reports, the original demo and checksums. GitHub also provides two source archives.
+
+| Platform            | Download                                                                                                                                                    | Installation                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------ |
+| SteamOS Gaming Mode | [SteamOS x64](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.2.0/Steam-Animated-Screensaver-1.2.0-steamos-x64.tar.gz)           | In Desktop Mode, extract the archive and run `./install.sh`.       |
+| Linux desktop       | [Linux x64](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.2.0/Steam-Animated-Screensaver-1.2.0-linux-x64.tar.gz)               | Extract the archive and run `./install.sh`.                        |
+| Windows 10 or 11    | [Windows x64 portable ZIP](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.2.0/Steam-Animated-Screensaver-1.2.0-windows-x64.zip) | Extract the whole folder and run `Steam Animated Screensaver.exe`. |
+| macOS 13 or later   | [Mac Apple Silicon DMG](https://github.com/Alyenax/Steam-Animated-Screensaver/releases/download/v1.2.0/Steam-Animated-Screensaver-1.2.0-macos-arm64.dmg)    | Open the DMG and drag the app to Applications.                     |
+
+### First upgrade and Steam playback
+
+1. Versions up to 1.1.1 have no internal updater. Download and install 1.2.0 once using the table above. Existing app data is preserved.
+2. For future versions, open **Settings → App updates**, click **Check for updates**, then **Download update**. When verification finishes, click **Restart and install** and confirm.
+3. After the app restarts, click **Update in Steam** if the installed screensaver needs refreshing. App updates do not automatically rewrite Steam's installed copy.
+4. For a first screensaver installation, choose games, **Prepare scenes**, check **Preview**, then **Install in Steam**.
+5. In Steam Big Picture or SteamOS Gaming Mode, open **Settings → Customization → Screensavers**, select **steam-animated-screensaver** and try **Preview**. Restart Steam if it is missing.
+6. Set the inactivity delay in Steam. If the controls are missing, fully quit Steam and use **Settings → Automatic start in Steam** in the app, then reopen Steam. The app can be closed during playback.
+
+Mac startup, replacement and rollback are tested with isolated native app copies. Windows, Linux and SteamOS packages are inspected and their updater logic is tested, but native update acceptance on those targets remains pending. Read-only installations offer the GitHub download for manual installation. More details: [App updates](docs/UPDATES.md).
+
 ## 1.1.1 - October 17, 2026
 
 ### Optional playback credits

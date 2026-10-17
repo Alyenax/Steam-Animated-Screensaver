@@ -89,12 +89,19 @@ async function check() {
         )
       )
         throw new Error(`Stale ${platform}/${file}`);
+    for (const name of ['yauzl', 'tar-stream']) {
+      const dependency = JSON.parse(
+        await fs.readFile(path.join(appRoot, 'node_modules', name, 'package.json'), 'utf8')
+      );
+      if (dependency.version !== pkg.dependencies[name])
+        throw new Error(`Stale runtime dependency: ${platform}/${name}`);
+    }
     for (const forbidden of [
+      '.release-secrets',
       'catalog.json',
       'steamgriddb.key',
       'steam-api.key',
       '.manager.lock',
-      'node_modules',
       '.data',
       '.qa'
     ]) {

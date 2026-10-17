@@ -1022,6 +1022,82 @@ Object.assign(translations.fr, {
   showCoverCredit: 'Jaquette fixe',
   showLogoCredit: 'Logo du jeu'
 });
+Object.assign(translations.en, {
+  appUpdates: 'App updates',
+  updateCheck: 'Check for updates',
+  updateDownload: 'Download update',
+  updateInstall: 'Restart and install',
+  updateCancel: 'Cancel download',
+  updateAuto: 'Check automatically',
+  updateAutoHint:
+    'Once a day while this app is open. Downloading and installing always require your choice.',
+  updateCurrent: 'Installed version',
+  updateAvailable: 'Available version',
+  updateLast: 'Last checked',
+  updateNever: 'Not checked yet',
+  updateRelease: 'Open GitHub release',
+  updateHint:
+    'App updates preserve your library, artwork and settings. After updating the app, use Update in Steam if the installed screensaver needs refreshing.',
+  updateConfirm:
+    'The app will close, install the verified update and restart. The previous app is kept for recovery. Continue?',
+  updatePermission:
+    'Install the app in a writable folder first. On Mac, drag it out of the DMG into Applications. You can also install the download manually.',
+  updateDevelopment:
+    'App replacement is available in packaged builds. This development preview does not install app updates.',
+  updateNotes: 'What changed',
+  updateSuccess: 'The app was updated successfully.',
+  updateRollback: 'The previous app was restored.',
+  updateNotice: 'An app update is available.',
+  updateIdle: 'Ready to check',
+  updateChecking: 'Checking GitHub',
+  updateUpToDate: 'You have the latest version',
+  updateAvailableState: 'Update available',
+  updateDownloading: 'Downloading update',
+  updateVerifying: 'Verifying the update',
+  updateExtracting: 'Preparing the application',
+  updateReady: 'Download verified. Ready to install.',
+  updateInstalling: 'Closing the app and installing',
+  updateError: 'Update could not be completed',
+  updateUnavailable: 'Updates are unavailable in this preview'
+});
+Object.assign(translations.fr, {
+  appUpdates: 'Mises à jour de l’app',
+  updateCheck: 'Rechercher une mise à jour',
+  updateDownload: 'Télécharger la mise à jour',
+  updateInstall: 'Redémarrer et installer',
+  updateCancel: 'Annuler le téléchargement',
+  updateAuto: 'Vérifier automatiquement',
+  updateAutoHint:
+    'Une fois par jour lorsque l’app est ouverte. Le téléchargement et l’installation nécessitent toujours votre choix.',
+  updateCurrent: 'Version installée',
+  updateAvailable: 'Version disponible',
+  updateLast: 'Dernière vérification',
+  updateNever: 'Pas encore vérifié',
+  updateRelease: 'Ouvrir la release GitHub',
+  updateHint:
+    'Les mises à jour conservent la bibliothèque, les illustrations et les réglages. Après la mise à jour de l’app, utilisez Mettre à jour dans Steam si l’écran de veille installé doit être actualisé.',
+  updateConfirm:
+    'L’app va se fermer, installer la mise à jour vérifiée puis redémarrer. L’ancienne app est conservée pour la récupération. Continuer ?',
+  updatePermission:
+    'Installez d’abord l’app dans un dossier accessible en écriture. Sur Mac, glissez-la du DMG vers Applications. Vous pouvez aussi installer le téléchargement manuellement.',
+  updateDevelopment:
+    'Le remplacement de l’app est disponible dans les versions empaquetées. Cet aperçu de développement n’installe pas de mise à jour.',
+  updateNotes: 'Changements',
+  updateSuccess: 'L’app a été mise à jour.',
+  updateRollback: 'L’ancienne app a été restaurée.',
+  updateNotice: 'Une mise à jour de l’app est disponible.',
+  updateIdle: 'Prêt à vérifier',
+  updateChecking: 'Vérification sur GitHub',
+  updateUpToDate: 'Vous avez la dernière version',
+  updateAvailableState: 'Mise à jour disponible',
+  updateDownloading: 'Téléchargement de la mise à jour',
+  updateVerifying: 'Vérification de la mise à jour',
+  updateExtracting: 'Préparation de l’application',
+  updateReady: 'Téléchargement vérifié. Prêt à installer.',
+  updateInstalling: 'Fermeture de l’app et installation',
+  updateError: 'La mise à jour n’a pas abouti',
+  updateUnavailable: 'Mises à jour indisponibles dans cet aperçu'
+});
 const app = document.querySelector('#app'),
   addDialog = document.querySelector('#add-dialog'),
   detailDialog = document.querySelector('#detail-dialog');
@@ -1453,7 +1529,7 @@ function brandingControls() {
   return `<label class="preview-option"><span>${esc(t('gameName'))}</span><select class="field" data-setting="nameDisplay" aria-label="${esc(t('gameName'))}">${brandingOptions(state.settings.nameDisplay)}</select></label><label class="preview-option"><span>${esc(t('logoPosition'))}</span><select class="field" data-setting="logoPosition" aria-label="${esc(t('logoPosition'))}">${brandingOptions(state.settings.logoPosition, true)}</select></label>`;
 }
 function shell() {
-  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'preparation' ? `<small data-workflow-badge class="workflow-badge" ${!workflowBadge() ? 'hidden' : ''}>${esc(workflowBadge())}</small>` : ''}${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION 1.1.1</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${workflow()}${steamNextStep()}${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
+  return `<div class="app-shell"><aside class="sidebar"><div class="brand"><span class="brand-mark">${icon('film')}</span><div><div class="brand-name">Steam <span>Animated Screensaver</span></div></div></div><nav class="nav" aria-label="${esc(t('tagline'))}">${['home', 'library', 'preparation', 'preview', 'settings'].map((r) => `<button data-route="${r}" class="${route === r ? 'active' : ''}" ${route === r ? 'aria-current="page"' : ''}>${icon(r === 'preparation' ? 'prepare' : r)}<span>${esc(t(r))}</span>${r === 'preparation' ? `<small data-workflow-badge class="workflow-badge" ${!workflowBadge() ? 'hidden' : ''}>${esc(workflowBadge())}</small>` : ''}${r === 'library' && state.games.length ? `<span class="nav-count">${state.games.length}</span>` : ''}</button>`).join('')}</nav><div class="sidebar-bottom"><div class="steam-status"><span class="status-dot ${state.steam.detected ? 'on' : ''}"></span>${esc(t(state.steam.detected ? 'connected' : 'notDetected'))}</div><div class="sidebar-foot">VERSION ${esc(state.appUpdate?.currentVersion || '1.2.0')}</div></div></aside><main class="main"><header class="topbar"><div class="breadcrumbs">Steam Animated Screensaver ${icon('arrow')}<span>${esc(t(route))}</span></div><div class="mobile-brand">${icon('film')} Steam Animated Screensaver</div><div class="top-actions"><button class="top-lang" data-action="language" aria-label="${lang() === 'en' ? 'Passer en français' : 'Switch to English'}">${lang() === 'en' ? 'EN / FR' : 'FR / EN'}</button></div></header><div class="content">${workflow()}${steamNextStep()}${state.appUpdate?.availableVersion && !['up_to_date', 'unavailable'].includes(state.appUpdate.phase) && route !== 'settings' ? `<div class="banner update-notice" role="status"><span>${esc(t('updateNotice'))} ${esc(state.appUpdate.availableVersion)}</span>${button(t('appUpdates'), 'open-app-updates', 'refresh')}</div>` : ''}${[...(state.warnings || []), ...(state.steam.warnings || [])].length ? `<div class="banner" role="status">${icon('info')}<span>${[...(state.warnings || []), ...(state.steam.warnings || [])].map(esc).join('<br>')}</span></div>` : ''}${connectionError ? `<div class="connection-error" role="alert">${esc(t('connectionError'))} ${button(t('retryConnection'), 'reconnect', 'refresh')}</div>` : ''}${{ home: homeView, library: libraryView, preparation: preparationView, preview: previewView, settings: settingsView }[route]()}</div></main></div>`;
 }
 function heading(eyebrow, title, sub, actions = '') {
   return `<div class="page-heading"><div><div class="eyebrow">${esc(t(eyebrow))}</div><h1>${esc(t(title))}</h1><p>${esc(t(sub))}</p></div>${actions ? `<div class="button-row">${actions}</div>` : ''}</div>`;
@@ -1696,10 +1772,31 @@ async function applySteamIdle() {
     render();
   }
 }
+function appUpdatePanel() {
+  const u = state.appUpdate || { phase: 'unavailable' };
+  const keys = {
+    idle: 'updateIdle',
+    checking: 'updateChecking',
+    up_to_date: 'updateUpToDate',
+    available: 'updateAvailableState',
+    downloading: 'updateDownloading',
+    verifying: 'updateVerifying',
+    extracting: 'updateExtracting',
+    ready: 'updateReady',
+    installing: 'updateInstalling',
+    error: 'updateError',
+    unavailable: 'updateUnavailable'
+  };
+  const busy = ['checking', 'downloading', 'verifying', 'extracting', 'installing'].includes(
+    u.phase
+  );
+  const progress = Number.isFinite(u.progress) ? Math.min(100, Math.max(0, u.progress)) : null;
+  return `<section class="panel app-update-panel" id="app-updates"><h2>${icon('refresh')}${esc(t('appUpdates'))}</h2><div class="update-versions"><span>${esc(t('updateCurrent'))}: <strong>${esc(u.currentVersion || '1.2.0')}</strong></span>${u.availableVersion ? `<span>${esc(t('updateAvailable'))}: <strong>${esc(u.availableVersion)}</strong></span>` : ''}</div><p class="update-phase" role="status">${esc(t(keys[u.phase] || 'updateIdle'))}${progress !== null ? ` · ${progress}%` : ''}</p>${progress !== null && busy ? `<progress class="update-progress" max="100" value="${progress}" aria-label="${esc(t(keys[u.phase]))}"></progress>` : ''}${u.phase === 'downloading' ? `<p>${esc(bytes(u.bytes))} / ${esc(bytes(u.total))}</p>` : ''}${u.error ? `<p class="update-error" role="alert">${esc(u.error)}</p>` : ''}${u.result === 'updated' ? `<p>${esc(t('updateSuccess'))}</p>` : ''}${u.result === 'rolled_back' ? `<p>${esc(t('updateRollback'))}</p>` : ''}<div class="button-row">${button(t('updateCheck'), 'app-update-check', 'refresh', false, busy || !u.canCheck || u.phase === 'ready' ? 'disabled' : '')}${u.canInstall && u.availableVersion && ['available', 'error'].includes(u.phase) ? button(t('updateDownload'), 'app-update-download', 'prepare', true) : ''}${u.phase === 'ready' ? button(t('updateInstall'), 'app-update-install', 'refresh', true, !u.canInstall ? 'disabled' : '') : ''}${u.phase === 'downloading' ? button(t('updateCancel'), 'app-update-cancel', 'close') : ''}${u.canOpenRelease ? button(t('updateRelease'), 'app-update-release', 'arrow') : ''}</div>${!u.canInstall ? `<p>${esc(t(u.installReason === 'permissions' ? 'updatePermission' : u.installReason === 'contents' ? 'updateContents' : 'updateDevelopment'))}</p>` : ''}<label class="setting-row"><span><span class="setting-row-label">${esc(t('updateAuto'))}</span><small>${esc(t('updateAutoHint'))}</small></span><input type="checkbox" data-update-auto ${u.autoCheck ? 'checked' : ''} ${!u.canCheck || busy ? 'disabled' : ''}></label><p>${esc(t('updateLast'))}: ${u.lastChecked ? esc(new Date(u.lastChecked).toLocaleString(lang())) : esc(t('updateNever'))}</p>${u.releaseNotes ? `<details class="update-notes"><summary>${esc(t('updateNotes'))}</summary><pre>${esc(u.releaseNotes)}</pre></details>` : ''}<p>${esc(t('updateHint'))}</p></section>`;
+}
 function settingsView() {
   const used = Number(state.storage.used) || 0,
     max = Number(state.settings.maxStorageGB) || 10;
-  return `${heading('settingsEyebrow', 'settingsTitle', 'settingsSub')}<div class="settings-layout"><div class="settings-stack">${panel('steamGridDb', 'key', `<p>${esc(t('keyBody'))}</p><form id="key-form"><div class="key-input"><input class="field" id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(state.hasKey ? 'replaceKey' : 'keyPlaceholder'))}" aria-label="${esc(t('keyPlaceholder'))}" required>${button(t('saveKey'), 'save-key', 'key', true, 'type="submit"')}</div></form><div class="button-row" style="align-items:center;margin:13px 0"><span style="font-size:10px;color:var(--muted)">${state.hasKey ? '✓ ' : ''}${esc(t(state.hasKey ? 'keySaved' : 'keyMissing'))}</span>${state.hasKey ? button(t('validateKey'), 'validateKey', 'check') : ''}</div><a class="key-link" href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">${esc(t('getKey'))} ↗</a>`)}${steamAccountPanel()}${panel(
+  return `${heading('settingsEyebrow', 'settingsTitle', 'settingsSub')}${appUpdatePanel()}<div class="settings-layout"><div class="settings-stack">${panel('steamGridDb', 'key', `<p>${esc(t('keyBody'))}</p><form id="key-form"><div class="key-input"><input class="field" id="api-key" name="apiKey" type="password" autocomplete="off" spellcheck="false" placeholder="${esc(t(state.hasKey ? 'replaceKey' : 'keyPlaceholder'))}" aria-label="${esc(t('keyPlaceholder'))}" required>${button(t('saveKey'), 'save-key', 'key', true, 'type="submit"')}</div></form><div class="button-row" style="align-items:center;margin:13px 0"><span style="font-size:10px;color:var(--muted)">${state.hasKey ? '✓ ' : ''}${esc(t(state.hasKey ? 'keySaved' : 'keyMissing'))}</span>${state.hasKey ? button(t('validateKey'), 'validateKey', 'check') : ''}</div><a class="key-link" href="https://www.steamgriddb.com/profile/preferences/api" target="_blank" rel="noopener noreferrer">${esc(t('getKey'))} ↗</a>`)}${steamAccountPanel()}${panel(
     'playback',
     'play',
     `<label class="setting-row"><span class="setting-row-label">${esc(t('language'))}</span><select class="field" data-setting="language"><option value="en" ${lang() === 'en' ? 'selected' : ''}>English</option><option value="fr" ${lang() === 'fr' ? 'selected' : ''}>Français</option></select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('sceneDuration'))}</span><small>${esc(t('durationHint'))}</small></span><input class="field" data-setting="sceneDuration" type="number" min="8" max="180" step="1" value="${Number(state.settings.sceneDuration)}" aria-label="${esc(t('sceneDuration'))}"></label>${toggle('shuffle', 'shuffle', 'shuffleHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('transition'))}</span><select class="field" data-setting="transition"><option value="crossfade" ${state.settings.transition === 'crossfade' || state.settings.transition === 'fade' ? 'selected' : ''}>${esc(t('crossfade'))}</option><option value="fade-black" ${state.settings.transition === 'fade-black' ? 'selected' : ''}>${esc(t('fadeBlack'))}</option></select></label>${brandingControls()}<p>${esc(t('logoHint'))}</p>${toggle('showCover', 'showCover', 'coverHint')}<label class="setting-row"><span class="setting-row-label">${esc(t('coverPosition'))}</span><select class="field" data-setting="coverPosition">${coverPositionOptions()}</select></label><label class="setting-row"><span><span class="setting-row-label">${esc(t('framing'))}</span><small>${esc(t('framingHint'))}</small></span><select class="field" data-setting="framing">${framingOptions(state.settings.framing)}</select></label>${toggle('smoothMotion', 'smoothMotion', 'smoothHint')}<label class="setting-row"><span><span class="setting-row-label">${esc(t('smoothingMode'))}</span><small>${esc(t('smoothingModeHint'))}</small></span><select class="field" data-setting="smoothingMode">${[
@@ -2121,6 +2218,31 @@ async function fullscreen() {
 }
 async function handleAction(action) {
   switch (action) {
+    case 'open-app-updates':
+      navigate('settings');
+      document.getElementById('app-updates')?.scrollIntoView({ block: 'start' });
+      break;
+    case 'app-update-check':
+      await invoke('appUpdateCheck');
+      await refresh(true);
+      break;
+    case 'app-update-download':
+      await invoke('appUpdateDownload');
+      await refresh(true);
+      break;
+    case 'app-update-cancel':
+      await invoke('appUpdateCancel');
+      await refresh(true);
+      break;
+    case 'app-update-release':
+      await invoke('appUpdateRelease');
+      break;
+    case 'app-update-install':
+      if (confirm(t('updateConfirm'))) {
+        await invoke('appUpdateInstall', { confirm: true });
+        await refresh(true);
+      }
+      break;
     case 'add-game':
       showAdd();
       break;
@@ -2442,6 +2564,11 @@ document.addEventListener('input', (event) => {
 });
 document.addEventListener('change', async (event) => {
   const el = event.target;
+  if (el.hasAttribute('data-update-auto')) {
+    await invoke('appUpdatePreferences', { autoCheck: el.checked });
+    await refresh(true);
+    return;
+  }
   if (el.dataset.branding) {
     const g = state.games.find((g) => g.id === detailId);
     const branding = {

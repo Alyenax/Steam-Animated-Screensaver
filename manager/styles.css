@@ -2762,3 +2762,77 @@ body.reduced-motion *:after {
   line-height: 1.6;
   margin: 12px 0 0;
 }
+
+.app-update-panel {
+  margin-bottom: 24px;
+  scroll-margin-top: 20px;
+  padding: 24px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #0e1724;
+}
+.app-update-panel h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 18px;
+  margin: 0 0 18px;
+}
+.app-update-panel h2 svg {
+  width: 20px;
+  height: 20px;
+}
+.update-versions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  font-size: 13px;
+}
+.update-phase {
+  color: var(--cyan);
+  font-weight: 600;
+}
+.update-error {
+  color: #ffb6aa;
+  overflow-wrap: anywhere;
+}
+.update-progress {
+  display: block;
+  width: 100%;
+  height: 9px;
+  margin: 12px 0;
+  accent-color: var(--cyan);
+}
+.update-notes {
+  margin: 16px 0;
+}
+.update-notes summary {
+  cursor: pointer;
+}
+.update-notes pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: inherit;
+  line-height: 1.6;
+  font-size: 12px;
+}
+.update-notice {
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.app-update-panel p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+.app-update-panel .update-phase {
+  color: var(--cyan);
+}
+.app-update-panel .update-error {
+  color: #ffb6aa;
+}
+.app-update-panel input[type='checkbox'] {
+  accent-color: var(--cyan);
+}

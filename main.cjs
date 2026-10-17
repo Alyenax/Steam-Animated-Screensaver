@@ -19,9 +19,12 @@ if (process.env.SAS_APP_DATA_ROOT)
   app.setPath('appData', path.resolve(process.env.SAS_APP_DATA_ROOT));
 {
   // Keep Chromium's early single-instance lock from creating the new catalog folder before migration.
-  const profile = explicitDataDir
-    ? path.join(path.resolve(explicitDataDir), 'electron-profile')
-    : path.join(app.getPath('appData'), 'steam-animated-screensaver-electron');
+  const profile =
+    process.env.SAS_UPDATE_PROFILE && /^[a-f0-9]{32}$/.test(process.env.SAS_UPDATE_TOKEN || '')
+      ? path.resolve(process.env.SAS_UPDATE_PROFILE)
+      : explicitDataDir
+        ? path.join(path.resolve(explicitDataDir), 'electron-profile')
+        : path.join(app.getPath('appData'), 'steam-animated-screensaver-electron');
   require('node:fs').mkdirSync(profile, { recursive: true });
   app.setPath('userData', profile);
   app.setPath('logs', path.join(profile, 'logs'));
@@ -62,12 +65,19 @@ process.on('unhandledRejection', (reason) =>
 app.on('child-process-gone', (_event, detail) =>
   report('error', 'electron.child_process_gone', detail)
 );
-let core,
+let updater,
+  core,
   win,
   quitting = false,
   quitReady = false;
 const actions = new Set([
   'state',
+  'appUpdateCheck',
+  'appUpdateDownload',
+  'appUpdateCancel',
+  'appUpdatePreferences',
+  'appUpdateInstall',
+  'appUpdateRelease',
   'steamIdleState',
   'setSteamIdle',
   'diagnosticsEvent',
@@ -189,10 +199,11 @@ function createWindow() {
 app
   .whenReady()
   .then(async () => {
-    const dataDir =
+    let dataDir =
       explicitDataDir ||
       (await require('./core/branding.cjs').dataDirectory(app.getPath('appData')));
     diagnostics = require('./core/diagnostics.cjs').createDiagnostics({ dataDir });
+    dataDir = await require('node:fs/promises').realpath(dataDir);
     for (const event of earlyEvents.splice(0))
       diagnostics.record(event.level, event.event, event.detail);
     app.setPath('crashDumps', path.join(dataDir, 'logs', 'crashes'));
@@ -203,7 +214,59 @@ app
       steamOverride: !!process.env.STEAM_ROOT
     });
     const { createCore } = require('./core/index.cjs');
-    core = await createCore({ dataDir, diagnostics });
+    const { createInstaller, acknowledgeUpdate } = require('./core/update-install.cjs');
+    const installer = await createInstaller({
+      dataDir,
+      version: app.getVersion(),
+      packaged: app.isPackaged,
+      profileDir: app.getPath('userData'),
+      protectedDirs: [
+        'home',
+        'desktop',
+        'documents',
+        'downloads',
+        'appData',
+        'userData',
+        'temp'
+      ].map((name) => app.getPath(name)),
+      active:
+        process.platform === 'darwin'
+          ? path.resolve(process.resourcesPath, '../..')
+          : path.dirname(process.execPath),
+      beforeInstall: async () => {
+        await core.close();
+      },
+      afterCloseFailure: () => {
+        app.relaunch();
+        app.quit();
+      },
+      quit: () => app.quit()
+    });
+    updater = require('./core/app-updates.cjs').createUpdater({
+      dataDir,
+      version: app.getVersion(),
+      installer,
+      diagnostics,
+      enabled: app.isPackaged && process.env.SAS_DISABLE_UPDATE_CHECK !== '1'
+    });
+    await updater.init();
+    core = await createCore({ dataDir, diagnostics, updater });
+    app.once('browser-window-created', (_event, window) => {
+      window.webContents.once('did-finish-load', async () => {
+        try {
+          // A live bridge, initialized library and loaded renderer must all succeed.
+          await window.webContents.executeJavaScript(
+            "window.screensaver.invoke('state').then(s => { if (!Array.isArray(s.games)) throw Error('Library unavailable'); return true; })"
+          );
+          if (await acknowledgeUpdate(dataDir, app.getVersion())) {
+            report('info', 'updater.healthy_startup', { version: app.getVersion() });
+            await updater.recover();
+          }
+        } catch (error) {
+          report('error', 'updater.health_failed', { error });
+        }
+      });
+    });
     protocol.handle('app', async (request) => {
       if (new URL(request.url).host !== 'screensaver')
         return new Response('Not found', { status: 404 });
@@ -239,6 +302,17 @@ app
       )
         throw new Error('Invalid request.');
       try {
+        if (action === 'appUpdateCheck') return await updater.check();
+        if (action === 'appUpdateDownload') return updater.download();
+        if (action === 'appUpdateCancel') return await updater.cancel();
+        if (action === 'appUpdatePreferences') return await updater.preferences(payload);
+        if (action === 'appUpdateInstall') return await updater.install(payload.confirm);
+        if (action === 'appUpdateRelease') {
+          await shell.openExternal(
+            'https://github.com/Alyenax/Steam-Animated-Screensaver/releases/latest'
+          );
+          return { opened: true };
+        }
         if (action === 'openLogs') {
           shell.showItemInFolder(diagnostics.file);
           return { opened: true };
@@ -267,6 +341,7 @@ app
     );
     app.exit(1);
   });
+process.on('SIGTERM', () => app.quit());
 app.on('second-instance', () => {
   if (win) {
     if (win.isMinimized()) win.restore();
@@ -282,10 +357,12 @@ app.on('before-quit', (event) => {
   if (quitting) return;
   quitting = true;
   if (win && !win.isDestroyed()) win.destroy();
-  Promise.resolve(core.close()).finally(() => {
-    report('info', 'application.closed', {});
-    diagnostics?.close();
-    quitReady = true;
-    app.quit();
-  });
+  Promise.resolve(core.close())
+    .then(() => updater?.close())
+    .finally(() => {
+      report('info', 'application.closed', {});
+      diagnostics?.close();
+      quitReady = true;
+      app.quit();
+    });
 });

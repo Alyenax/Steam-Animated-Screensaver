@@ -104,3 +104,9 @@ This option is available on macOS, Windows and Linux/SteamOS. It also works wher
 Automatic custom playback and timer persistence have been observed in native Steam on the maintainer’s Mac. Windows/Linux support is based on first-party client-code inspection, isolated configuration tests and package checks; native Steam acceptance remains pending there. Valve may change these internal settings in a later update.
 
 Your operating system’s screensaver, display sleep and lock settings remain separate and may interrupt Steam. Changing macOS’s own screensaver delay does not configure Steam. Selecting the custom screensaver alone does not set its inactivity timer.
+
+## Updating the application
+
+If you have 1.1.1 or earlier, download and install 1.2.0 once. Your saved data is outside the application folder. Later versions can be installed from **Settings → App updates**: **Check for updates**, **Download update**, then **Restart and install**. Daily checks are enabled while the app is open; downloads and installation require your choice. No GitHub account or background service is required.
+
+Use **Update in Steam** after an app update when prompted, so Steam gets the current player. This reuses prepared media. If the app is running from a read-only location, first install it in a writable folder; on Mac, drag it from the DMG into Applications. The GitHub release button is also available for manual installation. See [update verification and recovery](UPDATES.md).

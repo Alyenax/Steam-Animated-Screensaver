@@ -1,5 +1,13 @@
 # Validation - Steam Animated Screensaver
 
+## 1.2.0 validation
+
+The unit and integration suite passes 156 tests, including 22 dedicated updater and independent-helper cases.
+
+The app updater is covered by dedicated signed-manifest, real streaming download, cancellation, corrupted-cache, path, archive and helper transaction tests. Browser checks exercise Settings, live percentages, cancellation/retry, explicit install confirmation, escaped notes, English/French and desktop/handheld/mobile widths. Native Mac tests replace a real packaged app with a re-signed 1.2.1 QA variant, acknowledge renderer/IPC/library readiness, then independently inject a fatal new-app startup to prove app/catalog restoration and old-app relaunch. These variants are isolated tests, not public releases.
+
+The actual Windows PowerShell helper is parsed and executed on macOS using an official PowerShell runtime, including success and rollback scenarios. This is logic evidence only; it does not establish Windows policy, ACL, file-locking, antivirus or Steam behavior. The production archive extractor inspects actual Windows/Linux app archives on the Mac validation host. Native Windows, Linux and SteamOS update acceptance remains pending. Current reports are included in the release validation ZIP.
+
 ## 1.1.1 validation
 
 The full unit and integration suite passes 134 tests. Dedicated tests cover hidden defaults for new and existing libraries, independent boolean settings, persistence, exported metadata and installation change detection. Browser checks exercise all eight credit combinations, conditional cover and logo attribution, English/French controls, reload persistence and actual offline Steam export. The original 1.1.0 logo and installation regression remains covered.
@@ -51,7 +59,7 @@ The 0.1.9 regression also delays the installed player’s catalog and first GIF,
 | Logging faults        | Immediate process exit, nested stack/stderr retention, credential redaction, bounded JSON rotation, simulated disk-full failure/recovery and linked-path rejection                              | `tests/diagnostics.test.cjs`                            |
 | Distribution          | All four current platform artifacts; ZIP/tar/DMG integrity; package/source byte checks; Windows x64 PE headers; no catalog/key files in shipped app                                             | Release `PACKAGE_VALIDATION.json`, `SHA256SUMS`         |
 
-The release pipeline is local and explicit. After validation and tagging the committed source, `npm run release:bundle` prepares exactly eight upload files: four app packages, one source snapshot, one grouped report archive, the original demo and SHA256SUMS. GitHub adds two automatic source archives. Upload this prepared directory rather than all files in `dist`. `npm run release:check` refuses a missing/stale platform package. GitHub Actions remains disabled. Downloaded release assets are byte-compared with the local published files before delivery.
+The release pipeline is local and explicit. After validation and tagging the committed source, `npm run release:bundle` prepares exactly eight upload files: four app packages, one signed update descriptor, one grouped report archive, the original demo and SHA256SUMS. GitHub adds two automatic source archives. Upload this prepared directory rather than all files in `dist`. `npm run release:check` refuses a missing/stale platform package. GitHub Actions remains disabled. Downloaded release assets are byte-compared with the local published files before delivery.
 
 ## Fault-injection boundaries
 

@@ -8,7 +8,11 @@ Copies previously distributed under MIT retain their rights. This licensing chan
 
 ## Electron
 
-Every platform package retains Electron's LICENSE and Chromium third-party notices. Electron is pinned in `package-lock.json`. The application uses Node built-ins at runtime and does not ship development `node_modules`.
+Every platform package retains Electron's LICENSE and Chromium third-party notices. Electron is pinned in `package-lock.json`. The application uses Node built-ins and a small set of production archive-reader dependencies at runtime. Development dependencies and the media-tool npm packages are not shipped.
+
+## Archive readers
+
+App updates use pinned `yauzl` (MIT) and `tar-stream` (MIT), with their runtime dependencies. Packages and original license notices are retained under the app’s `node_modules` directory. They are used to inspect and extract the signed Windows and Linux app downloads with additional path, link, size and entry-count restrictions. The lockfile records exact dependency versions.
 
 ## Media tools in version 1.0.0
 

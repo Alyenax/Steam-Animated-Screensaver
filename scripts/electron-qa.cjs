@@ -41,7 +41,12 @@ async function run({ appPath, reportPath } = {}) {
     app = await _electron.launch({
       executablePath,
       args: appPath ? [] : [path.resolve(__dirname, '..')],
-      env: { ...process.env, SAS_DATA_DIR: fixture.dataDir, STEAM_ROOT: fixture.steamRoot },
+      env: {
+        ...process.env,
+        SAS_DISABLE_UPDATE_CHECK: '1',
+        SAS_DATA_DIR: fixture.dataDir,
+        STEAM_ROOT: fixture.steamRoot
+      },
       timeout: 20000
     });
     const page = await app.firstWindow();
@@ -59,8 +64,45 @@ async function run({ appPath, reportPath } = {}) {
       assert.equal(bundle.arch, 'arm64');
       assert.equal(bundle.executable, executablePath);
     }
-    const errors = [];
-    page.on('pageerror', (error) => errors.push(error.message));
+    await page.locator('[data-route="settings"]').first().waitFor();
+    const updateStatus = await page.evaluate(async () => {
+      const s = await window.screensaver.invoke('state');
+      await window.screensaver.invoke('appUpdatePreferences', { autoCheck: false });
+      const saved = await window.screensaver.invoke('state');
+      const rejected = await window.screensaver.invoke('appUpdateInstall', { confirm: false }).then(
+        () => false,
+        () => true
+      );
+      await window.screensaver.invoke('appUpdatePreferences', { autoCheck: true });
+      return {
+        version: s.appUpdate.currentVersion,
+        canInstall: s.appUpdate.canInstall,
+        auto: saved.appUpdate.autoCheck,
+        rejected
+      };
+    });
+    assert.equal(updateStatus.version, require('../package.json').version);
+    assert.equal(updateStatus.canInstall, !!appPath);
+    assert.equal(updateStatus.auto, false);
+    assert.equal(updateStatus.rejected, true);
+    await page.locator('[data-route="settings"]').first().click();
+    await page.locator('#app-updates').waitFor();
+    await app.evaluate(({ app, BrowserWindow }) => {
+      app.focus({ steal: true });
+      BrowserWindow.getAllWindows()[0].focus();
+    });
+    await page.locator('#app-updates').screenshot({
+      path: path.resolve(__dirname, '..', 'screenshots/19-app-updates-macos-qa.png'),
+      timeout: 60000
+    });
+    const errors = [],
+      injectedErrors = [];
+    let expectingInjectedErrors = false;
+    page.on('pageerror', (error) => {
+      if (expectingInjectedErrors && /SAS_QA_(RENDERER_FAILURE|REJECTION)/.test(error.message))
+        injectedErrors.push(error.message);
+      else errors.push(error.message);
+    });
     await page.locator('[data-route="preview"]').first().waitFor();
     assert.equal(await page.title(), 'Steam Animated Screensaver');
     assert.equal(await page.locator('.local-badge').count(), 0);
@@ -267,8 +309,14 @@ async function run({ appPath, reportPath } = {}) {
       null
     );
     await page.bringToFront();
+    await app.evaluate(({ app, BrowserWindow }) => {
+      app.focus({ steal: true });
+      const window = BrowserWindow.getAllWindows()[0];
+      window.show();
+      window.focus();
+    });
     await page.screenshot({
-      timeout: 30000,
+      timeout: 60000,
       path: path.resolve(
         __dirname,
         '..',
@@ -294,6 +342,7 @@ async function run({ appPath, reportPath } = {}) {
     await app.evaluate(({ shell }) => {
       shell.showItemInFolder = global.__sasOriginalShow;
     });
+    expectingInjectedErrors = true;
     await page.evaluate(() => {
       console.error('SAS_QA_CONSOLE_FAILURE');
       setTimeout(() => {
@@ -322,8 +371,15 @@ async function run({ appPath, reportPath } = {}) {
         ),
         event
       );
-    const expectedInjectedErrors = errors.splice(0);
-    assert(expectedInjectedErrors.every((e) => /SAS_QA_(RENDERER_FAILURE|REJECTION)/.test(e)));
+    // Log persistence and Playwright event delivery are separate asynchronous channels.
+    for (let i = 0; i < 100 && new Set(injectedErrors).size < 2; i++)
+      await new Promise((r) => setTimeout(r, 30));
+    assert.equal(
+      new Set(injectedErrors).size,
+      2,
+      'Both injected page errors must be observed before crashing the renderer'
+    );
+    expectingInjectedErrors = false;
     await app.evaluate(({ BrowserWindow }) => {
       BrowserWindow.getAllWindows()[0].webContents.forcefullyCrashRenderer();
     });
@@ -366,6 +422,8 @@ async function run({ appPath, reportPath } = {}) {
               'Bundled tools prepare and play a new 24 fps Fast derivative'
             ]
           : []),
+        'Native updater reports installed version and writable packaged-app capability',
+        'Native updater preference IPC persists and installation without confirmation is refused',
         'Actual app:// protocol media playback',
         'Prepared transparent game logo loads in the native app with the duplicate title hidden',
         'Native app starts with no credits, displays all three independent credits when enabled and hides them again',

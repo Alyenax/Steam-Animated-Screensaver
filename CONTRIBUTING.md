@@ -12,9 +12,9 @@ Contributions to the original application are provided under GPL-3.0-only. Prese
 
 ## Release requirement
 
-Every published version must provide **SteamOS x64, Linux x64, Windows x64 and macOS Apple Silicon** downloads together. macOS includes both DMG and ZIP. SteamOS and Linux use the same Linux x64 application. Never silently publish only the development host's package.
+Every published version must provide **SteamOS x64, Linux x64, Windows x64 and macOS Apple Silicon** downloads together. macOS builds both DMG and ZIP; only the DMG is uploaded. The ZIP is retained for local archive validation. SteamOS and Linux use the same Linux x64 application. Never silently publish only the development host's package.
 
-Run `package:mac`, `package:windows`, `package:linux` and `package:steamos`, then execute the packaged Mac, media, archive and lifecycle QA scripts listed in docs/VALIDATION.md. Run `npm run release:check` against the final artifacts; it rejects missing packages, stale source/docs, bad archive integrity and invalid Windows x64 headers. Publish the source archive, checksums and validation reports with each release. Download the published assets and byte-compare them against the local originals.
+Run `package:mac`, `package:windows`, `package:linux` and `package:steamos`, then execute the packaged Mac, media, archive and lifecycle QA scripts listed in docs/VALIDATION.md. Run `npm run release:check` against the final artifacts; it rejects missing packages, stale source/docs, bad archive integrity and invalid Windows x64 headers. Publish the signed update.json, checksums and validation reports with each release. GitHub supplies the two source archives. Keep eight uploaded files and ten displayed assets. Follow docs/UPDATES.md for signing and update testing. Download the published assets and byte-compare them against the local originals.
 
 Keep native execution results separate from cross-packaging and file inspection. Actual Steam Big Picture/Gaming Mode activation, wake, decoder performance and long-duration stability require target-client evidence. Do not describe an unexecuted platform as native-tested.
 

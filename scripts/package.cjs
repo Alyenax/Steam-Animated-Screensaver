@@ -59,11 +59,49 @@ async function build(platform = 'linux', arch = 'x64') {
     await fs.writeFile(
       path.join(staging, 'package.json'),
       JSON.stringify(
-        { ...pkg, scripts: undefined, dependencies: {}, devDependencies: undefined },
+        {
+          ...pkg,
+          scripts: undefined,
+          dependencies: Object.fromEntries(
+            ['tar-stream', 'yauzl'].map((name) => [name, pkg.dependencies[name]])
+          ),
+          devDependencies: undefined
+        },
         null,
         2
       )
     );
+    // Ship only archive-reader runtime dependencies, including their licenses.
+    const copied = new Map();
+    async function stageDependency(name, from = root) {
+      let source = path.dirname(require.resolve(name, { paths: [from] }));
+      while (true) {
+        try {
+          if (
+            JSON.parse(await fs.readFile(path.join(source, 'package.json'), 'utf8')).name === name
+          )
+            break;
+        } catch {}
+        const parent = path.dirname(source);
+        if (parent === source) throw new Error(`Dependency package not found: ${name}`);
+        source = parent;
+      }
+      const manifest = JSON.parse(await fs.readFile(path.join(source, 'package.json'), 'utf8'));
+      if (copied.has(name)) {
+        if (copied.get(name) !== manifest.version)
+          throw new Error(`Conflicting runtime dependency: ${name}`);
+        return;
+      }
+      copied.set(name, manifest.version);
+      const destination = path.join(staging, 'node_modules', name);
+      await fs.mkdir(path.dirname(destination), { recursive: true });
+      await fs.cp(source, destination, { recursive: true });
+      await fs.rm(path.join(destination, 'node_modules'), { recursive: true, force: true });
+      for (const dependency of Object.keys(manifest.dependencies || {}))
+        await stageDependency(dependency, source);
+    }
+    await stageDependency('tar-stream');
+    await stageDependency('yauzl');
     const bin = path.join(staging, 'binaries');
     await fs.mkdir(bin);
     const binaryHashes = {};
@@ -159,11 +197,22 @@ async function build(platform = 'linux', arch = 'x64') {
     });
     const output = outputs[0];
     if (macOS) return await finishMac({ root, dist, output, pkg });
+    async function updateBoundary() {
+      const entries = (await fs.readdir(output))
+        .filter((name) => name !== '.sas-update-root.json')
+        .sort();
+      await fs.writeFile(
+        path.join(output, '.sas-update-root.json'),
+        JSON.stringify({ schema: 1, product: pkg.name, version: pkg.version, entries }, null, 2) +
+          '\n'
+      );
+    }
     if (windows) {
       await fs.writeFile(
         path.join(output, 'README.txt'),
         'Steam Animated Screensaver - Windows x64\r\n\r\nExtract the entire ZIP, then run Steam Animated Screensaver.exe. No Node, FFmpeg installation or server is required.\r\nPrepare artwork, preview, then install into Steam from Settings. Restart Steam, open Big Picture > Settings > Customization and select steam-animated-screensaver.\r\nLocal data: %APPDATA%/steam-animated-screensaver. Previous app data and owned exports migrate automatically.\r\nUnsigned application. Windows users are invited to report native playback and installation issues.\r\n'
       );
+      await updateBoundary();
       const filename = `Steam-Animated-Screensaver-${pkg.version}-windows-x64.zip`;
       execFileSync('ditto', ['-c', '-k', '--keepParent', output, path.join(dist, filename)]);
       return await manifest(dist, [filename], 'WINDOWS_SHA256SUMS');
@@ -186,6 +235,7 @@ async function build(platform = 'linux', arch = 'x64') {
       path.join(output, 'README.txt'),
       'Steam Animated Screensaver by Alyenax. See resources/app/docs/INSTALLATION.md for setup and resources/app/docs/VALIDATION.md for test coverage and remaining native checks.\n'
     );
+    await updateBoundary();
     const filename = `Steam-Animated-Screensaver-${pkg.version}-${steamOS ? 'steamos' : platform}-${arch}.tar.gz`;
     execFileSync('tar', ['-czf', path.join(dist, filename), '-C', dist, path.basename(output)], {
       stdio: 'inherit'

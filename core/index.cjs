@@ -247,6 +247,13 @@ function createCore(options = {}) {
   function publicState() {
     const s = clone(state);
     s.selectionJob = clone(selectionJob);
+    s.appUpdate = options.updater?.status() || {
+      currentVersion: require('../package.json').version,
+      phase: 'unavailable',
+      canCheck: false,
+      canInstall: false,
+      installReason: 'development'
+    };
     s.steam.needsUpdate =
       !!s.steam.installed && s.steam.signature !== require('./installer.cjs').signature(state);
     s.diagnostics = {
